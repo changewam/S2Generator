@@ -41,7 +41,7 @@ def s2plot(x: np.ndarray, y: np.ndarray) -> plt.Figure:
         else:
             ax = axes[i, 1]
         ax.plot(y[:, i], color='royalblue')
-        ax.set_ylabel(f"Output Dimension {i + 1}", fontsize=10)
+        ax.set_ylabel(f"Output Dim {i + 1}", fontsize=10)
         ax.set_xlim(0, seq_len)
 
     # Add titles to the two columns of images
