@@ -6,7 +6,7 @@ In recent years, the fondation models of Time Series Analysis `(TSA)` have devel
 
 In order to solve the above problems, S2Generator provides an unrestricted bimodal data generation algorithm. The algorithm can provide high-quality time series data and its paired symbolic semantic information without restriction. The specific data generation method is shown in Figure (a) below. Through this method, we generated a large-scale synthetic dataset and trained a bimodal pre-trained basic model on it as shown in Figure (b) below.
 
-<img src=".\images\SymTime.png" alt="SymTime" style="zoom:33%;" />
+<img src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/SymTime.png" alt="SymTime" style="zoom:33%;" />
 
 ## Installation 🚀
 
@@ -42,7 +42,7 @@ fig = s2plot(x, y)
 
 > (73.5 add (sin((-7.57 add (3.89 mul x_0))) mul (((-0.092 mul exp((-63.4 add (-0.204 mul x_0)))) add (-6.12 mul log((-0.847 add (9.55 mul x_0))))) sub ((4.49 mul inv((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul sqrt((51.3 add (-55.6 mul x_0))))))))
 
-![ID1_OD1](.\images\ID1_OD1.jpg)
+![ID1_OD1](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg)
 
 The input and output dimensions of the multivariate time series and the length of the sampling sequence can be adjusted in the `run` method.
 
@@ -59,13 +59,13 @@ fig = s2plot(x, y)
 >
 > Two symbolic expressions are connected by `|`.
 
-![ID2_OD2](.\images\ID2_OD2.jpg)
+![ID2_OD2](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID2_OD2.jpg)
 
 ## Algorithm 🎯
 
 The key to this algorithm is to construct complex and diverse symbolic expressions $f(\cdot)$ through a tree structure, so as to generate a series $y$ by forward propagating through a sampling series $x$. Since the symbolic expressions of mathematical operations can be represented by a tree structure, we first construct a binary tree with random binary operators to form the basic framework of the expression, as shown in Figure (a). Then we insert random constants or variables as leaf nodes into the constructed structure to form a full binary tree, as shown in Figure (b). Then we increase the diversity of symbolic expressions by randomly inserting unary operators and radioactive transformations, as shown in Figure (c).
 
-![trees](.\images\trees.jpg)
+![trees](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/trees.jpg)
 
 ## Citation 🎖️
 
