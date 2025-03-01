@@ -41,6 +41,7 @@ class Params(object):
         reduce_num_constants: Optional[bool] = True,
         decimals: Optional[int] = 6,
         max_centroids: Optional[int] = 10,
+        max_kernels: Optional[int] = 7,
         p_min: Optional[int] = 1,
         p_max: Optional[int] = 3,
         q_min: Optional[int] = 1,
@@ -49,6 +50,7 @@ class Params(object):
         gaussian: Optional[bool] = True,
         uniform: Optional[bool] = True,
         arma: Optional[bool] = True,
+        kernel_synth: Optional[bool] = True,
     ) -> None:
         """
         Specific parameter control of data generation
@@ -81,6 +83,7 @@ class Params(object):
         :param reduce_num_constants: Use minimal amount of constants in eqs
         :param decimals: Number of digits reserved for floating-point numbers in symbolic expressions
         :param max_centroids: Max number of centroids for the input distribution
+        :param max_kernels: Max number of kernels for the input distribution in KernelSynth methods
         :param p_min: Minimal order for AR(p) in ARMA(p, q)
         :param p_max: Maximal order in ARMA(p, q)
         :param q_min: Minimal order in ARMA(q, p)
@@ -89,6 +92,7 @@ class Params(object):
         :param gaussian: Whether to use Gaussian mixture distribution for series sampling
         :param uniform: Whether to use uniform distribution for series sampling
         :param arma: Whether to use the ARMA model for series sampling
+        :param kernel_synth: Whether to use kernel synthesis for series sampling
         """
         self.min_input_dimension, self.max_input_dimension = (
             min_input_dimension,
@@ -125,9 +129,12 @@ class Params(object):
         self.use_sympy = use_sympy
         self.reduce_num_constants = reduce_num_constants
         self.max_centroids = max_centroids
+        self.max_kernels = max_kernels
         self.p_min, self.p_max, self.q_min, self.q_max = p_min, p_max, q_min, q_max
         self.rotate = rotate
         self.gaussian, self.uniform, self.arma = gaussian, uniform, arma
+
+        # Add various sampling methods
         self.sampling_type = []
         if gaussian is True:
             self.sampling_type.append("gaussian")
@@ -135,6 +142,8 @@ class Params(object):
             self.sampling_type.append("uniform")
         if arma is True:
             self.sampling_type.append("ARMA")
+        if kernel_synth is True:
+            self.sampling_type.append("kernel_synth")
         if len(self.sampling_type) == 0:
             raise ValueError(
                 "sampling_type is empty! please specify one sampling_type in (gaussian, uniform, ARMA) at least"

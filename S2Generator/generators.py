@@ -17,6 +17,7 @@ from S2Generator.params import Params
 from S2Generator.base import Node, NodeList
 from S2Generator.base import operators_real
 from S2Generator.base import math_constants, all_operators, SPECIAL_WORDS
+from S2Generator.base import generate_KernelSynth
 from S2Generator.encoders import GeneralEncoder
 
 
@@ -558,9 +559,7 @@ class Generator(object):
         """Sampling method for data generation"""
         return self.params.sampling_type
 
-    def type_sampling(
-        self, rng: np.random.RandomState, n: int
-    ) -> Tuple[List[str], dict]:
+    def type_sampling(self, rng: RandomState, n: int) -> Tuple[List[str], dict]:
         """Identify three specific sampling methods"""
         indices = rng.randint(0, self.num_type, size=n)
         type_list = [self.sampling_type[i] for i in indices]
@@ -592,7 +591,7 @@ class Generator(object):
 
     def generate_gaussian(
         self,
-        rng: np.random.RandomState,
+        rng: RandomState,
         input_dimension: int,
         n_centroids: int,
         n_points_comp: ndarray,
@@ -613,7 +612,7 @@ class Generator(object):
 
     def generate_uniform(
         self,
-        rng: np.random.RandomState,
+        rng: RandomState,
         input_dimension: int,
         n_centroids: int,
         n_points_comp: ndarray,
@@ -637,7 +636,7 @@ class Generator(object):
         )
 
     def generate_ARMA(
-        self, rng, n_inputs_points: int, input_dimension: int = 1
+        self, rng: RandomState, n_inputs_points: int, input_dimension: int = 1
     ) -> ndarray:
         """Generate ARMA stationary time series based on the specified input points and dimensions"""
         x = np.zeros(shape=(n_inputs_points, input_dimension))
@@ -678,6 +677,20 @@ class Generator(object):
             ts[index] = sum_value
         return ts
 
+    def generate_KernelSynth(
+        self, rng: RandomState, n_inputs_points: int, input_dimension: int = 1
+    ) -> ndarray:
+        """Generate a time series from KernelSynth, which comes from Chronos"""
+        print("hello")
+        return np.vstack(
+            [
+                generate_KernelSynth(
+                    rng=rng, max_kernels=self.params.max_kernels, length=n_inputs_points
+                )
+                for _ in range(input_dimension)
+            ]
+        ).T
+
     def get_rid(self, x: ndarray, y: ndarray) -> Tuple[ndarray, ndarray]:
         """Remove illegal values from the generated sequences"""
 
@@ -698,11 +711,11 @@ class Generator(object):
 
     def run(
         self,
-        rng,
-        n_points,
-        input_dimension=1,
-        output_dimension=1,
-        scale=1,
+        rng: RandomState,
+        n_points: int,
+        input_dimension: Optional[int] = 1,
+        output_dimension: Optional[int] = 1,
+        scale: Optional[int] = 1,
         max_trials: Optional[int] = None,
         rotate: Optional[bool] = False,
         offset: Tuple[float, float] = None,
@@ -743,7 +756,7 @@ class Generator(object):
                     # Sample using a Gaussian mixture distribution
                     x.append(
                         self.generate_gaussian(
-                            rng,
+                            rng=rng,
                             input_dimension=1,
                             n_centroids=n_centroids,
                             n_points_comp=n_points_comp,
@@ -753,7 +766,7 @@ class Generator(object):
                     # Sample using a uniform mixture distribution
                     x.append(
                         self.generate_uniform(
-                            rng,
+                            rng=rng,
                             input_dimension=1,
                             n_centroids=n_centroids,
                             n_points_comp=n_points_comp,
@@ -763,7 +776,14 @@ class Generator(object):
                     # Sample using forward propagation of the ARMA model
                     x.append(
                         self.generate_ARMA(
-                            rng, n_inputs_points=n_points, input_dimension=1
+                            rng=rng, n_inputs_points=n_points, input_dimension=1
+                        )
+                    )
+                elif sampling_type == "KernelSynth":
+                    # Sample using KernelSynth from Chronos
+                    x.append(
+                        self.generate_KernelSynth(
+                            rng=rng, input_dimension=1, n_inputs_points=n_points
                         )
                     )
                 else:
