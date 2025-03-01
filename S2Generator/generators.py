@@ -152,7 +152,7 @@ class Generator(object):
             self.params.decimals
         )  # Number of decimal places for floating-point numbers in symbolic expressions
         # List of sampling methods
-        self.num_type = 3
+        self.num_type = len(self.sampling_type)
 
         # Model order when generating ARMA sequences
         self.p_min, self.p_max = params.p_min, params.p_max

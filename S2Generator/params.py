@@ -143,7 +143,7 @@ class Params(object):
         if arma is True:
             self.sampling_type.append("ARMA")
         if kernel_synth is True:
-            self.sampling_type.append("kernel_synth")
+            self.sampling_type.append("KernelSynth")
         if len(self.sampling_type) == 0:
             raise ValueError(
                 "sampling_type is empty! please specify one sampling_type in (gaussian, uniform, ARMA) at least"
