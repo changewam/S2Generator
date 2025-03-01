@@ -58,7 +58,9 @@ SPECIAL_WORDS = [
 class Node(object):
     """Generate a node in the sampling tree"""
 
-    def __init__(self, value: Union[str, int], params: Params, children: list = None) -> None:
+    def __init__(
+        self, value: Union[str, int], params: Params, children: list = None
+    ) -> None:
         # The specific value stored in the current node
         self.value = value
         # The list of child nodes that the current node points to
@@ -154,9 +156,13 @@ class Node(object):
                 nans[:] = np.nan
                 return nans
         if self.value == "max":
-            return np.maximum(self.children[0].val(x), self.children[1].val(x))  # Maximum
+            return np.maximum(
+                self.children[0].val(x), self.children[1].val(x)
+            )  # Maximum
         if self.value == "min":
-            return np.minimum(self.children[0].val(x), self.children[1].val(x))  # Minimum
+            return np.minimum(
+                self.children[0].val(x), self.children[1].val(x)
+            )  # Minimum
         if self.value == "div":
             # Ensure denominator is not zero
             denominator = self.children[1].val(x)
@@ -210,7 +216,7 @@ class Node(object):
         if self.value == "pow2":
             numerator = self.children[0].val(x)
             try:
-                return numerator ** 2  # Square
+                return numerator**2  # Square
             except Exception as e:
                 nans = np.empty((numerator.shape[0],))
                 nans[:] = np.nan
@@ -218,7 +224,7 @@ class Node(object):
         if self.value == "pow3":
             numerator = self.children[0].val(x)
             try:
-                return numerator ** 3  # Cube
+                return numerator**3  # Cube
             except Exception as e:
                 nans = np.empty((numerator.shape[0],))
                 nans[:] = np.nan
@@ -236,7 +242,9 @@ class Node(object):
             return scipy.special.fresnel(self.children[0].val(x))[0]
         if self.value.startswith("eval"):
             n = self.value[-1]
-            return getattr(scipy.special, self.value[:-1])(n, self.children[0].val(x))[0]
+            return getattr(scipy.special, self.value[:-1])(n, self.children[0].val(x))[
+                0
+            ]
         else:
             fn = getattr(np, self.value, None)
             if fn is not None:
@@ -298,7 +306,9 @@ class NodeList(object):
 
     def infix(self) -> str:
         """Connect all multivariate symbolic expressions with |"""
-        return " | ".join([node.infix() for node in self.nodes])  # In-order traversal of the tree
+        return " | ".join(
+            [node.infix() for node in self.nodes]
+        )  # In-order traversal of the tree
 
     def prefix(self) -> str:
         """Connect all multivariate symbolic expressions with ,|,"""
@@ -306,7 +316,10 @@ class NodeList(object):
 
     def val(self, xs: ndarray, deterministic: Optional[bool] = True) -> ndarray:
         """Sample the entire multivariate symbolic expression to obtain a specific numerical sequence"""
-        batch_vals = [np.expand_dims(node.val(np.copy(xs), deterministic=deterministic), -1) for node in self.nodes]
+        batch_vals = [
+            np.expand_dims(node.val(np.copy(xs), deterministic=deterministic), -1)
+            for node in self.nodes
+        ]
         return np.concatenate(batch_vals, -1)
 
     def replace_node_value(self, old_value: str, new_value: str) -> None:

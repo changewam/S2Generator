@@ -15,11 +15,15 @@ from typing import Union, List, Dict, Tuple
 class GeneralEncoder(object):
     """General encoder for handling S2 data"""
 
-    def __init__(self, params: Params, symbols: List[str], all_operators: Dict[str, str]) -> None:
+    def __init__(
+        self, params: Params, symbols: List[str], all_operators: Dict[str, str]
+    ) -> None:
         # Create a numerical encoder
         self.float_encoder = FloatSequences(params)
         # Create a symbolic encoder
-        self.equation_encoder = Equation(params, symbols, self.float_encoder, all_operators)
+        self.equation_encoder = Equation(
+            params, symbols, self.float_encoder, all_operators
+        )
 
 
 class FloatSequences(object):
@@ -34,12 +38,16 @@ class FloatSequences(object):
         # Base
         self.base = (self.float_precision + 1) // self.mantissa_len
         # Maximum number of tokens in the longest encoding
-        self.max_token = 10 ** self.base
+        self.max_token = 10**self.base
 
         self.symbols = ["+", "-"]
 
-        self.symbols.extend(["N" + f"%0{self.base}d" % i for i in range(self.max_token)])
-        self.symbols.extend(["E" + str(i) for i in range(-self.max_exponent, self.max_exponent + 1)])
+        self.symbols.extend(
+            ["N" + f"%0{self.base}d" % i for i in range(self.max_token)]
+        )
+        self.symbols.extend(
+            ["E" + str(i) for i in range(-self.max_exponent, self.max_exponent + 1)]
+        )
 
     def encode(self, values: ndarray) -> List:
         """Encode a float number"""
@@ -50,7 +58,10 @@ class FloatSequences(object):
             value = values
             for val in value:
                 # Iterate over each value to encode
-                assert val not in [-np.inf, np.inf]  # Cannot encode illegal maximum values
+                assert val not in [
+                    -np.inf,
+                    np.inf,
+                ]  # Cannot encode illegal maximum values
                 # Encode the sign
                 sign = "+" if val >= 0 else "-"
                 # Use scientific notation
@@ -92,7 +103,7 @@ class FloatSequences(object):
                 # Process the mantissa and exponent
                 mant = int(mant)
                 exp = int(val[-1][1:])
-                value = sign * mant * (10 ** exp)
+                value = sign * mant * (10**exp)
                 value = float(value)
             except Exception:
                 value = np.nan
@@ -103,8 +114,13 @@ class FloatSequences(object):
 class Equation(object):
     """Symbolic expression encoder for handling S2 data"""
 
-    def __init__(self, params: Params, symbols: List[str], float_encoder: FloatSequences,
-                 all_operators: Dict[str, str]) -> None:
+    def __init__(
+        self,
+        params: Params,
+        symbols: List[str],
+        float_encoder: FloatSequences,
+        all_operators: Dict[str, str],
+    ) -> None:
         self.params = params
         # Maximum numerical range in symbolic expressions
         self.max_int = self.params.max_int
@@ -180,7 +196,7 @@ class Equation(object):
                 return None, 0
             return Node(str(val), self.params), 3
         elif (
-                lst[0].startswith("CONSTANT") or lst[0] == "y"
+            lst[0].startswith("CONSTANT") or lst[0] == "y"
         ):  # Added this manually, be careful!!
             return Node(lst[0], self.params), 1
         elif lst[0] in self.symbols:
@@ -196,8 +212,10 @@ class Equation(object):
     def split_at_value(lst: List, value: int) -> List:
         indices = [i for i, x in enumerate(lst) if x == value]
         res = []
-        for start, end in zip([0, *[i + 1 for i in indices]], [*[i - 1 for i in indices], len(lst)]):
-            res.append(lst[start: end + 1])
+        for start, end in zip(
+            [0, *[i + 1 for i in indices]], [*[i - 1 for i in indices], len(lst)]
+        ):
+            res.append(lst[start : end + 1])
         return res
 
     def parse_int(self, lst: List) -> Tuple[int, int]:
@@ -243,4 +261,4 @@ class Equation(object):
 def chunks(lst: List, n: int) -> List:
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
-        yield lst[i: i + n]
+        yield lst[i : i + n]

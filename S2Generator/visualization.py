@@ -22,7 +22,9 @@ def s2plot(x: np.ndarray, y: np.ndarray) -> plt.Figure:
     max_dim = max(input_dim, output_dim)
 
     # Create a matplotlib plotting object
-    fig, axes = plt.subplots(nrows=max_dim, ncols=2, figsize=(12, 2 * max_dim), sharex=True)
+    fig, axes = plt.subplots(
+        nrows=max_dim, ncols=2, figsize=(12, 2 * max_dim), sharex=True
+    )
 
     # Plot the input sequence
     for i in range(input_dim):
@@ -30,7 +32,7 @@ def s2plot(x: np.ndarray, y: np.ndarray) -> plt.Figure:
             ax = axes[0]
         else:
             ax = axes[i, 0]
-        ax.plot(x[:, i], color='royalblue')
+        ax.plot(x[:, i], color="royalblue")
         ax.set_ylabel(f"Input Dim {i + 1}", fontsize=10)
         ax.set_xlim(0, seq_len)
 
@@ -40,7 +42,7 @@ def s2plot(x: np.ndarray, y: np.ndarray) -> plt.Figure:
             ax = axes[1]
         else:
             ax = axes[i, 1]
-        ax.plot(y[:, i], color='royalblue')
+        ax.plot(y[:, i], color="royalblue")
         ax.set_ylabel(f"Output Dim {i + 1}", fontsize=10)
         ax.set_xlim(0, seq_len)
 
@@ -53,4 +55,3 @@ def s2plot(x: np.ndarray, y: np.ndarray) -> plt.Figure:
         axes[0, 1].set_title("Output Data", fontsize=12)
 
     return fig
-

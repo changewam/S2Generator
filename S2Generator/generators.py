@@ -23,14 +23,20 @@ from S2Generator.encoders import GeneralEncoder
 class Generator(object):
     """Interface for constructing symbolic expressions and sampling time series"""
 
-    def __init__(self, params: Optional[Params] = None, special_words: Optional[dict] = None) -> None:
+    def __init__(
+        self, params: Optional[Params] = None, special_words: Optional[dict] = None
+    ) -> None:
         self.params = Params() if params is None else params
         special_words = SPECIAL_WORDS if special_words is None else special_words
         self.prob_const = params.prob_const  # Probability to generate integer in leafs
         self.prob_rand = params.prob_rand  # Probability to generate n in leafs
         self.max_int = params.max_int  # Maximal integer in symbolic expressions
-        self.min_binary_ops_per_dim = params.min_binary_ops_per_dim  # Min number of binary operators per input dimension
-        self.max_binary_ops_per_dim = params.max_binary_ops_per_dim  # Max number of binary operators per input dimension
+        self.min_binary_ops_per_dim = (
+            params.min_binary_ops_per_dim
+        )  # Min number of binary operators per input dimension
+        self.max_binary_ops_per_dim = (
+            params.max_binary_ops_per_dim
+        )  # Max number of binary operators per input dimension
         self.min_unary_ops = params.min_unary_ops  # Min number of unary operators
         self.max_unary_ops = params.max_unary_ops  # Max number of unary operators
         # Maximum and minimum input dimensions
@@ -39,7 +45,7 @@ class Generator(object):
         self.max_input_dimension = params.max_input_dimension
         self.max_output_dimension = params.max_output_dimension
         # Maximum numerical range
-        self.max_number = 10 ** params.max_exponent
+        self.max_number = 10**params.max_exponent
         # Operators that can be used with copy
         self.operators = copy.deepcopy(operators_real)
 
@@ -71,10 +77,13 @@ class Generator(object):
             self.extra_unary_operators = []
 
         # All unary operators that can be used when constructing expressions
-        self.unaries = [o for o in self.operators.keys() if np.abs(self.operators[o]) == 1] + self.extra_unary_operators
+        self.unaries = [
+            o for o in self.operators.keys() if np.abs(self.operators[o]) == 1
+        ] + self.extra_unary_operators
         # All binary operators that can be used when constructing expressions
-        self.binaries = [o for o in self.operators.keys() if
-                         np.abs(self.operators[o]) == 2] + self.extra_binary_operators
+        self.binaries = [
+            o for o in self.operators.keys() if np.abs(self.operators[o]) == 2
+        ] + self.extra_binary_operators
 
         # Adjust the probability of each unary operator appearing
         unaries_probabilities = []
@@ -102,17 +111,25 @@ class Generator(object):
 
         self.unary = False  # len(self.unaries) > 0
         # Enumerate the possible number of unary binary trees that can be generated from an empty node
-        self.distrib = self.generate_dist(2 * self.max_binary_ops_per_dim * self.max_input_dimension)
+        self.distrib = self.generate_dist(
+            2 * self.max_binary_ops_per_dim * self.max_input_dimension
+        )
 
         # The numerical range of constants in leaf nodes
-        self.constants = [str(i) for i in range(-self.max_int, self.max_int + 1) if i != 0]
+        self.constants = [
+            str(i) for i in range(-self.max_int, self.max_int + 1) if i != 0
+        ]
         self.constants += math_constants  # Add specific mathematical symbol constants
         # Initialize the number of variables
         self.variables = ["rand"] + [f"x_{i}" for i in range(self.max_input_dimension)]
 
         # Summarize all symbols that can be used when constructing symbolic expressions
-        self.symbols = (list(self.operators) + self.constants + self.variables
-                        + ["|", "INT+", "INT-", "FLOAT+", "FLOAT-", "pow", "0"])
+        self.symbols = (
+            list(self.operators)
+            + self.constants
+            + self.variables
+            + ["|", "INT+", "INT-", "FLOAT+", "FLOAT-", "pow", "0"]
+        )
         self.constants.remove("CONSTANT")
         if self.params.extra_constants is not None:
             self.extra_constants = self.params.extra_constants.split(",")
@@ -130,7 +147,9 @@ class Generator(object):
         self.equation_words = special_words + self.equation_words
         # breakpoint()
         self.n_used_dims = None
-        self.decimals = self.params.decimals  # Number of decimal places for floating-point numbers in symbolic expressions
+        self.decimals = (
+            self.params.decimals
+        )  # Number of decimal places for floating-point numbers in symbolic expressions
         # List of sampling methods
         self.num_type = 3
 
@@ -159,20 +178,28 @@ class Generator(object):
             for e in range(1, 2 * max_ops - n + 1):  # number of empty nodes
                 s.append(s[e - 1] + p1 * D[n - 1][e] + D[n - 1][e + 1])
             D.append(s)
-        assert all(len(D[i]) >= len(D[i + 1]) for i in range(len(D) - 1)), "issue in generate_dist"
+        assert all(
+            len(D[i]) >= len(D[i + 1]) for i in range(len(D) - 1)
+        ), "issue in generate_dist"
         return D
 
     def generate_float(self, rng: RandomState, exponent=None) -> str:
         """Generate a valid random floating-point number within a specified range"""
         # Generate the sign of the number
         sign = rng.choice([-1, 1])
-        mantissa = float(rng.choice(range(1, 10 ** self.params.float_precision)))
+        mantissa = float(rng.choice(range(1, 10**self.params.float_precision)))
         if not exponent:
             # Determine whether to generate the exponent
-            min_power = (-self.params.max_exponent_prefactor - (self.params.float_precision + 1) // 2)
-            max_power = (self.params.max_exponent_prefactor - (self.params.float_precision + 1) // 2)
+            min_power = (
+                -self.params.max_exponent_prefactor
+                - (self.params.float_precision + 1) // 2
+            )
+            max_power = (
+                self.params.max_exponent_prefactor
+                - (self.params.float_precision + 1) // 2
+            )
             exponent = rng.randint(min_power, max_power + 1)
-        constant = sign * (mantissa * 10 ** exponent)  # Sign bit + mantissa + exponent
+        constant = sign * (mantissa * 10**exponent)  # Sign bit + mantissa + exponent
         return str(np.round(constant, decimals=self.decimals))  # Return as a string
 
     def generate_int(self, rng: RandomState) -> str:
@@ -230,7 +257,9 @@ class Generator(object):
         e %= nb_empty
         return e, arity
 
-    def generate_tree(self, rng: RandomState, nb_binary_ops: int, input_dimension: int) -> Node:
+    def generate_tree(
+        self, rng: RandomState, nb_binary_ops: int, input_dimension: int
+    ) -> Node:
         """Function to generate a tree, which is essentially an expression"""
         self.n_used_dims = 0
         tree = Node(0, self.params)  # Initialize the first root node of the tree
@@ -256,26 +285,39 @@ class Generator(object):
                 n.value = self.generate_leaf(rng, input_dimension)
         return tree
 
-    def generate_multi_dimensional_tree(self, rng: RandomState,
-                                        input_dimension: Optional[int] = None, output_dimension: Optional[int] = None,
-                                        nb_unary_ops: Optional[int] = None, nb_binary_ops: Optional[int] = None,
-                                        return_all: bool = False):
+    def generate_multi_dimensional_tree(
+        self,
+        rng: RandomState,
+        input_dimension: Optional[int] = None,
+        output_dimension: Optional[int] = None,
+        nb_unary_ops: Optional[int] = None,
+        nb_binary_ops: Optional[int] = None,
+        return_all: bool = False,
+    ):
         trees = []  # Initialize a list to store multiple symbolic expressions
         if input_dimension is None:
             # If the input dimension is not specified, initialize it randomly
-            input_dimension = rng.randint(self.min_input_dimension, self.max_input_dimension + 1)
+            input_dimension = rng.randint(
+                self.min_input_dimension, self.max_input_dimension + 1
+            )
 
         if output_dimension is None:
             # If the output dimension is not specified, initialize it randomly
-            output_dimension = rng.randint(self.min_output_dimension, self.max_output_dimension + 1)
+            output_dimension = rng.randint(
+                self.min_output_dimension, self.max_output_dimension + 1
+            )
 
         if nb_binary_ops is None:
             # If the number of binary operators is not specified, initialize it based on the input dimension
             min_binary_ops = self.min_binary_ops_per_dim * input_dimension
             max_binary_ops = self.max_binary_ops_per_dim * input_dimension
             # Initialize randomly within the range of minimum to maximum operators plus an offset
-            nb_binary_ops_to_use = [rng.randint(min_binary_ops, self.params.max_binary_ops_offset + max_binary_ops)
-                                    for dim in range(output_dimension)]  # Initialize for each dimension
+            nb_binary_ops_to_use = [
+                rng.randint(
+                    min_binary_ops, self.params.max_binary_ops_offset + max_binary_ops
+                )
+                for dim in range(output_dimension)
+            ]  # Initialize for each dimension
         # If a specific number is provided, use that number for each dimension
         elif isinstance(nb_binary_ops, int):
             nb_binary_ops_to_use = [nb_binary_ops for _ in range(output_dimension)]
@@ -285,14 +327,18 @@ class Generator(object):
 
         if nb_unary_ops is None:
             # Initialize the number of unary operators
-            nb_unary_ops_to_use = [rng.randint(self.min_unary_ops, self.max_unary_ops + 1)
-                                   for dim in range(output_dimension)]
+            nb_unary_ops_to_use = [
+                rng.randint(self.min_unary_ops, self.max_unary_ops + 1)
+                for dim in range(output_dimension)
+            ]
         elif isinstance(nb_unary_ops, int):
             nb_unary_ops_to_use = [nb_unary_ops for _ in range(output_dimension)]
         else:
             nb_unary_ops_to_use = nb_unary_ops
 
-        for i in range(output_dimension):  # Iterate over the specified number of output dimensions to generate data
+        for i in range(
+            output_dimension
+        ):  # Iterate over the specified number of output dimensions to generate data
             # Generate a binary tree as the basic framework
             tree = self.generate_tree(rng, nb_binary_ops_to_use[i], input_dimension)
             # Insert unary operators into the binary tree
@@ -310,23 +356,36 @@ class Generator(object):
 
         if return_all is True:
             # Iterate over the expressions to count the used symbols
-            nb_unary_ops_to_use = [len([x for x in tree_i.prefix().split(",") if x in self.unaries])
-                                   for tree_i in tree.nodes]
-            nb_binary_ops_to_use = [len([x for x in tree_i.prefix().split(",") if x in self.binaries])
-                                    for tree_i in tree.nodes]
+            nb_unary_ops_to_use = [
+                len([x for x in tree_i.prefix().split(",") if x in self.unaries])
+                for tree_i in tree.nodes
+            ]
+            nb_binary_ops_to_use = [
+                len([x for x in tree_i.prefix().split(",") if x in self.binaries])
+                for tree_i in tree.nodes
+            ]
         for op in self.required_operators:
             if op not in tree.infix():
-                return self.generate_multi_dimensional_tree(rng, input_dimension, output_dimension, nb_unary_ops,
-                                                            nb_binary_ops)
+                return self.generate_multi_dimensional_tree(
+                    rng, input_dimension, output_dimension, nb_unary_ops, nb_binary_ops
+                )
 
         if return_all is True:
-            return tree, input_dimension, output_dimension, nb_unary_ops_to_use, nb_binary_ops_to_use
+            return (
+                tree,
+                input_dimension,
+                output_dimension,
+                nb_unary_ops_to_use,
+                nb_binary_ops_to_use,
+            )
         else:
             return tree, input_dimension, output_dimension
 
     def add_unaries(self, rng: RandomState, tree: Node, nb_unaries: int) -> Node:
         """Insert unary operators into a binary tree composed of binary operators and leaf nodes to increase diversity"""
-        prefix = self._add_unaries(rng, tree)  # Get the traversal sequence after insertion
+        prefix = self._add_unaries(
+            rng, tree
+        )  # Get the traversal sequence after insertion
         prefix = prefix.split(",")  # Split the traversal sequence
         indices = []
         for i, x in enumerate(prefix):
@@ -337,7 +396,9 @@ class Generator(object):
             to_remove = indices[: len(indices) - nb_unaries]
             for index in sorted(to_remove, reverse=True):
                 del prefix[index]
-        tree = self.equation_encoder.decode(prefix).nodes[0]  # Decode using the symbol encoder
+        tree = self.equation_encoder.decode(prefix).nodes[
+            0
+        ]  # Decode using the symbol encoder
         return tree
 
     def _add_unaries(self, rng: RandomState, tree: Node) -> str:
@@ -372,10 +433,12 @@ class Generator(object):
         a, b = self.generate_float(rng), self.generate_float(rng)
         if s in ["add", "sub"]:
             # Handle binary operators
-            s += ("," if tree.children[0].value in ["add", "sub"] else f",mul,{a},"
-                  ) + self._add_prefactors(rng, tree.children[0])
-            s += ("," if tree.children[1].value in ["add", "sub"] else f",mul,{b},"
-                  ) + self._add_prefactors(rng, tree.children[1])
+            s += (
+                "," if tree.children[0].value in ["add", "sub"] else f",mul,{a},"
+            ) + self._add_prefactors(rng, tree.children[0])
+            s += (
+                "," if tree.children[1].value in ["add", "sub"] else f",mul,{b},"
+            ) + self._add_prefactors(rng, tree.children[1])
         elif s in self.unaries and tree.children[0].value not in ["add", "sub"]:
             # Handle unary operators
             s += f",add,{a},mul,{b}," + self._add_prefactors(rng, tree.children[0])
@@ -384,8 +447,13 @@ class Generator(object):
                 s += f"," + self._add_prefactors(rng, c)
         return s
 
-    def add_linear_transformations(self, rng: RandomState, tree: Node, target: List[str],
-                                   add_after: Optional[bool] = False) -> Node:
+    def add_linear_transformations(
+        self,
+        rng: RandomState,
+        tree: Node,
+        target: List[str],
+        add_after: Optional[bool] = False,
+    ) -> Node:
         """Apply affine transformations to the constructed symbolic expression to increase diversity"""
         prefix = tree.prefix().split(",")
         indices = []
@@ -397,9 +465,17 @@ class Generator(object):
             # Generate random floating-point numbers as weights and biases
             a, b = self.generate_float(rng), self.generate_float(rng)
             if add_after:
-                prefix = (prefix[: idx + offset + 1] + ["add", a, "mul", b] + prefix[idx + offset + 1:])
+                prefix = (
+                    prefix[: idx + offset + 1]
+                    + ["add", a, "mul", b]
+                    + prefix[idx + offset + 1 :]
+                )
             else:
-                prefix = (prefix[: idx + offset] + ["add", a, "mul", b] + prefix[idx + offset:])
+                prefix = (
+                    prefix[: idx + offset]
+                    + ["add", a, "mul", b]
+                    + prefix[idx + offset :]
+                )
             offset += 4
         tree = self.equation_encoder.decode(prefix).nodes[0]
         return tree
@@ -420,9 +496,12 @@ class Generator(object):
             tree.replace_node_value(xi, "x_{}".format(j))
         return input_dimension
 
-    def function_to_skeleton(self, tree: Union[Node, NodeList],
-                             skeletonize_integers: Optional[bool] = False,
-                             constants_with_idx: Optional[bool] = False) -> Tuple[Union[Node, NodeList], List]:
+    def function_to_skeleton(
+        self,
+        tree: Union[Node, NodeList],
+        skeletonize_integers: Optional[bool] = False,
+        constants_with_idx: Optional[bool] = False,
+    ) -> Tuple[Union[Node, NodeList], List]:
         """
         Obtain the basic framework of a symbolic expression
         :param tree: The symbolic expression to be processed.
@@ -479,44 +558,87 @@ class Generator(object):
         """Sampling method for data generation"""
         return self.params.sampling_type
 
-    def type_sampling(self, rng: np.random.RandomState, n: int) -> Tuple[List[str], dict]:
+    def type_sampling(
+        self, rng: np.random.RandomState, n: int
+    ) -> Tuple[List[str], dict]:
         """Identify three specific sampling methods"""
         indices = rng.randint(0, self.num_type, size=n)
         type_list = [self.sampling_type[i] for i in indices]
         type_dict = {key: type_list.count(key) for key in self.sampling_type}
         return type_list, type_dict
 
-    def generate_stats(self, rng: RandomState, input_dimension: int,
-                       n_centroids: int) -> Tuple[ndarray, ndarray, List[ndarray]]:
+    def generate_stats(
+        self, rng: RandomState, input_dimension: int, n_centroids: int
+    ) -> Tuple[ndarray, ndarray, List[ndarray]]:
         """Generate parameters required for sampling from a mixture distribution"""
-        means = rng.randn(n_centroids, input_dimension)  # Means of the mixture distribution
-        covariances = rng.uniform(0, 1, size=(n_centroids, input_dimension))  # Variances of the mixture distribution
+        means = rng.randn(
+            n_centroids, input_dimension
+        )  # Means of the mixture distribution
+        covariances = rng.uniform(
+            0, 1, size=(n_centroids, input_dimension)
+        )  # Variances of the mixture distribution
         if self.rotate:
-            rotations = [special_ortho_group.rvs(input_dimension)
-                         if input_dimension > 1
-                         else np.identity(1)
-                         for i in range(n_centroids)]
+            rotations = [
+                (
+                    special_ortho_group.rvs(input_dimension)
+                    if input_dimension > 1
+                    else np.identity(1)
+                )
+                for i in range(n_centroids)
+            ]
         else:
             rotations = [np.identity(input_dimension) for i in range(n_centroids)]
         return means, covariances, rotations
 
-    def generate_gaussian(self, rng: np.random.RandomState, input_dimension: int, n_centroids: int,
-                          n_points_comp: ndarray) -> ndarray:
+    def generate_gaussian(
+        self,
+        rng: np.random.RandomState,
+        input_dimension: int,
+        n_centroids: int,
+        n_points_comp: ndarray,
+    ) -> ndarray:
         """Generate sequences of specified dimensions and lengths using a Gaussian mixture distribution"""
-        means, covariances, rotations = self.generate_stats(rng, input_dimension, n_centroids)
-        return np.vstack([rng.multivariate_normal(mean, np.diag(covariance), int(sample)) @ rotation
-                          for (mean, covariance, rotation, sample) in
-                          zip(means, covariances, rotations, n_points_comp)])
+        means, covariances, rotations = self.generate_stats(
+            rng, input_dimension, n_centroids
+        )
+        return np.vstack(
+            [
+                rng.multivariate_normal(mean, np.diag(covariance), int(sample))
+                @ rotation
+                for (mean, covariance, rotation, sample) in zip(
+                    means, covariances, rotations, n_points_comp
+                )
+            ]
+        )
 
-    def generate_uniform(self, rng: np.random.RandomState, input_dimension: int, n_centroids: int,
-                         n_points_comp: ndarray) -> ndarray:
+    def generate_uniform(
+        self,
+        rng: np.random.RandomState,
+        input_dimension: int,
+        n_centroids: int,
+        n_points_comp: ndarray,
+    ) -> ndarray:
         """Generate sequences of specified dimensions and lengths using a uniform mixture distribution"""
-        means, covariances, rotations = self.generate_stats(rng, input_dimension, n_centroids)
-        return np.vstack([(mean + rng.uniform(-1, 1, size=(sample, input_dimension)) * np.sqrt(covariance)) @ rotation
-                          for (mean, covariance, rotation, sample) in
-                          zip(means, covariances, rotations, n_points_comp)])
+        means, covariances, rotations = self.generate_stats(
+            rng, input_dimension, n_centroids
+        )
+        return np.vstack(
+            [
+                (
+                    mean
+                    + rng.uniform(-1, 1, size=(sample, input_dimension))
+                    * np.sqrt(covariance)
+                )
+                @ rotation
+                for (mean, covariance, rotation, sample) in zip(
+                    means, covariances, rotations, n_points_comp
+                )
+            ]
+        )
 
-    def generate_ARMA(self, rng, n_inputs_points: int, input_dimension: int = 1) -> ndarray:
+    def generate_ARMA(
+        self, rng, n_inputs_points: int, input_dimension: int = 1
+    ) -> ndarray:
         """Generate ARMA stationary time series based on the specified input points and dimensions"""
         x = np.zeros(shape=(n_inputs_points, input_dimension))
         # Generate clusters with numerical explosion through a while loop
@@ -545,9 +667,9 @@ class Generator(object):
         for index in range(len(ts)):
             # Get the previous p AR values
             index_p = max(0, index - len(P))
-            p_vector = np.flip(ts[index_p: index])
+            p_vector = np.flip(ts[index_p:index])
             # Compute the dot product of p values and model parameters
-            p_value = np.dot(p_vector, P[0: len(p_vector)])
+            p_value = np.dot(p_vector, P[0 : len(p_vector)])
             # Generate q values through a white noise sequence
             q_value = np.dot(rng.randn(len(Q)), Q)
             sum_value = p_value + rng.randn(1) + q_value
@@ -574,13 +696,26 @@ class Generator(object):
 
         return x, y
 
-    def run(self, rng, n_points, input_dimension=1, output_dimension=1, scale=1, max_trials: Optional[int] = None,
-            rotate: Optional[bool] = False, offset: Tuple[float, float] = None,
-            output_norm: Optional[bool] = False) -> tuple[None, None, None] | tuple[NodeList, ndarray, ndarray]:
+    def run(
+        self,
+        rng,
+        n_points,
+        input_dimension=1,
+        output_dimension=1,
+        scale=1,
+        max_trials: Optional[int] = None,
+        rotate: Optional[bool] = False,
+        offset: Tuple[float, float] = None,
+        output_norm: Optional[bool] = False,
+    ) -> tuple[None, None, None] | tuple[NodeList, ndarray, ndarray]:
         """Generate sampling sequences using a mixture distribution"""
         # Obtain the generated symbolic expressions
-        trees, _, _ = self.generate_multi_dimensional_tree(rng, input_dimension=input_dimension,
-                                                           output_dimension=output_dimension, return_all=False)
+        trees, _, _ = self.generate_multi_dimensional_tree(
+            rng,
+            input_dimension=input_dimension,
+            output_dimension=output_dimension,
+            return_all=False,
+        )
         # Store the generated sequence data
         inputs, outputs = [], []
         # Get the sampling distribution order
@@ -606,21 +741,39 @@ class Generator(object):
             for sampling_type in type_list:
                 if sampling_type == "gaussian":
                     # Sample using a Gaussian mixture distribution
-                    x.append(self.generate_gaussian(rng, input_dimension=1, n_centroids=n_centroids,
-                                                    n_points_comp=n_points_comp))
+                    x.append(
+                        self.generate_gaussian(
+                            rng,
+                            input_dimension=1,
+                            n_centroids=n_centroids,
+                            n_points_comp=n_points_comp,
+                        )
+                    )
                 elif sampling_type == "uniform":
                     # Sample using a uniform mixture distribution
-                    x.append(self.generate_uniform(rng, input_dimension=1, n_centroids=n_centroids,
-                                                   n_points_comp=n_points_comp))
+                    x.append(
+                        self.generate_uniform(
+                            rng,
+                            input_dimension=1,
+                            n_centroids=n_centroids,
+                            n_points_comp=n_points_comp,
+                        )
+                    )
                 elif sampling_type == "ARMA":
                     # Sample using forward propagation of the ARMA model
-                    x.append(self.generate_ARMA(rng, n_inputs_points=n_points, input_dimension=1))
+                    x.append(
+                        self.generate_ARMA(
+                            rng, n_inputs_points=n_points, input_dimension=1
+                        )
+                    )
                 else:
                     raise ValueError("Unknown sampling type!")
 
-            # Standardize the multi-channel sequences obtained from sampling
+            # Standardize the multi-channels sequences obtained from sampling
             x = np.hstack(x)
-            x = (x - np.mean(x, axis=0, keepdims=True)) / np.std(x, axis=0, keepdims=True)
+            x = (x - np.mean(x, axis=0, keepdims=True)) / np.std(
+                x, axis=0, keepdims=True
+            )
             x *= scale
             # Add the specified distribution bias to the sampling sequence
             if offset is not None:
@@ -649,11 +802,13 @@ class Generator(object):
             return None, None, None
 
         # Combine the results of all sampling attempts
-        inputs = np.concatenate(inputs, axis=0)[: n_points]
-        outputs = np.concatenate(outputs, axis=0)[: n_points]
+        inputs = np.concatenate(inputs, axis=0)[:n_points]
+        outputs = np.concatenate(outputs, axis=0)[:n_points]
 
         # Whether to normalize the output y
         if output_norm is True:
-            outputs = (outputs - np.mean(outputs, axis=0, keepdims=True)) / np.std(outputs, axis=0, keepdims=True)
+            outputs = (outputs - np.mean(outputs, axis=0, keepdims=True)) / np.std(
+                outputs, axis=0, keepdims=True
+            )
 
         return trees, inputs, outputs
