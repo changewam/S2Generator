@@ -1,9 +1,18 @@
 # -*- coding: utf-8 -*-
-"""
-Created on 2025/01/23 17:37:24
-@author: Whenxuan Wang
-@email: wwhenxuan@gmail.com
-"""
+
+__version__ = "0.0.1"
+
+__all__ = [
+    "Node",
+    "NodeList",
+    "Params",
+    "Generator",
+    "s2plot",
+    "print_ascii",
+    "print_hello",
+    
+]
+
 # The basic data structure of symbolic expressions
 from .base import Node, NodeList
 
@@ -14,4 +23,29 @@ from .params import Params
 from .generators import Generator
 
 # Visualize the generated S2 object
-from .visualization import s2plot
+from .utils import s2plot
+
+
+def print_ascii() -> None:
+    print(
+        """
+   _____   ___     _____                                        _                  
+  / ____| |__ \   / ____|                                      | |                 
+ | (___      ) | | |  __    ___   _ __     ___   _ __    __ _  | |_    ___    _ __ 
+  \___ \    / /  | | |_ |  / _ \ | '_ \   / _ \ | '__|  / _` | | __|  / _ \  | '__|
+  ____) |  / /_  | |__| | |  __/ | | | | |  __/ | |    | (_| | | |_  | (_) | | |   
+ |_____/  |____|  \_____|  \___| |_| |_|  \___| |_|     \__,_|  \__|  \___/  |_|                                   
+"""
+    )
+
+
+def print_hello() -> None:
+    print("Hello, S2Generator!")
+    print("=" * 30)
+    print(
+        "This is a basic package for generating time series data with symbolic representations."
+    )
+    print(
+        "For more information, please visit: https://github.com/wwhenxuan/S2Generator"
+    )
+    print_ascii()

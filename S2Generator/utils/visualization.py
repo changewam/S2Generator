@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 def s2plot(x: np.ndarray, y: np.ndarray) -> plt.Figure:
     """
     Visualize S2 data
+
     :param x: input sampling series
     :param y: output generated series
     :return: the plot figure of matplotlib
@@ -55,3 +56,14 @@ def s2plot(x: np.ndarray, y: np.ndarray) -> plt.Figure:
         axes[0, 1].set_title("Output Data", fontsize=12)
 
     return fig
+
+
+def print_symbol(symbol: str) -> None:
+    """
+    Print the symbol with color
+
+    :param symbol: the symbol to print
+    """
+    from colorama import Fore, Style
+
+    print(Fore.CYAN + Style.BRIGHT + symbol + Style.RESET_ALL)
