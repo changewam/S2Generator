@@ -30,5 +30,7 @@ setuptools.setup(
         "scipy==1.14.1",
         "matplotlib==3.9.2",
         "scikit-learn==1.2.2",
+        "pysdkit",
+        "colorama",
     ],
 )
