@@ -8,8 +8,10 @@ __all__ = [
     "Params",
     "Generator",
     "plot_series",
+    "plot_symbol",
     "print_ascii",
     "print_hello",
+    "utils",
 ]
 
 # The basic data structure of symbolic expressions
@@ -23,6 +25,9 @@ from .generators import Generator
 
 # Visualize the generated S2 object
 from .utils import plot_series
+
+# Visualize the symbol expression
+from .utils import plot_symbol
 
 
 def print_ascii() -> None:
@@ -42,7 +47,7 @@ def print_hello() -> None:
     print("Hello, S2Generator!")
     print("=" * 30)
     print(
-        "This is a basic package for generating time series data with symbolic representations."
+        "This is a Python package for generating time series data with symbolic representations."
     )
     print(
         "For more information, please visit: https://github.com/wwhenxuan/S2Generator"
