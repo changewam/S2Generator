@@ -15,26 +15,27 @@ ReplaceFn = Callable[[str], str]
 
 def power(text: str, power_name: str, power_member: str) -> str:
     """
+    Adjustments are made to suffixes that have power forms.
 
-
-    :param text:
-    :param power_name:
-    :param power_member:
-    :return:
+    :param text: The input string containing 'power or inv' expressions.
+    :param power_name: the name of the power expression.
+    :param power_member: the value of the power expression.
+    :return: return the new symbol replaced by power.
     """
-
+    # Count the number of symbols
     number = text.count(power_name)
 
-    # 循环指针
+    # Loop pointer
     c = 0
-    # 开始的索引指针
+    # Starting index pointer
     start = 0
 
     while c < number:
-        position = text[start:].find(power_name) + start
+        # Determine the location of the symbol
+        position = text[start: ].find(power_name) + start
         start = position + 1
 
-        # 记录左右括号的数目
+        # Record the number of left and right brackets
         left, right = 0, 0
 
         for i in range(position, len(text)):
@@ -44,9 +45,9 @@ def power(text: str, power_name: str, power_member: str) -> str:
                 right += 1
 
                 if i + 1 < len(text):
-                    # 尝试访问这个索引
+                    # Try to access this index
                     if text[i + 1] == " " and left == right:
-                        text = text[: i + 1] + f" ^ {power_member}" + text[i + 1 :]
+                        text = text[: i + 1] + f" ^ {power_member}" + text[i + 1:]
                 else:
                     if left == right:
                         text = text + f" ^ {power_member}"
@@ -54,7 +55,6 @@ def power(text: str, power_name: str, power_member: str) -> str:
         c += 1
 
     return text.replace(power_name, "")
-
 
 def replace_add(text: str) -> str:
     """
@@ -106,7 +106,6 @@ def replace_pow2(text: str) -> str:
     # return re.sub(r"pow2\(([^()]*)\)", r"(\1)^2", text)
     return power(text, power_name="pow2", power_member="2")
 
-
 def replace_pow3(text: str) -> str:
     """
     Replace occurrences of 'pow3' with the equivalent mathematical expression.
@@ -116,7 +115,6 @@ def replace_pow3(text: str) -> str:
     """
     # return re.sub(r"pow3\(([^()]*)\)", r"(\1)^2", text)
     return power(text, power_name="pow3", power_member="3")
-
 
 def replace_sqrt(text: str) -> str:
     """
@@ -348,12 +346,12 @@ def symbol_to_markdown(symbol: str | Node | NodeList) -> List[str]:
         # the input is NodeList object, so we first split the string with ' | '
         split_symbol = str(symbol).split(" | ")
 
-        # 遍历这个划分的列表去处理每一个字符串
+        # Traverse this partitioned list to process each string
         for symbol in split_symbol:
             symbol_list.append(string_to_markdown(string=str(symbol)))
 
     else:
-        # 处理异常
+        # Handling Exceptions
         raise TypeError("Invalid symbol type, please input str or Node or NodeList !")
 
     return symbol_list
