@@ -64,7 +64,9 @@ def plot_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:
     return fig
 
 
-def which_edges_out(artist: plt.Text | Any, *, padding: Optional[int] = 0) -> Dict[str, bool]:
+def which_edges_out(
+    artist: plt.Text | Any, *, padding: Optional[int] = 0
+) -> Dict[str, bool]:
     """
     判断 artist 在画布的哪几条边之外。
     padding：像素级额外安全边距（可为负值，表示“几乎出去”）。
@@ -87,15 +89,16 @@ def which_edges_out(artist: plt.Text | Any, *, padding: Optional[int] = 0) -> Di
     canvas = Bbox([[0, 0], [w, h]])
 
     return {
-        'left': bbox.xmin < canvas.xmin,  # 整盒都在画布左侧之外
-        'right': bbox.xmax > canvas.xmax,  # 整盒都在画布右侧之外
-        'bottom': bbox.ymin < canvas.ymin,  # 整盒都在画布下方之外
-        'top': bbox.ymax > canvas.ymax,  # 整盒都在画布上方之外
+        "left": bbox.xmin < canvas.xmin,  # 整盒都在画布左侧之外
+        "right": bbox.xmax > canvas.xmax,  # 整盒都在画布右侧之外
+        "bottom": bbox.ymin < canvas.ymin,  # 整盒都在画布下方之外
+        "top": bbox.ymax > canvas.ymax,  # 整盒都在画布上方之外
     }
 
 
-def create_symbol_figure(symbol: str | List[str], width: float, height: float, dpi: Optional[int] = 300) -> Tuple[
-    plt.Figure, plt.Axes, List[plt.Text]]:
+def create_symbol_figure(
+    symbol: str | List[str], width: float, height: float, dpi: Optional[int] = 300
+) -> Tuple[plt.Figure, plt.Axes, List[plt.Text]]:
     """
 
 
@@ -114,12 +117,12 @@ def create_symbol_figure(symbol: str | List[str], width: float, height: float, d
     ax.set_ylim(0, 1)
 
     # 完全空白，不显示坐标轴
-    ax.axis('off')
+    ax.axis("off")
 
     if isinstance(symbol, str):
-        text = ax.text(0.5, 0.5, symbol,
-                    ha='center', va='center',
-                    fontsize=14)  # 去掉 usetex=True
+        text = ax.text(
+            0.5, 0.5, symbol, ha="center", va="center", fontsize=14
+        )  # 去掉 usetex=True
         text = [text]
     elif isinstance(symbol, list):
         number = len(symbol)
@@ -127,7 +130,10 @@ def create_symbol_figure(symbol: str | List[str], width: float, height: float, d
         position = np.arange(0, number + 2)
         position = (position - position.min()) / (position.max() - position.min())
         position = position[1:-1]
-        text = [ax.text(0.5, pos, s, ha='center', va='center', fontsize=14) for (s, pos) in zip(symbol, position[::-1])]
+        text = [
+            ax.text(0.5, pos, s, ha="center", va="center", fontsize=14)
+            for (s, pos) in zip(symbol, position[::-1])
+        ]
 
     else:
         raise ValueError("symbol must be str or list")
@@ -146,7 +152,13 @@ def create_symbol_figure(symbol: str | List[str], width: float, height: float, d
     return fig, ax, text
 
 
-def plot_symbol(symbol: str | Node | NodeList, width: Optional[int] = 20, height: Optional[int] = None, dpi: Optional[int] = 160, return_all: Optional[str] = False) -> plt.Figure | Tuple[plt.Figure, plt.Axes, List[plt.Text]]:
+def plot_symbol(
+    symbol: str | Node | NodeList,
+    width: Optional[int] = 20,
+    height: Optional[int] = None,
+    dpi: Optional[int] = 160,
+    return_all: Optional[str] = False,
+) -> plt.Figure | Tuple[plt.Figure, plt.Axes, List[plt.Text]]:
     """
     对符号数据进行可视化的函数。
     由于输入的符号表达式数据各不相同，因此在实际使用时可能需要多次调整width的大小
@@ -178,8 +190,6 @@ def plot_symbol(symbol: str | Node | NodeList, width: Optional[int] = 20, height
     return fig
 
 
-
-
 # # -------------------------------------------------
 # # 1. 你的公式
 # formula = r"$E = mc^2 + \int_0^\infty e^{-x^2}\,dx + \sum_{k=1}^{n}\frac{a_k}{1+k^2}$"
@@ -200,8 +210,9 @@ def plot_symbol(symbol: str | Node | NodeList, width: Optional[int] = 20, height
 # plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import numpy as np
+
     # Importing data generators, parameter controllers and visualization functions
     from S2Generator import Generator, Params, plot_series
 
@@ -211,8 +222,9 @@ if __name__ == '__main__':
     rng = np.random.RandomState(0)  # Creating a random number object
     # Start generating symbolic expressions, sampling and generating series
 
-
-    trees, x, y = generator.run(rng, input_dimension=2, output_dimension=10, n_points=20)
+    trees, x, y = generator.run(
+        rng, input_dimension=2, output_dimension=10, n_points=20
+    )
 
     trees_list = str(trees).split(" | ")
     for i, tree in enumerate(trees_list):
