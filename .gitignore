@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C developer
+*.so
+
+# File for PyPI
+*.egg-info/
+dist/
+build/
+
+# IDE config
+.idea/
+.spyderproject
+.ropeproject
+
+# Python env
+.venv/
+venv/
+.env
+.python-version
+
+
+# save the test data
+/data/

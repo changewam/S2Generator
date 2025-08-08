@@ -25,7 +25,7 @@ We provide two interfaces [`Params`](https://github.com/wwhenxuan/S2Generator/bl
 ~~~python
 import numpy as np
 # Importing data generators, parameter controllers and visualization functions
-from S2Generator import Generator, Params, s2plot
+from S2Generator import Generator, Params, plot_series
 
 params = Params()  # Adjust the parameters here
 generator = Generator(params)  # Create an instance
@@ -37,7 +37,7 @@ trees, x, y = generator.run(rng, input_dimension=1, output_dimension=1, n_points
 print(trees)
 
 # Visualize the time series
-fig = s2plot(x, y)
+fig = plot_series(x, y)
 ~~~
 
 > (73.5 add (sin((-7.57 add (3.89 mul x_0))) mul (((-0.092 mul exp((-63.4 add (-0.204 mul x_0)))) add (-6.12 mul log((-0.847 add (9.55 mul x_0))))) sub ((4.49 mul inv((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul sqrt((51.3 add (-55.6 mul x_0))))))))

@@ -7,10 +7,9 @@ __all__ = [
     "NodeList",
     "Params",
     "Generator",
-    "s2plot",
+    "plot_series",
     "print_ascii",
     "print_hello",
-    
 ]
 
 # The basic data structure of symbolic expressions
@@ -23,7 +22,7 @@ from .params import Params
 from .generators import Generator
 
 # Visualize the generated S2 object
-from .utils import s2plot
+from .utils import plot_series
 
 
 def print_ascii() -> None:

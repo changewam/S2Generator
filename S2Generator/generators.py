@@ -681,7 +681,6 @@ class Generator(object):
         self, rng: RandomState, n_inputs_points: int, input_dimension: int = 1
     ) -> ndarray:
         """Generate a time series from KernelSynth, which comes from Chronos"""
-        print("hello")
         return np.vstack(
             [
                 generate_KernelSynth(
