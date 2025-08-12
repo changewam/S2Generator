@@ -17,7 +17,7 @@ from S2Generator.params import Params
 from S2Generator.base import Node, NodeList
 from S2Generator.base import operators_real
 from S2Generator.base import math_constants, all_operators, SPECIAL_WORDS
-from S2Generator.base import generate_KernelSynth
+from S2Generator.incentives import generate_KernelSynth
 from S2Generator.encoders import GeneralEncoder
 
 
@@ -720,7 +720,20 @@ class Generator(object):
         offset: Tuple[float, float] = None,
         output_norm: Optional[bool] = False,
     ) -> tuple[None, None, None] | tuple[NodeList, ndarray, ndarray]:
-        """Generate sampling sequences using a mixture distribution"""
+        """
+        Generate sampling sequences using a mixture distribution.
+
+        :param rng: Random state generator of NumPy.
+        :param n_points: Number of points of time series to generate.
+        :param input_dimension: Number of dimensions of time series to generate.
+        :param output_dimension: Number of dimensions of time series to generate.
+        :param scale: Scaling factor of time series to generate.
+        :param max_trials: Maximum number of trials to generate.
+        :param rotate: Rotate time series around the center of time series to generate.
+        :param offset: Offset time series to generate.
+        :param output_norm: If true, output normalized time series.
+        :return: Tuple with generated complex system (symbol $f(\cdot)$) and time series.
+        """
         # Obtain the generated symbolic expressions
         trees, _, _ = self.generate_multi_dimensional_tree(
             rng,
@@ -787,6 +800,9 @@ class Generator(object):
                     )
                 else:
                     raise ValueError("Unknown sampling type!")
+
+            # for test
+            print(x[0].shape)
 
             # Standardize the multi-channels sequences obtained from sampling
             x = np.hstack(x)
