@@ -34,7 +34,7 @@ operators_real = {
     "arctan": 1,
     "pow2": 1,
     "pow3": 1,
-    "diff": 1
+    "diff": 1,
 }
 
 operators_extra = {"pow": 2}
