@@ -3,13 +3,18 @@
 Created on 2025/01/23 18:25:07
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
+
+Edited on 2025/08/09 16:51:36
+@author:Yifan Wu
+@email: wy3370868155@outlook.com
 """
 import numpy as np
 from numpy import ndarray
 import scipy.special
 from typing import Optional, Union, List
-
+from scipy.integrate import cumulative_trapezoid
 from S2Generator.params import Params
+from scipy.ndimage import gaussian_filter1d  # 用于平滑微分
 
 operators_real = {
     "add": 2,
@@ -29,6 +34,7 @@ operators_real = {
     "arctan": 1,
     "pow2": 1,
     "pow3": 1,
+    "diff": 1,
 }
 
 operators_extra = {"pow": 2}
@@ -240,6 +246,16 @@ class Node(object):
             return self.children[0].val(x)  # Identity mapping
         if self.value == "fresnel":
             return scipy.special.fresnel(self.children[0].val(x))[0]
+        if self.value == "diff":
+            child_vals = self.children[0].val(x)  # 获取子表达式的值
+            # 使用数值差分法计算微分
+            diff_vals = np.zeros_like(child_vals)
+            diff_vals[:-1] = np.diff(child_vals)
+            # 最后一个点使用向后差分
+            diff_vals[-1] = diff_vals[-2]
+            # 对结果进行轻微平滑以减少噪声
+            diff_vals = gaussian_filter1d(diff_vals, sigma=0.5)
+            return diff_vals
         if self.value.startswith("eval"):
             n = self.value[-1]
             return getattr(scipy.special, self.value[:-1])(n, self.children[0].val(x))[
@@ -314,6 +330,18 @@ class NodeList(object):
         """Connect all multivariate symbolic expressions with ,|,"""
         return ",|,".join([node.prefix() for node in self.nodes])
 
+    def val_router(
+        self,
+        xs: ndarray,
+        deterministic: Optional[bool] = True,
+    ) -> ndarray:
+        if self.params.solve_diff == 0:
+            return self.val(xs, deterministic=deterministic)
+        elif self.params.solve_diff == 1:
+            return self.val_diff(xs, deterministic=deterministic)
+        else:
+            raise ValueError(f"Unsupported diff value: {self.params.solve_diff}.")
+
     def val(self, xs: ndarray, deterministic: Optional[bool] = True) -> ndarray:
         """Sample the entire multivariate symbolic expression to obtain a specific numerical sequence"""
         batch_vals = [
@@ -321,6 +349,79 @@ class NodeList(object):
             for node in self.nodes
         ]
         return np.concatenate(batch_vals, -1)
+
+    def val_diff(self, xs: ndarray, deterministic: Optional[bool] = True) -> ndarray:
+        """Solve differential equation dy/dx = f(x) to get time series y(x)"""
+        # Extract x values for integration
+        x_values = xs[:, 0] if xs.ndim > 1 else xs
+
+        if len(x_values) <= 1:
+            solutions = np.zeros_like(
+                self.val(xs, deterministic=deterministic), dtype=np.float64
+            )
+            return solutions
+
+        # Create a uniform grid for integration from min to max of x_values
+        x_min, x_max = np.min(x_values), np.max(x_values)
+
+        # Always ensure the integration grid includes x=0 as the starting point
+        grid_min = min(0.0, x_min)
+        grid_max = max(0.0, x_max)
+
+        integration_step = 0.001  # Adjust to your needs
+        n_integration_points = max(100, int((grid_max - grid_min) / integration_step))
+        x_uniform = np.linspace(grid_min, grid_max, n_integration_points)
+
+        # Create input array for uniform grid evaluation
+        if xs.ndim > 1:
+            # For multivariate case, keep other dimensions constant
+            x_uniform_input = np.tile(np.mean(xs, axis=0), (n_integration_points, 1))
+            x_uniform_input[:, 0] = (
+                x_uniform  # Replace first dimension with uniform grid
+            )
+        else:
+            x_uniform_input = x_uniform.reshape(-1, 1)  # Ensure 2D array for val method
+
+        # Evaluate the symbolic expressions on uniform grid to get f'(x)
+        derivatives_uniform = self.val(x_uniform_input, deterministic=deterministic)
+
+        # Initialize result array
+        solutions = np.zeros(
+            (len(x_values), derivatives_uniform.shape[1]), dtype=np.float64
+        )
+
+        # For each equation in the multivariate system
+        for i in range(derivatives_uniform.shape[1]):
+            f_x_uniform = derivatives_uniform[:, i]
+
+            # Find the index corresponding to x=0 in the uniform grid
+            zero_idx = np.argmin(np.abs(x_uniform - 0.0))
+
+            # Split the integration: from x=0 to positive side and from x=0 to negative side
+            integrated_uniform = np.zeros_like(x_uniform)
+
+            # Integrate from x=0 to the right (positive direction)
+            if zero_idx < len(x_uniform) - 1:
+                x_right = x_uniform[zero_idx:]
+                f_right = f_x_uniform[zero_idx:]
+                integ_right = cumulative_trapezoid(f_right, x_right, initial=0.0)
+                integrated_uniform[zero_idx:] = integ_right
+
+            # Integrate from x=0 to the left (negative direction)
+            if zero_idx > 0:
+                x_left = x_uniform[: zero_idx + 1][
+                    ::-1
+                ]  # Reverse for integration from 0 to left
+                f_left = f_x_uniform[: zero_idx + 1][::-1]
+                integ_left = cumulative_trapezoid(f_left, x_left, initial=0.0)
+                integrated_uniform[: zero_idx + 1] = integ_left[
+                    ::-1
+                ]  # Reverse back and negate
+
+            # Interpolate the integrated values to match the original x_values
+            solutions[:, i] = np.interp(x_values, x_uniform, integrated_uniform)
+
+        return solutions
 
     def replace_node_value(self, old_value: str, new_value: str) -> None:
         """Traverse the entire symbolic expression to replace a specific value"""
