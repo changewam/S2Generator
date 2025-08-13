@@ -95,21 +95,21 @@ class IMFs(BaseIncentive):
     """用于生成本征模态函数形式的激励时间序列"""
 
     def __init__(
-            self,
-            min_base_imfs: int = 1,
-            max_base_imfs: int = 3,
-            min_choice_imfs: int = 2,
-            max_choice_imfs: int = 5,
-            probability_dict: Optional[Dict[str, float]] = None,
-            probability_list: Optional[List[float]] = None,
-            min_duration: float = 0.5,
-            max_duration: float = 10.0,
-            min_amplitude: float = 0.01,
-            max_amplitude: float = 10.0,
-            min_frequency: float = 0.01,
-            max_frequency: float = 8.0,
-            noise_level: float = 0.01,
-            dtype: np.dtype = np.float64,
+        self,
+        min_base_imfs: int = 1,
+        max_base_imfs: int = 3,
+        min_choice_imfs: int = 2,
+        max_choice_imfs: int = 5,
+        probability_dict: Optional[Dict[str, float]] = None,
+        probability_list: Optional[List[float]] = None,
+        min_duration: float = 0.5,
+        max_duration: float = 10.0,
+        min_amplitude: float = 0.01,
+        max_amplitude: float = 10.0,
+        min_frequency: float = 0.01,
+        max_frequency: float = 8.0,
+        noise_level: float = 0.01,
+        dtype: np.dtype = np.float64,
     ) -> None:
         """"""
         super().__init__(dtype=dtype)
@@ -171,9 +171,9 @@ class IMFs(BaseIncentive):
         }
 
     def _processing_probability(
-            self,
-            probability_dict: Dict[str, float] = None,
-            probability_list: List[float] = None,
+        self,
+        probability_dict: Dict[str, float] = None,
+        probability_list: List[float] = None,
     ) -> Tuple[Dict[str, float], List[str], List[float]]:
         """
         处理输入的概率字典和列表.
@@ -235,7 +235,7 @@ class IMFs(BaseIncentive):
         return rng.uniform(low=self.min_duration, high=self.max_duration, size=number)
 
     def get_random_amplitude(
-            self, rng: np.random.RandomState, number: int
+        self, rng: np.random.RandomState, number: int
     ) -> np.ndarray:
         """
         随机获取每个本征模态函数中的振幅大小。
@@ -246,7 +246,9 @@ class IMFs(BaseIncentive):
         """
         return rng.uniform(low=self.min_amplitude, high=self.max_amplitude, size=number)
 
-    def get_random_frequency(self, rng: np.random.RandomState, number: int) -> np.ndarray:
+    def get_random_frequency(
+        self, rng: np.random.RandomState, number: int
+    ) -> np.ndarray:
         """
         随机获取每个本征模态函数中的周期大小。
 
@@ -257,63 +259,83 @@ class IMFs(BaseIncentive):
         return rng.uniform(low=self.min_frequency, high=self.max_frequency, size=number)
 
     def get_base_imfs(
-            self, imfs: np.ndarray, rng: np.random.RandomState, n_inputs_points: int
+        self, imfs: np.ndarray, rng: np.random.RandomState, n_inputs_points: int
     ) -> np.ndarray:
 
         # 获得基函数的数目
         base_number = rng.randint(low=self.min_base_imfs, high=self.max_base_imfs + 1)
 
         # 随机获取基函数的振幅和周期
-        for (base_function, amplitude, frequency, duration) in zip(
-                rng.choice(self.base_imfs, size=base_number, p=np.array([0.5, 0.5])),
-                self.get_random_amplitude(rng=rng, number=base_number),
-                self.get_random_frequency(rng=rng, number=base_number),
-                self.get_random_duration(rng=rng, number=base_number),
+        for base_function, amplitude, frequency, duration in zip(
+            rng.choice(self.base_imfs, size=base_number, p=np.array([0.5, 0.5])),
+            self.get_random_amplitude(rng=rng, number=base_number),
+            self.get_random_frequency(rng=rng, number=base_number),
+            self.get_random_duration(rng=rng, number=base_number),
         ):
             # 逐步添加基函数
-            imfs += amplitude * base_function(duration=duration,
-                                              sampling_rate=get_adaptive_sampling_rate(duration=duration,
-                                                                                       length=n_inputs_points),
-                                              frequency=frequency,
-                                              noise_level=0.0)[1][: n_inputs_points]
+            imfs += (
+                amplitude
+                * base_function(
+                    duration=duration,
+                    sampling_rate=get_adaptive_sampling_rate(
+                        duration=duration, length=n_inputs_points
+                    ),
+                    frequency=frequency,
+                    noise_level=0.0,
+                )[1][:n_inputs_points]
+            )
 
         return imfs
 
     def get_choice_imfs(
-            self, imfs: np.ndarray, rng: np.random.RandomState, n_inputs_points: int
+        self, imfs: np.ndarray, rng: np.random.RandomState, n_inputs_points: int
     ) -> np.ndarray:
 
         # 获得随机本征模态函数的数目
         choice_number = rng.randint(low=self.min_choice_imfs, high=self.max_choice_imfs)
 
         # 添加其他的随机本征模态函数
-        for (choice_function, amplitude, frequency, duration) in zip(
-                rng.choice(self.available_list, size=choice_number, p=self.available_probability),
-                self.get_random_amplitude(rng=rng, number=choice_number),
-                self.get_random_frequency(rng=rng, number=choice_number),
-                self.get_random_duration(rng=rng, number=choice_number),
+        for choice_function, amplitude, frequency, duration in zip(
+            rng.choice(
+                self.available_list, size=choice_number, p=self.available_probability
+            ),
+            self.get_random_amplitude(rng=rng, number=choice_number),
+            self.get_random_frequency(rng=rng, number=choice_number),
+            self.get_random_duration(rng=rng, number=choice_number),
         ):
             choice_function = ALL_IMF_DICT[choice_function]
             if choice_function == generate_am_signal:
-                imfs += amplitude * generate_am_signal(duration=duration,
-                                                       sampling_rate=get_adaptive_sampling_rate(duration=duration,
-                                                                                                length=n_inputs_points),
-                                                       mod_index=rng.randint(1, 4),
-                                                       carrier_freq=rng.randint(low=50, high=150),
-                                                       modulating_freq=rng.randint(low=1, high=16),
-                                                       noise_level=0.0)[1][: n_inputs_points]
+                imfs += (
+                    amplitude
+                    * generate_am_signal(
+                        duration=duration,
+                        sampling_rate=get_adaptive_sampling_rate(
+                            duration=duration, length=n_inputs_points
+                        ),
+                        mod_index=rng.randint(1, 4),
+                        carrier_freq=rng.randint(low=50, high=150),
+                        modulating_freq=rng.randint(low=1, high=16),
+                        noise_level=0.0,
+                    )[1][:n_inputs_points]
+                )
             else:
                 print(1)
-                imfs += amplitude * choice_function(duration=duration,
-                                                    sampling_rate=get_adaptive_sampling_rate(duration=duration,
-                                                                                             length=n_inputs_points),
-                                                    frequency=frequency,
-                                                    noise_level=0.0)[1][: n_inputs_points]
+                imfs += (
+                    amplitude
+                    * choice_function(
+                        duration=duration,
+                        sampling_rate=get_adaptive_sampling_rate(
+                            duration=duration, length=n_inputs_points
+                        ),
+                        frequency=frequency,
+                        noise_level=0.0,
+                    )[1][:n_inputs_points]
+                )
 
         return imfs
 
     def generate(
-            self, rng: np.random.RandomState, n_inputs_points: int = 512, input_dimension=1
+        self, rng: np.random.RandomState, n_inputs_points: int = 512, input_dimension=1
     ) -> np.ndarray:
         """
         通过多种本征模态函数组合的形式获得生数据
@@ -323,18 +345,24 @@ class IMFs(BaseIncentive):
 
         for i in range(input_dimension):
             # 1. 添加基函数
-            imfs[:, i] = self.get_base_imfs(imfs=imfs[:, i], rng=rng, n_inputs_points=n_inputs_points)
+            imfs[:, i] = self.get_base_imfs(
+                imfs=imfs[:, i], rng=rng, n_inputs_points=n_inputs_points
+            )
 
             # 2. 添加随机选择的其他基函数
-            imfs[:, i] = self.get_choice_imfs(imfs=imfs[:, i], rng=rng, n_inputs_points=n_inputs_points)
+            imfs[:, i] = self.get_choice_imfs(
+                imfs=imfs[:, i], rng=rng, n_inputs_points=n_inputs_points
+            )
 
             # 3. 为构建的本征模态函数添加随机的噪声
-            imfs[:, i] += self._add_noise(imfs=imfs[:, i], n_inputs_points=n_inputs_points)
+            imfs[:, i] += self._add_noise(
+                imfs=imfs[:, i], n_inputs_points=n_inputs_points
+            )
 
         return imfs
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     rng = np.random.RandomState(10)

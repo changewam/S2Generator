@@ -17,6 +17,18 @@ class BaseIncentive(ABC):
     def __str__(self) -> str:
         return self.__class__.__name__
 
+    def create_zeros(
+        self, n_inputs_points: int = 512, input_dimension: int = 1
+    ) -> np.ndarray:
+        """
+        构建指定长度和维度的空时间序列数据.
+
+        :param n_inputs_points:
+        :param input_dimension:
+        :return: The zeros time series with
+        """
+        return np.zeros(shape=(n_inputs_points, input_dimension), dtype=self.data_type)
+
     @property
     def dtype(self) -> np.dtype:
         return self.data_type
