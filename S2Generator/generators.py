@@ -723,7 +723,6 @@ class Generator(object):
         rotate: Optional[bool] = False,
         offset: Tuple[float, float] = None,
         output_norm: Optional[bool] = False,
-        order: Optional[int] = 0,
     ) -> tuple[None, None, None] | tuple[NodeList, ndarray, ndarray]:
         """
         Generate sampling sequences using a mixture distribution.
@@ -822,7 +821,7 @@ class Generator(object):
                 x += mean
 
             # Sample using the generated symbolic expressions
-            y = trees.val_router(x, solve_diff=order)
+            y = trees.val_router(x)
 
             x, y = self.get_rid(x, y)
 

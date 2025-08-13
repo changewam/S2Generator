@@ -322,14 +322,13 @@ class NodeList(object):
         self,
         xs: ndarray,
         deterministic: Optional[bool] = True,
-        solve_diff: Optional[int] = 0,
     ) -> ndarray:
-        if solve_diff == 0:
+        if self.params.solve_diff == 0:
             return self.val(xs, deterministic=deterministic)
-        elif solve_diff == 1:
+        elif self.params.solve_diff == 1:
             return self.val_diff(xs, deterministic=deterministic)
         else:
-            raise ValueError(f"Unsupported diff value: {solve_diff}.")
+            raise ValueError(f"Unsupported diff value: {self.params.solve_diff}.")
 
     def val(self, xs: ndarray, deterministic: Optional[bool] = True) -> ndarray:
         """Sample the entire multivariate symbolic expression to obtain a specific numerical sequence"""
