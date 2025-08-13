@@ -14,6 +14,7 @@ import scipy.special
 from typing import Optional, Union, List
 from scipy.integrate import cumulative_trapezoid
 from S2Generator.params import Params
+from scipy.ndimage import gaussian_filter1d  # 用于平滑微分
 
 operators_real = {
     "add": 2,
@@ -33,6 +34,7 @@ operators_real = {
     "arctan": 1,
     "pow2": 1,
     "pow3": 1,
+    "diff": 1
 }
 
 operators_extra = {"pow": 2}
@@ -244,6 +246,18 @@ class Node(object):
             return self.children[0].val(x)  # Identity mapping
         if self.value == "fresnel":
             return scipy.special.fresnel(self.children[0].val(x))[0]
+        if self.value == "diff":
+            child_vals = self.children[0].val(x)  # 获取子表达式的值
+            # 使用数值差分法计算微分
+            diff_vals = np.zeros_like(child_vals)
+            if len(child_vals) > 1:
+                # 向前差分法
+                diff_vals[:-1] = np.diff(child_vals)
+                # 最后一个点使用向后差分
+                diff_vals[-1] = diff_vals[-2]
+                # 对结果进行轻微平滑以减少噪声
+                diff_vals = gaussian_filter1d(diff_vals, sigma=0.5)
+            return diff_vals
         if self.value.startswith("eval"):
             n = self.value[-1]
             return getattr(scipy.special, self.value[:-1])(n, self.children[0].val(x))[
