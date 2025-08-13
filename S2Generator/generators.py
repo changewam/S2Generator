@@ -3,6 +3,10 @@
 Created on 2025/01/23 17:37:24
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
+
+Edited on 2025/08/09 16:51:36
+@author:Yifan Wu
+@email: wy3370868155@outlook.com
 """
 import copy
 import numpy as np
@@ -817,7 +821,7 @@ class Generator(object):
                 x += mean
 
             # Sample using the generated symbolic expressions
-            y = trees.val(x)
+            y = trees.val_router(x)
 
             x, y = self.get_rid(x, y)
 

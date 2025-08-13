@@ -51,6 +51,7 @@ class Params(object):
         uniform: Optional[bool] = True,
         arma: Optional[bool] = True,
         kernel_synth: Optional[bool] = True,
+        solve_diff: Optional[int] = 0,
     ) -> None:
         """
         Specific parameter control of data generation
@@ -93,6 +94,7 @@ class Params(object):
         :param uniform: Whether to use uniform distribution for series sampling
         :param arma: Whether to use the ARMA model for series sampling
         :param kernel_synth: Whether to use kernel synthesis for series sampling
+        :param solve_diff: Order of differential equation solving (0: no diff, 1: first order, etc.)
         """
         self.min_input_dimension, self.max_input_dimension = (
             min_input_dimension,
@@ -133,6 +135,7 @@ class Params(object):
         self.p_min, self.p_max, self.q_min, self.q_max = p_min, p_max, q_min, q_max
         self.rotate = rotate
         self.gaussian, self.uniform, self.arma = gaussian, uniform, arma
+        self.solve_diff = solve_diff
 
         # Add various sampling methods
         self.sampling_type = []
