@@ -22,6 +22,5 @@ venv/
 .env
 .python-version
 
-
 # save the test data
 /data/

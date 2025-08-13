@@ -32,7 +32,7 @@ def power(text: str, power_name: str, power_member: str) -> str:
 
     while c < number:
         # Determine the location of the symbol
-        position = text[start: ].find(power_name) + start
+        position = text[start:].find(power_name) + start
         start = position + 1
 
         # Record the number of left and right brackets
@@ -47,7 +47,7 @@ def power(text: str, power_name: str, power_member: str) -> str:
                 if i + 1 < len(text):
                     # Try to access this index
                     if text[i + 1] == " " and left == right:
-                        text = text[: i + 1] + f" ^ {power_member}" + text[i + 1:]
+                        text = text[: i + 1] + f" ^ {power_member}" + text[i + 1 :]
                 else:
                     if left == right:
                         text = text + f" ^ {power_member}"
@@ -55,6 +55,7 @@ def power(text: str, power_name: str, power_member: str) -> str:
         c += 1
 
     return text.replace(power_name, "")
+
 
 def replace_add(text: str) -> str:
     """
@@ -106,6 +107,7 @@ def replace_pow2(text: str) -> str:
     # return re.sub(r"pow2\(([^()]*)\)", r"(\1)^2", text)
     return power(text, power_name="pow2", power_member="2")
 
+
 def replace_pow3(text: str) -> str:
     """
     Replace occurrences of 'pow3' with the equivalent mathematical expression.
@@ -115,6 +117,7 @@ def replace_pow3(text: str) -> str:
     """
     # return re.sub(r"pow3\(([^()]*)\)", r"(\1)^2", text)
     return power(text, power_name="pow3", power_member="3")
+
 
 def replace_sqrt(text: str) -> str:
     """

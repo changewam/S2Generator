@@ -42,7 +42,7 @@ class Incentives(object):
         self.rotate = params.rotate
 
     def generate_stats(
-            self, rng: RandomState, input_dimension: int, n_centroids: int
+        self, rng: RandomState, input_dimension: int, n_centroids: int
     ) -> Tuple[ndarray, ndarray, List[ndarray]]:
         """Generate parameters required for sampling from a mixture distribution"""
         means = rng.randn(
@@ -65,11 +65,11 @@ class Incentives(object):
         return means, covariances, rotations
 
     def generate_gaussian(
-            self,
-            rng: RandomState,
-            input_dimension: int,
-            n_centroids: int,
-            n_points_comp: ndarray,
+        self,
+        rng: RandomState,
+        input_dimension: int,
+        n_centroids: int,
+        n_points_comp: ndarray,
     ) -> ndarray:
         """Generate sequences of specified dimensions and lengths using a Gaussian mixture distribution"""
         means, covariances, rotations = self.generate_stats(
@@ -80,17 +80,17 @@ class Incentives(object):
                 rng.multivariate_normal(mean, np.diag(covariance), int(sample))
                 @ rotation
                 for (mean, covariance, rotation, sample) in zip(
-                means, covariances, rotations, n_points_comp
-            )
+                    means, covariances, rotations, n_points_comp
+                )
             ]
         )
 
     def generate_uniform(
-            self,
-            rng: RandomState,
-            input_dimension: int,
-            n_centroids: int,
-            n_points_comp: ndarray,
+        self,
+        rng: RandomState,
+        input_dimension: int,
+        n_centroids: int,
+        n_points_comp: ndarray,
     ) -> ndarray:
         """Generate sequences of specified dimensions and lengths using a uniform mixture distribution"""
         means, covariances, rotations = self.generate_stats(
@@ -99,19 +99,19 @@ class Incentives(object):
         return np.vstack(
             [
                 (
-                        mean
-                        + rng.uniform(-1, 1, size=(sample, input_dimension))
-                        * np.sqrt(covariance)
+                    mean
+                    + rng.uniform(-1, 1, size=(sample, input_dimension))
+                    * np.sqrt(covariance)
                 )
                 @ rotation
                 for (mean, covariance, rotation, sample) in zip(
-                means, covariances, rotations, n_points_comp
-            )
+                    means, covariances, rotations, n_points_comp
+                )
             ]
         )
 
     def generate_ARMA(
-            self, rng: RandomState, n_inputs_points: int, input_dimension: int = 1
+        self, rng: RandomState, n_inputs_points: int, input_dimension: int = 1
     ) -> ndarray:
         """Generate ARMA stationary time series based on the specified input points and dimensions"""
         x = np.zeros(shape=(n_inputs_points, input_dimension))
@@ -138,7 +138,7 @@ class Incentives(object):
         return x
 
     def generate_KernelSynth(
-            self, rng: RandomState, n_inputs_points: int, input_dimension: int = 1
+        self, rng: RandomState, n_inputs_points: int, input_dimension: int = 1
     ) -> ndarray:
         """
         Generate a time series from KernelSynth, which comes from Chronos.
@@ -161,7 +161,9 @@ class Incentives(object):
             ]
         ).T
 
-    def generate_forecast_pfn(self, rng: RandomState, n_inputs_points: int, input_dimension: int = 1) -> ndarray:
+    def generate_forecast_pfn(
+        self, rng: RandomState, n_inputs_points: int, input_dimension: int = 1
+    ) -> ndarray:
         """
         Generate a time series from forecast, which comes from ForecastPFN.
 
@@ -180,7 +182,7 @@ def arma(rng, ts: ndarray, P: ndarray, Q: ndarray) -> ndarray:
         index_p = max(0, index - len(P))
         p_vector = np.flip(ts[index_p:index])
         # Compute the dot product of p values and model parameters
-        p_value = np.dot(p_vector, P[0: len(p_vector)])
+        p_value = np.dot(p_vector, P[0 : len(p_vector)])
         # Generate q values through a white noise sequence
         q_value = np.dot(rng.randn(len(Q)), Q)
         sum_value = p_value + rng.randn(1) + q_value
@@ -244,7 +246,7 @@ def random_binary_map(a: Kernel, b: Kernel) -> ndarray:
 
 
 def sample_from_gp_prior(
-        kernel: Kernel, X: ndarray, random_seed: Optional[int] = None
+    kernel: Kernel, X: ndarray, random_seed: Optional[int] = None
 ) -> ndarray:
     """
     Draw a sample from a GP prior.
@@ -265,10 +267,10 @@ def sample_from_gp_prior(
 
 
 def sample_from_gp_prior_efficient(
-        kernel: Kernel,
-        X: ndarray,
-        random_seed: Optional[int] = None,
-        method: str = "eigh",
+    kernel: Kernel,
+    X: ndarray,
+    random_seed: Optional[int] = None,
+    method: str = "eigh",
 ) -> ndarray:
     """
     Draw a sample from a GP prior. An efficient version that allows specification
@@ -296,7 +298,7 @@ def sample_from_gp_prior_efficient(
 
 
 def generate_KernelSynth(
-        rng: RandomState, max_kernels: Optional[int] = 5, length: Optional[int] = 256
+    rng: RandomState, max_kernels: Optional[int] = 5, length: Optional[int] = 256
 ) -> ndarray:
     """
     Generate a synthetic time series from KernelSynth.

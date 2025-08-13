@@ -64,9 +64,21 @@ class Config:
             # cls.freq_and_index = (("minute", 0), ("hourly", 1), ("daily", 2), ("weekly", 3), ("monthly", 4), ("yearly", 5))
 
             # Whenxuan: we remove the frequencies of year (YE)
-            cls.frequencies = [("min", 1 / 1440), ("h", 1 / 24), ("D", 1), ("W", 7), ("MS", 30)]
+            cls.frequencies = [
+                ("min", 1 / 1440),
+                ("h", 1 / 24),
+                ("D", 1),
+                ("W", 7),
+                ("MS", 30),
+            ]
             cls.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly"]
-            cls.freq_and_index = (("minute", 0), ("hourly", 1), ("daily", 2), ("weekly", 3), ("monthly", 4))
+            cls.freq_and_index = (
+                ("minute", 0),
+                ("hourly", 1),
+                ("daily", 2),
+                ("weekly", 3),
+                ("monthly", 4),
+            )
         else:
             cls.frequencies = [("D", 1), ("W", 7), ("MS", 30)]
             cls.frequency_names = ["daily", "weekly", "monthly"]
@@ -78,7 +90,9 @@ class Config:
 
 
 # ========================utils.py
-def weibull_noise(k: Optional[float] = 2, length: Optional[int] = 1, median: Optional[int] = 1) -> np.ndarray:
+def weibull_noise(
+    k: Optional[float] = 2, length: Optional[int] = 1, median: Optional[int] = 1
+) -> np.ndarray:
     """
     Function to generate weibull noise with a fixed median.
     Its main feature is that it achieves a fixed median output by adjusting the scale parameter.
@@ -101,7 +115,9 @@ def weibull_noise(k: Optional[float] = 2, length: Optional[int] = 1, median: Opt
     return lamda * np.random.weibull(k, length)
 
 
-def shift_axis(days: pd.DatetimeIndex, shift: Optional[pd.DatetimeIndex] = None) -> pd.DatetimeIndex:
+def shift_axis(
+    days: pd.DatetimeIndex, shift: Optional[pd.DatetimeIndex] = None
+) -> pd.DatetimeIndex:
     """
     Used to adjust the relative position of a time series (or other numerical series),
     specifically to shift the series proportionally to a new reference point.
@@ -115,7 +131,7 @@ def shift_axis(days: pd.DatetimeIndex, shift: Optional[pd.DatetimeIndex] = None)
     return days - shift * days[-1]
 
 
-def get_random_walk_series(length: int, movements: Optional[List[int]]=None):
+def get_random_walk_series(length: int, movements: Optional[List[int]] = None):
     """
     Function to generate a random walk series with a specified length.
     This is a random process model widely used in finance, physics, statistics and other fields.
@@ -158,7 +174,7 @@ def sample_scale() -> np.ndarray:
         return np.random.uniform(0.6, 0.8)
 
 
-def get_transition_coefficients(context_length : int) -> np.ndarray:
+def get_transition_coefficients(context_length: int) -> np.ndarray:
     """
     Transition series refers to the linear combination of 2 series
     S1 and S2 such that the series S represents S1 for a period and S2
@@ -183,7 +199,9 @@ def get_transition_coefficients(context_length : int) -> np.ndarray:
     return coeff
 
 
-def make_series_trend(series: SeriesConfig, dates: pd.DatetimeIndex) -> ndarray[Any, dtype[Any]]:
+def make_series_trend(
+    series: SeriesConfig, dates: pd.DatetimeIndex
+) -> ndarray[Any, dtype[Any]]:
     """
     Function to generate the trend(t) component of synthetic series.
 
@@ -202,7 +220,9 @@ def make_series_trend(series: SeriesConfig, dates: pd.DatetimeIndex) -> ndarray[
     return values
 
 
-def get_freq_component(dates_feature: pd.Index, n_harmonics: int, n_total: int) -> np.ndarray | Any:
+def get_freq_component(
+    dates_feature: pd.Index, n_harmonics: int, n_total: int
+) -> np.ndarray | Any:
     """
     Method to get systematic movement of values across time
     :param dates_feature: the component of date to be used for generating
@@ -236,8 +256,12 @@ def get_freq_component(dates_feature: pd.Index, n_harmonics: int, n_total: int) 
     # comprises of patterns of varying frequency
     return_val = 0
     for idx, harmonic in enumerate(harmonics):
-        return_val += sin_coef[idx] * np.sin(2 * np.pi * harmonic * dates_feature / n_total)
-        return_val += cos_coef[idx] * np.cos(2 * np.pi * harmonic * dates_feature / n_total)
+        return_val += sin_coef[idx] * np.sin(
+            2 * np.pi * harmonic * dates_feature / n_total
+        )
+        return_val += cos_coef[idx] * np.cos(
+            2 * np.pi * harmonic * dates_feature / n_total
+        )
 
     return return_val
 
@@ -254,32 +278,42 @@ def make_series_seasonal(series: SeriesConfig, dates: pd.DatetimeIndex) -> Any:
 
     seasonal_components = defaultdict(lambda: 1)
     if series.scale.minute is not None:
-        seasonal_components['minute'] = 1 + series.scale.minute * get_freq_component(dates.minute, 10, 60)
-        seasonal *= seasonal_components['minute']
+        seasonal_components["minute"] = 1 + series.scale.minute * get_freq_component(
+            dates.minute, 10, 60
+        )
+        seasonal *= seasonal_components["minute"]
     if series.scale.h is not None:
-        seasonal_components['h'] = 1 + series.scale.h * get_freq_component(dates.hour, 10, 24)
-        seasonal *= seasonal_components['h']
+        seasonal_components["h"] = 1 + series.scale.h * get_freq_component(
+            dates.hour, 10, 24
+        )
+        seasonal *= seasonal_components["h"]
     if series.scale.a is not None:
-        seasonal_components['a'] = 1 + series.scale.a * get_freq_component(dates.month, 6, 12)
-        seasonal *= seasonal_components['a']
+        seasonal_components["a"] = 1 + series.scale.a * get_freq_component(
+            dates.month, 6, 12
+        )
+        seasonal *= seasonal_components["a"]
     if series.scale.m is not None:
-        seasonal_components['m'] = 1 + series.scale.m * get_freq_component(dates.day, 10, 30.5)
-        seasonal *= seasonal_components['m']
+        seasonal_components["m"] = 1 + series.scale.m * get_freq_component(
+            dates.day, 10, 30.5
+        )
+        seasonal *= seasonal_components["m"]
     if series.scale.w is not None:
-        seasonal_components['w'] = 1 + series.scale.w * get_freq_component(dates.dayofweek, 4, 7)
-        seasonal *= seasonal_components['w']
+        seasonal_components["w"] = 1 + series.scale.w * get_freq_component(
+            dates.dayofweek, 4, 7
+        )
+        seasonal *= seasonal_components["w"]
 
-    seasonal_components['seasonal'] = seasonal
+    seasonal_components["seasonal"] = seasonal
     return seasonal_components
 
 
 def make_series(
-        series: SeriesConfig,
-        freq: pd.DateOffset,
-        periods: int,
-        start: pd.Timestamp,
-        options: dict,
-        random_walk: bool,
+    series: SeriesConfig,
+    freq: pd.DateOffset,
+    periods: int,
+    start: pd.Timestamp,
+    options: dict,
+    random_walk: bool,
 ):
     """
     make series of the following form
@@ -295,12 +329,12 @@ def make_series(
         values_trend = make_series_trend(series, dates)
         values_seasonal = make_series_seasonal(series, dates)
 
-        values = values_trend * values_seasonal['seasonal']
+        values = values_trend * values_seasonal["seasonal"]
 
         weibull_noise_term = weibull_noise(
             k=series.noise_config.k,
             median=series.noise_config.median,
-            length=len(values)
+            length=len(values),
         )
 
         # approximating estimated value from median
@@ -308,13 +342,15 @@ def make_series(
 
         # expected value of this term is 0
         # for no noise, scale is set to 0
-        scaled_noise_term = series.noise_config.scale * (weibull_noise_term - noise_expected_val)
+        scaled_noise_term = series.noise_config.scale * (
+            weibull_noise_term - noise_expected_val
+        )
 
     dataframe_data = {
         **values_seasonal,
-        'values': values,
-        'noise': 1 + scaled_noise_term,
-        'dates': dates
+        "values": values,
+        "noise": 1 + scaled_noise_term,
+        "dates": dates,
     }
 
     return dataframe_data
@@ -331,17 +367,17 @@ PRODUCT_SCHEMA = {
         {"name": "id", "type": "string"},
         {"name": "ts", "type": {"type": "int", "logicalType": "date"}},
         {"name": "y", "type": ["null", "float"]},
-        {"name": "noise", "type": ["float"]}
+        {"name": "noise", "type": ["float"]},
     ],
 }
 
 
 def __generate(
-        n=100,
-        freq_index: int = None,
-        start: pd.Timestamp = None,
-        options: dict = {},
-        random_walk: bool = False,
+    n=100,
+    freq_index: int = None,
+    start: pd.Timestamp = None,
+    options: dict = {},
+    random_walk: bool = False,
 ):
     """
     Function to construct synthetic series configs and generate synthetic series.
@@ -384,7 +420,9 @@ def __generate(
 
     if start is None:
         # start = pd.Timestamp(date.fromordinal(np.random.randint(BASE_START, BASE_END)))
-        start = pd.Timestamp(date.fromordinal(int((BASE_START - BASE_END) * beta.rvs(5, 1) + BASE_START)))
+        start = pd.Timestamp(
+            date.fromordinal(int((BASE_START - BASE_END) * beta.rvs(5, 1) + BASE_START))
+        )
 
     scale_config = ComponentScale(
         1.0,
@@ -394,7 +432,7 @@ def __generate(
         m=m,
         w=w,
         minute=minute,
-        h=h
+        h=h,
     )
 
     offset_config = ComponentScale(
@@ -407,9 +445,7 @@ def __generate(
     )
 
     noise_config = ComponentNoise(
-        k=np.random.uniform(1, 5),
-        median=1,
-        scale=sample_scale()
+        k=np.random.uniform(1, 5), median=1, scale=sample_scale()
     )
 
     cfg = SeriesConfig(scale_config, offset_config, noise_config)
@@ -418,11 +454,11 @@ def __generate(
 
 
 def generate(
-        n=100,
-        freq_index: int = None,
-        start: pd.Timestamp = None,
-        options: dict = {},
-        random_walk: bool = False,
+    n=100,
+    freq_index: int = None,
+    start: pd.Timestamp = None,
+    options: dict = {},
+    random_walk: bool = False,
 ) -> np.ndarray:
     """
     Function to generate a synthetic series for a given config
@@ -433,14 +469,14 @@ def generate(
 
     if Config.transition:
         coeff = get_transition_coefficients(CONTEXT_LENGTH)
-        values = coeff * series1['values'] + (1 - coeff) * series2['values']
+        values = coeff * series1["values"] + (1 - coeff) * series2["values"]
     else:
-        values = series1['values']
+        values = series1["values"]
 
     return values
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     from matplotlib import pyplot as plt
 
@@ -472,10 +508,7 @@ if __name__ == '__main__':
                 )
             else:
                 sample = generate(
-                    size,
-                    freq_index=freq_index,
-                    start=start,
-                    options=options
+                    size, freq_index=freq_index, start=start, options=options
                 )
             break
 

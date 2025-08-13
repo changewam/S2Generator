@@ -64,7 +64,9 @@ def plot_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:
     return fig
 
 
-def which_edges_out(artist: plt.Text | Any, *, padding: Optional[int] = 0) -> Dict[str, bool]:
+def which_edges_out(
+    artist: plt.Text | Any, *, padding: Optional[int] = 0
+) -> Dict[str, bool]:
     """
     Determine which edges of the canvas the artist is outside.
 
@@ -89,15 +91,18 @@ def which_edges_out(artist: plt.Text | Any, *, padding: Optional[int] = 0) -> Di
     canvas = Bbox([[0, 0], [w, h]])
 
     return {
-        'left': bbox.xmin < canvas.xmin,  # The entire box is outside the left side of the canvas
-        'right': bbox.xmax > canvas.xmax,  # The entire box is outside the right side of the canvas
-        'bottom': bbox.ymin < canvas.ymin,  # The whole box is outside the canvas
-        'top': bbox.ymax > canvas.ymax,  # The entire box is outside the canvas
+        "left": bbox.xmin
+        < canvas.xmin,  # The entire box is outside the left side of the canvas
+        "right": bbox.xmax
+        > canvas.xmax,  # The entire box is outside the right side of the canvas
+        "bottom": bbox.ymin < canvas.ymin,  # The whole box is outside the canvas
+        "top": bbox.ymax > canvas.ymax,  # The entire box is outside the canvas
     }
 
 
-def create_symbol_figure(symbol: str | List[str], width: float, height: float, dpi: Optional[int] = 300) -> Tuple[
-    plt.Figure, plt.Axes, List[plt.Text]]:
+def create_symbol_figure(
+    symbol: str | List[str], width: float, height: float, dpi: Optional[int] = 300
+) -> Tuple[plt.Figure, plt.Axes, List[plt.Text]]:
     """
     Create a specific Figure object for visualization.
 
@@ -116,12 +121,12 @@ def create_symbol_figure(symbol: str | List[str], width: float, height: float, d
     ax.set_ylim(0, 1)
 
     # Completely blank, no axes are displayed
-    ax.axis('off')
+    ax.axis("off")
 
     if isinstance(symbol, str):
-        text = ax.text(0.5, 0.5, symbol,
-                    ha='center', va='center',
-                    fontsize=14)  # Remove usetex=True
+        text = ax.text(
+            0.5, 0.5, symbol, ha="center", va="center", fontsize=14
+        )  # Remove usetex=True
         text = [text]
     elif isinstance(symbol, list):
         number = len(symbol)
@@ -129,7 +134,10 @@ def create_symbol_figure(symbol: str | List[str], width: float, height: float, d
         position = np.arange(0, number + 2)
         position = (position - position.min()) / (position.max() - position.min())
         position = position[1:-1]
-        text = [ax.text(0.5, pos, s, ha='center', va='center', fontsize=14) for (s, pos) in zip(symbol, position[::-1])]
+        text = [
+            ax.text(0.5, pos, s, ha="center", va="center", fontsize=14)
+            for (s, pos) in zip(symbol, position[::-1])
+        ]
     else:
         raise ValueError("symbol must be str or list")
 
@@ -147,7 +155,13 @@ def create_symbol_figure(symbol: str | List[str], width: float, height: float, d
     return fig, ax, text
 
 
-def plot_symbol(symbol: str | Node | NodeList, width: Optional[int] = 20, height: Optional[int] = None, dpi: Optional[int] = 160, return_all: Optional[str] = False) -> plt.Figure | Tuple[plt.Figure, plt.Axes, List[plt.Text]]:
+def plot_symbol(
+    symbol: str | Node | NodeList,
+    width: Optional[int] = 20,
+    height: Optional[int] = None,
+    dpi: Optional[int] = 160,
+    return_all: Optional[str] = False,
+) -> plt.Figure | Tuple[plt.Figure, plt.Axes, List[plt.Text]]:
     """
     This function visualizes symbolic data.
     Since the input symbolic expression data varies, you may need to adjust the width multiple times in actual use.
@@ -179,9 +193,9 @@ def plot_symbol(symbol: str | Node | NodeList, width: Optional[int] = 20, height
     return fig
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     import numpy as np
+
     # Importing data generators, parameter controllers and visualization functions
     from S2Generator import Generator, Params, plot_series
 
@@ -191,7 +205,9 @@ if __name__ == '__main__':
     rng = np.random.RandomState(0)  # Creating a random number object
     # Start generating symbolic expressions, sampling and generating series
 
-    trees, x, y = generator.run(rng, input_dimension=2, output_dimension=10, n_points=20)
+    trees, x, y = generator.run(
+        rng, input_dimension=2, output_dimension=10, n_points=20
+    )
 
     trees_list = str(trees).split(" | ")
     for i, tree in enumerate(trees_list):
