@@ -5,9 +5,7 @@ Created on 2025/08/13 21:48:34
 @email: wwhenxuan@gmail.com
 """
 import numpy as np
-
-from typing import Optional, Dict
-
+from typing import Optional, Dict, Tuple
 from S2Generator.incentive.base_incentive import BaseIncentive
 
 
@@ -30,10 +28,13 @@ def arma_series(
         # Get the previous p AR values
         index_p = max(0, index - len(p_params))
         p_vector = np.flip(time_series[index_p:index])
+
         # Compute the dot product of p values and model parameters
         p_value = np.dot(p_vector, p_params[0: len(p_vector)])
+
         # Generate q values through a white noise sequence
         q_value = np.dot(rng.randn(len(q_params)), q_params)
+
         sum_value = p_value + rng.randn(1) + q_value
         if sum_value > 1024:
             sum_value = q_value
@@ -42,7 +43,7 @@ def arma_series(
 
 
 class ARMA(BaseIncentive):
-    """"""
+    """Generate motivating time series data by constructing random parameterized moving average and autoregressive."""
 
     def __init__(
             self,
@@ -54,19 +55,26 @@ class ARMA(BaseIncentive):
             dtype: np.dtype = np.float64,
     ) -> None:
         """
+        :param p_min: Minimum value for the AR(p) process.
+        :param p_max: Maximum value for the AR(p) process.
+        :param q_min: Minimum value for the MA(q) process.
+        :param q_max: Maximum value for the MA(q) process.
         :param upper_bound: The upper bound number of the ARMA process.
+        :param dtype: The data type of NumPy in ARMA process.
         """
         super().__init__(dtype=dtype)
 
+        # The min and max order of AR(p) and MA(q)
         self.p_min = p_min
         self.p_max = p_max
         self.q_min = q_min
         self.q_max = q_max
 
+        # Save the order and params in AMRA
         self.p_order, self.q_order = None, None
-
         self.p_params, self.q_params = None, None
 
+        # The value upper bound
         self.upper_bound = upper_bound
 
     @staticmethod
@@ -74,9 +82,12 @@ class ARMA(BaseIncentive):
             rng: np.random.RandomState, p_order: int
     ) -> np.ndarray:
         """
-        构建自回归过程的模型参数.
-        由于自回归过程会利用时间序列的历史累计信息因此很容易导致生成的激励时间序列发生数值爆炸。
-        为保证自回归过程的能够稳定生成平稳时间序列，我们对自回归过程的参数进行了一定的约束。
+        Constructing the model parameters for the autoregressive process.
+        Because the autoregressive process utilizes historical information accumulated in the time series,
+        it can easily lead to numerical explosion in the generated stimulus time series.
+        To ensure that the autoregressive process can stably generate a stationary time series,
+        we impose certain constraints on the parameters of the autoregressive process.
+
         1. The absolute value of the last parameter (i.e., φ_p) is less than 1: |φ_p| < 1
         2. The sum of all parameters is less than 1: φ_1 + φ_2 + ... + φ_p < 1
 
@@ -90,12 +101,12 @@ class ARMA(BaseIncentive):
         # Generate other params
         p_params = np.append(rng.uniform(low=-1.0, high=1.0, size=p_order - 1), p_last)
 
-        # 计算参数的求和
+        # Calculate the sum of parameters
         total = np.sum(p_params)
 
-        # 缩放参数使总和<1（同时保持|φ_p|<1）
+        # Scale the parameters so that the sum is < 1 (while keeping |φ_p| < 1)
         if total >= 1:
-            scale_factor = 0.95 / (total + 0.1)  # 确保缩放后总和<1
+            scale_factor = 0.95 / (total + 0.1)  # Make sure the sum is < 1 after scaling
             p_params *= scale_factor
 
         return p_params
@@ -105,7 +116,7 @@ class ARMA(BaseIncentive):
             rng: np.random.RandomState, q_order: int
     ) -> np.ndarray:
         """
-        构建滑动平均过程的模型参数。
+        Constructing model parameters of the sliding average process.
 
         :param rng: The random number generator of NumPy with fixed seed.
         :param q_order: The order of the moving average process.
@@ -115,12 +126,12 @@ class ARMA(BaseIncentive):
 
     @property
     def order(self) -> Dict[str, int]:
-        """获取ARMA模型中自回归过程和滑动平均过程的阶数"""
+        """Get the order of the autoregressive process and the moving average process in the ARMA model."""
         return {"AR(p)": self.p_order, "MA(q)": self.q_order}
 
     @property
     def params(self) -> Dict[str, np.ndarray]:
-        """获取ARMA模型中自回归过程和滑动平均过程的参数"""
+        """Get the parameters of the autoregressive process and the moving average process in the ARMA model."""
         return {"AR(p)": self.p_params, "MA(q)": self.q_params}
 
     def arma_series(
@@ -145,9 +156,14 @@ class ARMA(BaseIncentive):
             q_params=self.q_params if q_params is None else q_params,
         )
 
-    def create_params(self, rng: np.random.RandomState) -> np.ndarray:
-        """构建滑动平均自回归时间序列数据的参数"""
-        # 首先随机生成模型的阶数
+    def create_params(self, rng: np.random.RandomState) -> None:
+        """
+        Constructing parameters for moving average autoregressive time series data.
+
+        :param rng: The random number generator of NumPy with fixed seed.
+        :return: None.
+        """
+        # First, randomly generate the order of the model
         self.p_order = rng.randint(low=self.p_min, high=self.p_max)
         self.q_order = rng.randint(low=self.q_min, high=self.q_max)
 
@@ -171,7 +187,7 @@ class ARMA(BaseIncentive):
         :param input_dimension: The dimension of the time series.
         :return: The generated ARMA time series.
         """
-        # 生成全零的时间序列数据
+        # Generate all zero time series data
         time_series = self.create_zeros(
             n_inputs_points=n_inputs_points, input_dimension=input_dimension
         )
@@ -179,8 +195,11 @@ class ARMA(BaseIncentive):
         # Generate clusters with numerical explosion through a while loop
         index = 0
         while index < input_dimension:
+            # Randomly generate model parameters
+            self.create_params(rng=rng)
+
             # Generate the AMRA series
-            arma = self.arma_series(rng=rng, time_series=time_series, p_params=self.p_params, q_params=self.q_params)
+            arma = self.arma_series(rng=rng, time_series=time_series[:, index], p_params=self.p_params, q_params=self.q_params)
 
             # Check the upper bound
             if np.max(np.abs(arma)) <= self.upper_bound:
@@ -189,3 +208,16 @@ class ARMA(BaseIncentive):
                 index += 1
 
         return time_series
+
+
+if __name__ == '__main__':
+    from matplotlib import pyplot as plt
+
+    arma = ARMA()
+
+    for i in range(10):
+        rng = np.random.RandomState(i)
+
+        time =  arma.generate(rng=rng, n_inputs_points=256)
+        plt.plot(time)
+        plt.show()
