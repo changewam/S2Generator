@@ -250,13 +250,11 @@ class Node(object):
             child_vals = self.children[0].val(x)  # 获取子表达式的值
             # 使用数值差分法计算微分
             diff_vals = np.zeros_like(child_vals)
-            if len(child_vals) > 1:
-                # 向前差分法
-                diff_vals[:-1] = np.diff(child_vals)
-                # 最后一个点使用向后差分
-                diff_vals[-1] = diff_vals[-2]
-                # 对结果进行轻微平滑以减少噪声
-                diff_vals = gaussian_filter1d(diff_vals, sigma=0.5)
+            diff_vals[:-1] = np.diff(child_vals)
+            # 最后一个点使用向后差分
+            diff_vals[-1] = diff_vals[-2]
+            # 对结果进行轻微平滑以减少噪声
+            diff_vals = gaussian_filter1d(diff_vals, sigma=0.5)
             return diff_vals
         if self.value.startswith("eval"):
             n = self.value[-1]
