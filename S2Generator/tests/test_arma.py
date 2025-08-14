@@ -75,9 +75,12 @@ class TestARMA(unittest.TestCase):
         order_dict = self.arma.order
 
         # 测试字典的数据类型
-        self.assertIsInstance(obj=order_dict, cls=dict)
+        self.assertIsInstance(obj=order_dict, cls=dict, msg="测试阶数的函数返回了错误的数据类型!")
 
-        #
+        # 遍历字典测试数据类型
+        for key, value in order_dict.items():
+            self.assertIsInstance(obj=key, cls=str, msg="返回内容错误!")
+            self.assertIsInstance(obj=value, cls=int, msg="返回内容错误!")
 
     def test_params(self) -> None:
         """测试尝试获取模型参数的功能"""
