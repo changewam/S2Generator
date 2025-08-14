@@ -13,7 +13,7 @@ from S2Generator.incentive.base_incentive import BaseIncentive
 
 
 class MixedDistribution(BaseIncentive):
-    """通过混合分布的方式生成激励时间序列数据"""
+    """Generate incentive time series data through mixed distribution."""
 
     def __init__(
         self,
@@ -28,27 +28,30 @@ class MixedDistribution(BaseIncentive):
     ):
         super().__init__(dtype=dtype)
 
-        # 最小和最大的混合分布数目
+        # Minimum and maximum number of mixed distributions
         self.min_centroids = min_centroids
         self.max_centroids = max_centroids
 
-        # 是否对采样获得的时间序列数据乘以旋转矩阵
+        # Whether to multiply the sampled time series data by the rotation matrix
         self.rotate = rotate
 
-        # 是否开启高斯过程和均匀分布过程的采样
+        # Whether to enable sampling of Gaussian process and uniform distribution process
         self.gaussian = gaussian
         self.uniform = uniform
 
-        # 激励概率字典和列表
+        # Dictionary and list of stimulus probabilities
         self.probability_dict = probability_dict
         self.probability_list = probability_list
 
-        # 获取可用的字典和列表
+        # Get available dictionaries and lists
         self._available_dict, self._available_list, self._available_prob = (
             self._get_available(
                 probability_dict=probability_dict, probability_list=probability_list
             )
         )
+
+        # Sampling parameters of the record mixture distribution
+        self.means, self.covariances, self.rotations = None, None, None
 
     def __call__(self, *args, **kwargs):
         pass
@@ -58,7 +61,10 @@ class MixedDistribution(BaseIncentive):
 
     @property
     def default_probability_dict(self) -> Dict[str, float]:
-        """当用户没有指定概率字典时提供数据生成的默认配置"""
+        """
+        Provides default configuration for data generation,
+        when the user does not specify a probability dictionary.
+        """
         if self.gaussian is True and self.uniform is True:
             return {"gaussian": 0.5, "uniform": 0.5}
         elif self.gaussian is True and self.uniform is False:
@@ -70,33 +76,43 @@ class MixedDistribution(BaseIncentive):
 
     @property
     def available_dict(self) -> Dict[str, float]:
+        """Get the probability dictionary of available samples."""
         return self._available_dict
 
     @property
     def available_list(self) -> List[str]:
+        """Get a list of the distribution names used by available sampling, gaussian or uniform."""
         return self._available_list
 
     @property
-    def available_prob(self) -> List[float]:
+    def available_prob(self) -> List[float] | np.ndarray:
+        """Get a list of the probability names used by available sampling, gaussian or uniform."""
         return self._available_prob
 
     def _get_available(
         self,
         probability_dict: Optional[Dict[str, float]] = None,
         probability_list: Optional[list[float]] = None,
-    ) -> Tuple[Dict[str, float], List[str], List[float]]:
-        """处理用户提供的概率列表和概率字典"""
+    ) -> Tuple[Dict[str, float], List[str], List[float] | np.ndarray]:
+        """
+        Handling user-supplied probability lists and probability dictionaries.
+        The default configuration will be used when the user does not specify or specifies incorrectly.
+
+        :param probability_dict: Probability dictionary of user inputs, defaults to None.
+        :param probability_list: Probability list of user inputs, defaults to None.
+        :return: Tuple of available probability dictionaries and list of available samples.
+        """
         if probability_dict is None and probability_list is None:
-            # 当字典和列表都没有提供时返回默认配置
+            # When neither a dictionary nor a list is provided, the default configuration is returned.
             available_dict = self.default_probability_dict
 
         elif probability_dict is not None:
-            # 当用户提供了概率字典时
+            # When the user provides a probability dictionary
             if "gaussian" not in probability_dict and "uniform" not in probability_dict:
-                # 没有指定的键值则返回默认配置
+                # If no key value is specified, the default configuration is returned.
                 available_dict = self.default_probability_dict
             else:
-                # 对字典中的内容进行归一化处理
+                # Normalize the contents of the dictionary
                 probability_array = max_min_normalization(
                     np.array(
                         [probability_dict["gaussian"], probability_dict["uniform"]]
@@ -108,44 +124,85 @@ class MixedDistribution(BaseIncentive):
                 }
 
         elif probability_list is not None and probability_dict is None:
-            # 当用户提供了概率列表时
-            probability_array = max_min_normalization(np.array([probability_list]))
-            available_dict = {
-                "gaussian": probability_array[0],
-                "uniform": probability_array[1],
-            }
+            # When the user provides a list of probabilities
+            if len(probability_list) != 2:
+                # When the list length does not meet the requirements
+                available_dict = self.default_probability_dict
+            else:
+                probability_array = max_min_normalization(np.array([probability_list]))
+                available_dict = {
+                    "gaussian": probability_array[0],
+                    "uniform": probability_array[1],
+                }
 
         else:
             raise ValueError("Something wrong in probability_dict or probability_list!")
 
-        # 获取字典中的内容
+        # Get the contents of the dictionary
         available_list = list(available_dict.keys())
-        available_prob = list(available_dict.values())
+        available_prob = np.array(list(available_dict.values()))
 
         return available_dict, available_list, available_prob
 
     def generate_stats(
         self, rng: np.random.RandomState, input_dimension: int, n_centroids: int
     ) -> Tuple[np.ndarray, np.ndarray, List[np.ndarray]]:
-        """Generate parameters required for sampling from a mixture distribution"""
-        means = rng.randn(
+        """
+        Generate parameters required for sampling from a mixture distribution.
+
+        :param rng: The random number generator in NumPy with fixed seed.
+        :param input_dimension: The number of input dimension.
+        :param n_centroids: The number of centroids in mixed distribution.
+        :return:
+        - means: Mean array with np.ndarray;
+        - *covariances*: Covariance array (Note: This actually generates variances,
+           as each center generates a separate variance value in each dimension,
+           so the covariance matrix is a diagonal matrix);
+        - rotations: Rotation matrix list (each element is a np.ndarray,
+           representing the rotation matrix for each center);
+        """
+        self.means = rng.randn(
             n_centroids, input_dimension
         )  # Means of the mixture distribution
-        covariances = rng.uniform(
+        self.covariances = rng.uniform(
             0, 1, size=(n_centroids, input_dimension)
         )  # Variances of the mixture distribution
+
+        # The rotation matrix is used to transform an independent Gaussian distribution
+        # (i.e., each dimension is independent) into a Gaussian distribution with correlation.
         if self.rotate:
-            rotations = [
+            self.rotations = [
                 (
                     special_ortho_group.rvs(input_dimension)
                     if input_dimension > 1
                     else np.identity(1)
                 )
-                for i in range(n_centroids)
+                for _ in range(n_centroids)
             ]
         else:
-            rotations = [np.identity(input_dimension) for i in range(n_centroids)]
-        return means, covariances, rotations
+            self.rotations = [np.identity(input_dimension) for _ in range(n_centroids)]
+
+        return self.means, self.covariances, self.rotations
+
+    @property
+    def get_stats(self) -> Tuple[np.ndarray, np.ndarray, List[np.ndarray]]:
+        """Get the sampling parameters for the recorded mixture distribution."""
+        return self.means, self.covariances, self.rotations
+
+    @property
+    def get_means(self) -> np.ndarray:
+        """Get the sampling mean for a recorded mixture distribution."""
+        return self.means
+
+    @property
+    def get_covariances(self) -> np.ndarray:
+        """Get the sampling covariance for a recorded mixture distribution."""
+        return self.covariances
+
+    @property
+    def get_rotations(self) -> np.ndarray:
+        """Get the sampling rotations for a recorded mixture distribution."""
+        return self.rotations
 
     def generate_gaussian(
         self,
@@ -154,7 +211,7 @@ class MixedDistribution(BaseIncentive):
         n_centroids: int,
         n_points_comp: np.ndarray,
     ) -> np.ndarray:
-        """Generate sequences of specified dimensions and lengths using a Gaussian mixture distribution"""
+        """Generate time series of specified dimensions and lengths using a Gaussian mixture distribution"""
         means, covariances, rotations = self.generate_stats(
             rng, input_dimension, n_centroids
         )
@@ -175,7 +232,7 @@ class MixedDistribution(BaseIncentive):
         n_centroids: int,
         n_points_comp: np.ndarray,
     ) -> np.ndarray:
-        """Generate sequences of specified dimensions and lengths using a uniform mixture distribution"""
+        """Generate time series of specified dimensions and lengths using a uniform mixture distribution"""
         means, covariances, rotations = self.generate_stats(
             rng, input_dimension, n_centroids
         )
@@ -197,7 +254,7 @@ class MixedDistribution(BaseIncentive):
         self, rng: np.random.RandomState, n_inputs_points: int = 512
     ) -> np.ndarray | None:
         """
-        通过混合分布生成单个通道的激励时间序列数据。
+        Generate stimulus time series data for a single channel through a mixture distribution.
 
         :param rng: The random state generator in NumPy.
         :param n_inputs_points: The number of input points in this sampling.
@@ -211,12 +268,12 @@ class MixedDistribution(BaseIncentive):
         weights /= np.sum(weights)
         n_points_comp = rng.multinomial(n_inputs_points, weights)
 
-        # 3. 决定使用那种分布进行采样
+        # 3. Decide which distribution to use for sampling
         dist_list = rng.choice(
             self.available_list, size=n_centroids, p=self.available_prob
         )
 
-        # 4. 遍历混合分布的列表来生成时间序列数据
+        # 4. Iterate over a list of mixed distributions to generate time series data
         for sampling_type in dist_list:
             if sampling_type == "gaussian":
                 # Sample using a Gaussian mixture distribution
@@ -252,7 +309,7 @@ class MixedDistribution(BaseIncentive):
         :param input_dimension: The dimension of the time series.
         :return: The generated mixed distribution time series.
         """
-        # 遍历多个通道来生成时间序列数据
+        # Iterate over multiple channels to generate time series data
         time_series = np.hstack(
             [
                 self.generate_once(rng=rng, n_inputs_points=n_inputs_points)
