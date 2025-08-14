@@ -25,7 +25,7 @@ class TestARMA(unittest.TestCase):
             for q_max in [2, 3, 4, 5]:
                 for upper_bound in [100, 200, 300, 400]:
                     # 构建激励时间序列生成器
-                    arma = ARMA(p_max, q_max)
+                    arma = ARMA(p_max, q_max, upper_bound=upper_bound)
                     self.assertIsInstance(
                         arma, cls=ARMA, msg="Wrong ARMA type in `test_setup` method"
                     )
@@ -100,9 +100,29 @@ class TestARMA(unittest.TestCase):
 
     def test_generate(self) -> None:
         """测试激励时间序列数据能否正确生成"""
+        for p_max in [2, 3, 4]:
+            # 遍历自回归阶数
+            for q_max in [2, 3, 4, 5]:
+                # 遍历滑动平均过程阶数
+                arma = ARMA(p_max=p_max, q_max=q_max)
+
+                # 执行数据的生成算法
+                for length in [32, 128, 256]:
+                    # 遍历不同的输入长度
+                    for dim in [1, 3, 5]:
+                        # 遍历不同的输入维度
+                        time_series = arma.generate(rng=self.rng, n_inputs_points=length, input_dimension=dim)
 
     def test_call(self) -> None:
         """测试数据生成类的响应"""
+        time_series = self.arma(rng=self.rng, n_inputs_points=256, input_dimension=1)
+
+        # 测试输入数据的类型和维度
+        self.assertIsInstance(obj=time_series, cls=np.ndarray, msg="ARMA的类响应错误!")
+        self.assertEqual(time_series.shape, (256, 1), msg="ARMA的数据维度错误!")
 
     def test_str(self) -> None:
         """测试获取字符串描述的魔术方法"""
+        # 测试数据类型和返回内容
+        self.assertIsInstance(obj=str(self.arma), cls=str, msg="__str__方法获得的数据类型错误!")
+        self.assertEqual(str(self.arma), "ARMA", msg="__str__方法返回的内容错误!")
