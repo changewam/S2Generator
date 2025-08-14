@@ -16,6 +16,9 @@ class TestARMA(unittest.TestCase):
     # 用于测试的随机数生成器
     rng = np.random.RandomState(42)
 
+    # 用于测试的实例对象
+    arma = ARMA()
+
     def test_setup(self) -> None:
         """测试模块的创建过程"""
         for p_max in [2, 3, 4, 5]:
@@ -29,11 +32,9 @@ class TestARMA(unittest.TestCase):
 
     def test_create_autoregressive_params(self) -> None:
         """测试能否正常生成自回归过程的参数"""
-        arma = ARMA()
-
         for p_order in [1, 2, 3, 4]:
             # 遍历不同的阶数来生成参数
-            p_params = arma.create_autoregressive_params(rng=self.rng, p_order=p_order)
+            p_params = self.arma.create_autoregressive_params(rng=self.rng, p_order=p_order)
 
             # 检验参数的长度
             self.assertEquals(len(p_params), p_order, msg="自回归过程的参数长度错误!")
@@ -45,12 +46,38 @@ class TestARMA(unittest.TestCase):
 
     def test_create_moving_average_params(self) -> None:
         """测试能否正常生成滑动平均过程的参数"""
+        for q_order in [1, 2, 3, 4, 5]:
+            # 遍历不同的阶数来生成参数
+            q_params = self.arma.create_autoregressive_params(rng=self.rng, p_order=q_order)
+
+            # 检验参数的长度
+            self.assertEquals(len(q_params), q_order, msg="滑动平均过程的参数长度错误!")
+            self.assertIsInstance(q_params, np.ndarray, msg="滑动平均过程的参数类型错误!")
 
     def test_create_params(self) -> None:
         """测试能否正常生成ARAM模型的参数"""
+        # 执行创建参数的方法
+        self.arma.create_params(rng=self.rng)
+
+        # 通过模型的阶数和参数数组大小进行验证
+        p_order = self.arma.p_order
+        q_order = self.arma.q_order
+
+        self.assertEquals(first=p_order, second=len(self.arma.p_params), msg="自回归过程的阶数与生成的参数不匹配!")
+        self.assertEquals(first=q_order, second=len(self.arma.q_params), msg="滑动平均过程的阶数与生成的参数不匹配!")
 
     def test_order(self) -> None:
         """测试尝试获取模型阶数的功能"""
+        # 执行创建参数的方法
+        self.arma.create_params(rng=self.rng)
+
+        # 获取模型的阶数
+        order_dict = self.arma.order
+
+        # 测试字典的数据类型
+        self.assertIsInstance(obj=order_dict, cls=dict)
+
+        #
 
     def test_params(self) -> None:
         """测试尝试获取模型参数的功能"""
