@@ -34,25 +34,51 @@ class TestARMA(unittest.TestCase):
         """Test whether the parameters of the autoregressive process can be generated normally"""
         for p_order in [1, 2, 3, 4]:
             # Traverse different orders to generate parameters
-            p_params = self.arma.create_autoregressive_params(rng=self.rng, p_order=p_order)
+            p_params = self.arma.create_autoregressive_params(
+                rng=self.rng, p_order=p_order
+            )
 
             # Check the length of the parameter
-            self.assertEquals(len(p_params), p_order, msg="Wrong parameter length for autoregressive process!")
-            self.assertIsInstance(p_params, np.ndarray, msg="Wrong parameter type for autoregressive process!")
+            self.assertEquals(
+                len(p_params),
+                p_order,
+                msg="Wrong parameter length for autoregressive process!",
+            )
+            self.assertIsInstance(
+                p_params,
+                np.ndarray,
+                msg="Wrong parameter type for autoregressive process!",
+            )
 
             # Checks whether the parameter range of the autoregressive process meets the constraints
-            self.assertTrue(np.sum(p_params) < 1, msg="The sum of the parameters of the autoregressive process is not less than 1!")
-            self.assertTrue(np.abs(p_params[-1]) < 1, msg="The absolute value of the last parameter of the autoregressive process is not less than 1!")
+            self.assertTrue(
+                np.sum(p_params) < 1,
+                msg="The sum of the parameters of the autoregressive process is not less than 1!",
+            )
+            self.assertTrue(
+                np.abs(p_params[-1]) < 1,
+                msg="The absolute value of the last parameter of the autoregressive process is not less than 1!",
+            )
 
     def test_create_moving_average_params(self) -> None:
         """Test whether the parameters of the sliding average process can be generated normally"""
         for q_order in [1, 2, 3, 4, 5]:
             # Traverse different orders to generate parameters
-            q_params = self.arma.create_autoregressive_params(rng=self.rng, p_order=q_order)
+            q_params = self.arma.create_autoregressive_params(
+                rng=self.rng, p_order=q_order
+            )
 
             # Check the length of the parameter
-            self.assertEquals(len(q_params), q_order, msg="Wrong parameter length for sliding average process!")
-            self.assertIsInstance(q_params, np.ndarray, msg="The parameter type of the sliding average process is incorrect!")
+            self.assertEquals(
+                len(q_params),
+                q_order,
+                msg="Wrong parameter length for sliding average process!",
+            )
+            self.assertIsInstance(
+                q_params,
+                np.ndarray,
+                msg="The parameter type of the sliding average process is incorrect!",
+            )
 
     def test_create_params(self) -> None:
         """Test whether the parameters of the ARAM model can be generated normally"""
@@ -64,8 +90,16 @@ class TestARMA(unittest.TestCase):
         p_order = self.arma.p_order
         q_order = self.arma.q_order
 
-        self.assertEquals(first=p_order, second=len(self.arma.p_params), msg="The order of the autoregressive process does not match the generated parameters!")
-        self.assertEquals(first=q_order, second=len(self.arma.q_params), msg="The order of the moving average process does not match the generated parameters!")
+        self.assertEquals(
+            first=p_order,
+            second=len(self.arma.p_params),
+            msg="The order of the autoregressive process does not match the generated parameters!",
+        )
+        self.assertEquals(
+            first=q_order,
+            second=len(self.arma.q_params),
+            msg="The order of the moving average process does not match the generated parameters!",
+        )
 
     def test_order(self) -> None:
         """Test the function that attempts to obtain the model order"""
@@ -77,7 +111,11 @@ class TestARMA(unittest.TestCase):
         order_dict = self.arma.order
 
         # Test dictionary data type
-        self.assertIsInstance(obj=order_dict, cls=dict, msg="The function that tests the order returns the wrong data type.!")
+        self.assertIsInstance(
+            obj=order_dict,
+            cls=dict,
+            msg="The function that tests the order returns the wrong data type.!",
+        )
 
         # 遍历字典测试数据类型
         for key, value in order_dict.items():
@@ -93,12 +131,18 @@ class TestARMA(unittest.TestCase):
         params_dict = self.arma.params
 
         # Test dictionary data type
-        self.assertIsInstance(obj=params_dict, cls=dict, msg="The function that tests the parameters returned an incorrect data type.!")
+        self.assertIsInstance(
+            obj=params_dict,
+            cls=dict,
+            msg="The function that tests the parameters returned an incorrect data type.!",
+        )
 
         # Traversing the dictionary to test data types
         for key, value in params_dict.items():
             self.assertIsInstance(obj=key, cls=str, msg="Return content error!")
-            self.assertIsInstance(obj=value, cls=np.ndarray, msg="Return content error!")
+            self.assertIsInstance(
+                obj=value, cls=np.ndarray, msg="Return content error!"
+            )
 
     def test_generate(self) -> None:
         """Test whether the stimulus time series data can be generated correctly"""
@@ -113,7 +157,9 @@ class TestARMA(unittest.TestCase):
                     # Iterate over different input lengths
                     for dim in [1, 3, 5]:
                         # Iterate over different input dimensions
-                        time_series = arma.generate(rng=self.rng, n_inputs_points=length, input_dimension=dim)
+                        time_series = arma.generate(
+                            rng=self.rng, n_inputs_points=length, input_dimension=dim
+                        )
 
                         # Test output data type
                         self.assertIsInstance(time_series, np.ndarray)
@@ -126,11 +172,21 @@ class TestARMA(unittest.TestCase):
         time_series = self.arma(rng=self.rng, n_inputs_points=256, input_dimension=1)
 
         # Test input data type and dimension
-        self.assertIsInstance(obj=time_series, cls=np.ndarray, msg="Wrong class response for ARMA!")
-        self.assertEqual(time_series.shape, (256, 1), msg="Wrong data dimension for ARMA!")
+        self.assertIsInstance(
+            obj=time_series, cls=np.ndarray, msg="Wrong class response for ARMA!"
+        )
+        self.assertEqual(
+            time_series.shape, (256, 1), msg="Wrong data dimension for ARMA!"
+        )
 
     def test_str(self) -> None:
         """Test the magic method to get string description"""
         # Test data types and return contents
-        self.assertIsInstance(obj=str(self.arma), cls=str, msg="The __str__ method gets the wrong data type!")
-        self.assertEqual(str(self.arma), "ARMA", msg="The __str__ method returns the wrong content!")
+        self.assertIsInstance(
+            obj=str(self.arma),
+            cls=str,
+            msg="The __str__ method gets the wrong data type!",
+        )
+        self.assertEqual(
+            str(self.arma), "ARMA", msg="The __str__ method returns the wrong content!"
+        )
