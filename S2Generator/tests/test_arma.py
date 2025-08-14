@@ -11,118 +11,126 @@ from S2Generator.incentive import ARMA
 
 
 class TestARMA(unittest.TestCase):
-    """测试用于生成激励时间序列数据的ARMA模块"""
+    """Testing the ARMA module for generating stimulus time series data"""
 
-    # 用于测试的随机数生成器
+    # Random number generator for testing
     rng = np.random.RandomState(42)
 
-    # 用于测试的实例对象
+    # Instance object for testing
     arma = ARMA()
 
     def test_setup(self) -> None:
-        """测试模块的创建过程"""
+        """Test module creation process"""
         for p_max in [2, 3, 4, 5]:
             for q_max in [2, 3, 4, 5]:
                 for upper_bound in [100, 200, 300, 400]:
-                    # 构建激励时间序列生成器
+                    # Building an incentive time series generator
                     arma = ARMA(p_max, q_max, upper_bound=upper_bound)
                     self.assertIsInstance(
                         arma, cls=ARMA, msg="Wrong ARMA type in `test_setup` method"
                     )
 
     def test_create_autoregressive_params(self) -> None:
-        """测试能否正常生成自回归过程的参数"""
+        """Test whether the parameters of the autoregressive process can be generated normally"""
         for p_order in [1, 2, 3, 4]:
-            # 遍历不同的阶数来生成参数
+            # Traverse different orders to generate parameters
             p_params = self.arma.create_autoregressive_params(rng=self.rng, p_order=p_order)
 
-            # 检验参数的长度
-            self.assertEquals(len(p_params), p_order, msg="自回归过程的参数长度错误!")
-            self.assertIsInstance(p_params, np.ndarray, msg="自回归过程的参数类型错误!")
+            # Check the length of the parameter
+            self.assertEquals(len(p_params), p_order, msg="Wrong parameter length for autoregressive process!")
+            self.assertIsInstance(p_params, np.ndarray, msg="Wrong parameter type for autoregressive process!")
 
-            # 检查自回归过程的参数范围是否符合约束
-            self.assertTrue(np.sum(p_params) < 1, msg="自回归过程的参数求和没有小于1!")
-            self.assertTrue(np.abs(p_params[-1]) < 1, msg="自回归过程的最后一个参数的绝对值没有小于1!")
+            # Checks whether the parameter range of the autoregressive process meets the constraints
+            self.assertTrue(np.sum(p_params) < 1, msg="The sum of the parameters of the autoregressive process is not less than 1!")
+            self.assertTrue(np.abs(p_params[-1]) < 1, msg="The absolute value of the last parameter of the autoregressive process is not less than 1!")
 
     def test_create_moving_average_params(self) -> None:
-        """测试能否正常生成滑动平均过程的参数"""
+        """Test whether the parameters of the sliding average process can be generated normally"""
         for q_order in [1, 2, 3, 4, 5]:
-            # 遍历不同的阶数来生成参数
+            # Traverse different orders to generate parameters
             q_params = self.arma.create_autoregressive_params(rng=self.rng, p_order=q_order)
 
-            # 检验参数的长度
-            self.assertEquals(len(q_params), q_order, msg="滑动平均过程的参数长度错误!")
-            self.assertIsInstance(q_params, np.ndarray, msg="滑动平均过程的参数类型错误!")
+            # Check the length of the parameter
+            self.assertEquals(len(q_params), q_order, msg="Wrong parameter length for sliding average process!")
+            self.assertIsInstance(q_params, np.ndarray, msg="The parameter type of the sliding average process is incorrect!")
 
     def test_create_params(self) -> None:
-        """测试能否正常生成ARAM模型的参数"""
-        # 执行创建参数的方法
+        """Test whether the parameters of the ARAM model can be generated normally"""
+
+        # Execute the method to create parameters
         self.arma.create_params(rng=self.rng)
 
-        # 通过模型的阶数和参数数组大小进行验证
+        # Verify by model order and parameter array size
         p_order = self.arma.p_order
         q_order = self.arma.q_order
 
-        self.assertEquals(first=p_order, second=len(self.arma.p_params), msg="自回归过程的阶数与生成的参数不匹配!")
-        self.assertEquals(first=q_order, second=len(self.arma.q_params), msg="滑动平均过程的阶数与生成的参数不匹配!")
+        self.assertEquals(first=p_order, second=len(self.arma.p_params), msg="The order of the autoregressive process does not match the generated parameters!")
+        self.assertEquals(first=q_order, second=len(self.arma.q_params), msg="The order of the moving average process does not match the generated parameters!")
 
     def test_order(self) -> None:
-        """测试尝试获取模型阶数的功能"""
-        # 执行创建参数的方法
+        """Test the function that attempts to obtain the model order"""
+
+        # Execute the method to create parameters
         self.arma.create_params(rng=self.rng)
 
-        # 获取模型的阶数
+        # Get the order of the model
         order_dict = self.arma.order
 
-        # 测试字典的数据类型
-        self.assertIsInstance(obj=order_dict, cls=dict, msg="测试阶数的函数返回了错误的数据类型!")
+        # Test dictionary data type
+        self.assertIsInstance(obj=order_dict, cls=dict, msg="The function that tests the order returns the wrong data type.!")
 
         # 遍历字典测试数据类型
         for key, value in order_dict.items():
-            self.assertIsInstance(obj=key, cls=str, msg="返回内容错误!")
-            self.assertIsInstance(obj=value, cls=int, msg="返回内容错误!")
+            self.assertIsInstance(obj=key, cls=str, msg="Return content error!")
+            self.assertIsInstance(obj=value, cls=int, msg="Return content error!")
 
     def test_params(self) -> None:
-        """测试尝试获取模型参数的功能"""
-        # 执行创建参数的方法
+        """Test the function that tries to get the model parameters"""
+        # Execute the method to create parameters
         self.arma.create_params(rng=self.rng)
 
-        # 获取模型的参数
+        # Get the parameters of the model
         params_dict = self.arma.params
 
-        # 测试字典的数据类型
-        self.assertIsInstance(obj=params_dict, cls=dict, msg="测试参数的函数返回了错误的数据类型!")
+        # Test dictionary data type
+        self.assertIsInstance(obj=params_dict, cls=dict, msg="The function that tests the parameters returned an incorrect data type.!")
 
-        # 遍历字典测试数据类型
+        # Traversing the dictionary to test data types
         for key, value in params_dict.items():
-            self.assertIsInstance(obj=key, cls=str, msg="返回内容错误!")
-            self.assertIsInstance(obj=value, cls=np.ndarray, msg="返回内容错误!")
+            self.assertIsInstance(obj=key, cls=str, msg="Return content error!")
+            self.assertIsInstance(obj=value, cls=np.ndarray, msg="Return content error!")
 
     def test_generate(self) -> None:
-        """测试激励时间序列数据能否正确生成"""
+        """Test whether the stimulus time series data can be generated correctly"""
         for p_max in [2, 3, 4]:
-            # 遍历自回归阶数
+            # Ergodic autoregressive order
             for q_max in [2, 3, 4, 5]:
-                # 遍历滑动平均过程阶数
+                # Ergodic moving average process order
                 arma = ARMA(p_max=p_max, q_max=q_max)
 
-                # 执行数据的生成算法
+                # Execute the data generation algorithm
                 for length in [32, 128, 256]:
-                    # 遍历不同的输入长度
+                    # Iterate over different input lengths
                     for dim in [1, 3, 5]:
-                        # 遍历不同的输入维度
+                        # Iterate over different input dimensions
                         time_series = arma.generate(rng=self.rng, n_inputs_points=length, input_dimension=dim)
 
+                        # Test output data type
+                        self.assertIsInstance(time_series, np.ndarray)
+
+                        # Test output length and dimensions
+                        self.assertEqual(first=time_series.shape, second=(length, dim))
+
     def test_call(self) -> None:
-        """测试数据生成类的响应"""
+        """Test data generation class response"""
         time_series = self.arma(rng=self.rng, n_inputs_points=256, input_dimension=1)
 
-        # 测试输入数据的类型和维度
-        self.assertIsInstance(obj=time_series, cls=np.ndarray, msg="ARMA的类响应错误!")
-        self.assertEqual(time_series.shape, (256, 1), msg="ARMA的数据维度错误!")
+        # Test input data type and dimension
+        self.assertIsInstance(obj=time_series, cls=np.ndarray, msg="Wrong class response for ARMA!")
+        self.assertEqual(time_series.shape, (256, 1), msg="Wrong data dimension for ARMA!")
 
     def test_str(self) -> None:
-        """测试获取字符串描述的魔术方法"""
-        # 测试数据类型和返回内容
-        self.assertIsInstance(obj=str(self.arma), cls=str, msg="__str__方法获得的数据类型错误!")
-        self.assertEqual(str(self.arma), "ARMA", msg="__str__方法返回的内容错误!")
+        """Test the magic method to get string description"""
+        # Test data types and return contents
+        self.assertIsInstance(obj=str(self.arma), cls=str, msg="The __str__ method gets the wrong data type!")
+        self.assertEqual(str(self.arma), "ARMA", msg="The __str__ method returns the wrong content!")

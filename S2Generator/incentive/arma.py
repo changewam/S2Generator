@@ -83,7 +83,7 @@ class ARMA(BaseIncentive):
         n_inputs_points: int = 512,
         input_dimension: int = 1,
     ) -> np.ndarray:
-        """调用激励时间序列生成的`generate`方法"""
+        """Call the `generate` method to stimulate time series generation"""
         return self.generate(
             rng=rng, n_inputs_points=n_inputs_points, input_dimension=input_dimension
         )
