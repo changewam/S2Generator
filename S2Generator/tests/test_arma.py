@@ -84,6 +84,19 @@ class TestARMA(unittest.TestCase):
 
     def test_params(self) -> None:
         """测试尝试获取模型参数的功能"""
+        # 执行创建参数的方法
+        self.arma.create_params(rng=self.rng)
+
+        # 获取模型的参数
+        params_dict = self.arma.params
+
+        # 测试字典的数据类型
+        self.assertIsInstance(obj=params_dict, cls=dict, msg="测试参数的函数返回了错误的数据类型!")
+
+        # 遍历字典测试数据类型
+        for key, value in params_dict.items():
+            self.assertIsInstance(obj=key, cls=str, msg="返回内容错误!")
+            self.assertIsInstance(obj=value, cls=np.ndarray, msg="返回内容错误!")
 
     def test_generate(self) -> None:
         """测试激励时间序列数据能否正确生成"""
