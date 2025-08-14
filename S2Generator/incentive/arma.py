@@ -5,15 +5,15 @@ Created on 2025/08/13 21:48:34
 @email: wwhenxuan@gmail.com
 """
 import numpy as np
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict
 from S2Generator.incentive.base_incentive import BaseIncentive
 
 
 def arma_series(
-        rng: np.random.RandomState,
-        time_series: np.ndarray,
-        p_params: np.ndarray,
-        q_params: np.ndarray,
+    rng: np.random.RandomState,
+    time_series: np.ndarray,
+    p_params: np.ndarray,
+    q_params: np.ndarray,
 ) -> np.ndarray:
     """
     Generate an ARMA process based on the specified parameters.
@@ -30,7 +30,7 @@ def arma_series(
         p_vector = np.flip(time_series[index_p:index])
 
         # Compute the dot product of p values and model parameters
-        p_value = np.dot(p_vector, p_params[0: len(p_vector)])
+        p_value = np.dot(p_vector, p_params[0 : len(p_vector)])
 
         # Generate q values through a white noise sequence
         q_value = np.dot(rng.randn(len(q_params)), q_params)
@@ -46,13 +46,13 @@ class ARMA(BaseIncentive):
     """Generate motivating time series data by constructing random parameterized moving average and autoregressive."""
 
     def __init__(
-            self,
-            p_min: Optional[int] = 1,
-            p_max: Optional[int] = 3,
-            q_min: Optional[int] = 1,
-            q_max: Optional[int] = 5,
-            upper_bound: float = 512,
-            dtype: np.dtype = np.float64,
+        self,
+        p_min: Optional[int] = 1,
+        p_max: Optional[int] = 3,
+        q_min: Optional[int] = 1,
+        q_max: Optional[int] = 5,
+        upper_bound: float = 512,
+        dtype: np.dtype = np.float64,
     ) -> None:
         """
         :param p_min: Minimum value for the AR(p) process.
@@ -77,9 +77,24 @@ class ARMA(BaseIncentive):
         # The value upper bound
         self.upper_bound = upper_bound
 
+    def __call__(
+        self,
+        rng: np.random.RandomState,
+        n_inputs_points: int = 512,
+        input_dimension: int = 1,
+    ) -> np.ndarray:
+        """调用激励时间序列生成的`generate`方法"""
+        return self.generate(
+            rng=rng, n_inputs_points=n_inputs_points, input_dimension=input_dimension
+        )
+
+    def __str__(self) -> str:
+        """Get the name of the time series generator"""
+        return "ARMA"
+
     @staticmethod
     def create_autoregressive_params(
-            rng: np.random.RandomState, p_order: int
+        rng: np.random.RandomState, p_order: int
     ) -> np.ndarray:
         """
         Constructing the model parameters for the autoregressive process.
@@ -106,14 +121,16 @@ class ARMA(BaseIncentive):
 
         # Scale the parameters so that the sum is < 1 (while keeping |φ_p| < 1)
         if total >= 1:
-            scale_factor = 0.95 / (total + 0.1)  # Make sure the sum is < 1 after scaling
+            scale_factor = 0.95 / (
+                total + 0.1
+            )  # Make sure the sum is < 1 after scaling
             p_params *= scale_factor
 
         return p_params
 
     @staticmethod
     def create_moving_average_params(
-            rng: np.random.RandomState, q_order: int
+        rng: np.random.RandomState, q_order: int
     ) -> np.ndarray:
         """
         Constructing model parameters of the sliding average process.
@@ -135,11 +152,11 @@ class ARMA(BaseIncentive):
         return {"AR(p)": self.p_params, "MA(q)": self.q_params}
 
     def arma_series(
-            self,
-            rng: np.random.RandomState,
-            time_series: np.ndarray,
-            p_params: Optional[np.ndarray] = None,
-            q_params: Optional[np.ndarray] = None,
+        self,
+        rng: np.random.RandomState,
+        time_series: np.ndarray,
+        p_params: Optional[np.ndarray] = None,
+        q_params: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """
         Generate an ARMA process based on the specified parameters.
@@ -174,10 +191,10 @@ class ARMA(BaseIncentive):
         self.q_params = self.create_moving_average_params(rng=rng, q_order=self.q_order)
 
     def generate(
-            self,
-            rng: np.random.RandomState,
-            n_inputs_points: int = 512,
-            input_dimension: int = 1,
+        self,
+        rng: np.random.RandomState,
+        n_inputs_points: int = 512,
+        input_dimension: int = 1,
     ) -> np.ndarray:
         """
         Generate ARMA stationary time series based on the specified input points and dimensions.
@@ -199,7 +216,12 @@ class ARMA(BaseIncentive):
             self.create_params(rng=rng)
 
             # Generate the AMRA series
-            arma = self.arma_series(rng=rng, time_series=time_series[:, index], p_params=self.p_params, q_params=self.q_params)
+            arma = self.arma_series(
+                rng=rng,
+                time_series=time_series[:, index],
+                p_params=self.p_params,
+                q_params=self.q_params,
+            )
 
             # Check the upper bound
             if np.max(np.abs(arma)) <= self.upper_bound:
@@ -210,7 +232,7 @@ class ARMA(BaseIncentive):
         return time_series
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     arma = ARMA()
@@ -218,6 +240,6 @@ if __name__ == '__main__':
     for i in range(10):
         rng = np.random.RandomState(i)
 
-        time =  arma.generate(rng=rng, n_inputs_points=256)
+        time = arma.generate(rng=rng, n_inputs_points=256)
         plt.plot(time)
         plt.show()
