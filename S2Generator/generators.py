@@ -757,6 +757,7 @@ class Generator(object):
         weights /= np.sum(weights)
         n_points_comp = rng.multinomial(n_points, weights)
 
+        # TODO: 这个可用在统一接口中添加
         if rotate is not False:
             self.rotate = rotate
 
