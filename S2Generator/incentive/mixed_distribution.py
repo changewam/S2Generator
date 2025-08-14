@@ -26,6 +26,18 @@ class MixedDistribution(BaseIncentive):
         probability_list: Optional[List[float]] = None,
         dtype: np.dtype = np.float64,
     ):
+        """
+        :param min_centroids: The min number of centroids for the input distribution.
+        :param max_centroids: The max number of centroids for the input distribution.
+        :param rotate: Whether to rotate or not.
+        :param gaussian: Whether to use Gaussian distribution.
+        :param uniform: Whether to use uniform distribution.
+        :param probability_dict: A dictionary that determines the probability of a certain distribution
+                                 being sampled in a mixed distribution.
+        :param probability_list: A list that determines the probability of a certain distribution being
+                                 sampled from a mixed distribution.
+        :param dtype: The dtype of the generated data.
+        """
         super().__init__(dtype=dtype)
 
         # Minimum and maximum number of mixed distributions
@@ -53,10 +65,19 @@ class MixedDistribution(BaseIncentive):
         # Sampling parameters of the record mixture distribution
         self.means, self.covariances, self.rotations = None, None, None
 
-    def __call__(self, *args, **kwargs):
-        pass
+    def __call__(
+            self,
+            rng: np.random.RandomState,
+            n_inputs_points: int = 512,
+            input_dimension: int = 1,
+    ) -> np.ndarray:
+        """Call the `generate` method to stimulate time series generation"""
+        return self.generate(
+            rng=rng, n_inputs_points=n_inputs_points, input_dimension=input_dimension
+        )
 
     def __str__(self) -> str:
+        """Get the name of the time series generator"""
         return "MixedDistribution"
 
     @property
@@ -211,7 +232,15 @@ class MixedDistribution(BaseIncentive):
         n_centroids: int,
         n_points_comp: np.ndarray,
     ) -> np.ndarray:
-        """Generate time series of specified dimensions and lengths using a Gaussian mixture distribution"""
+        """
+        Generate time series of specified dimensions and lengths using a Gaussian mixture distribution.
+
+        :param rng: The random number generator in NumPy with fixed seed.
+        :param input_dimension: The number of input dimension.
+        :param n_centroids: The number of centroids in mixed distribution.
+        :param n_points_comp: The number of points in each dimension.
+        :return: Time series of specified dimensions and lengths.
+        """
         means, covariances, rotations = self.generate_stats(
             rng, input_dimension, n_centroids
         )
@@ -232,7 +261,15 @@ class MixedDistribution(BaseIncentive):
         n_centroids: int,
         n_points_comp: np.ndarray,
     ) -> np.ndarray:
-        """Generate time series of specified dimensions and lengths using a uniform mixture distribution"""
+        """
+        Generate time series of specified dimensions and lengths using a uniform mixture distribution.
+
+        :param rng: The random number generator in NumPy with fixed seed.
+        :param input_dimension: The number of input dimension.
+        :param n_centroids: The number of centroids in mixed distribution.
+        :param n_points_comp: The number of points in each dimension.
+        :return: Time series of specified dimensions and lengths.
+        """
         means, covariances, rotations = self.generate_stats(
             rng, input_dimension, n_centroids
         )
