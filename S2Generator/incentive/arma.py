@@ -42,7 +42,7 @@ def arma_series(
     return time_series
 
 
-class ARMA(BaseIncentive):
+class AutoregressiveMovingAverage(BaseIncentive):
     """Generate motivating time series data by constructing random parameterized moving average and autoregressive."""
 
     def __init__(
@@ -235,7 +235,7 @@ class ARMA(BaseIncentive):
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
-    arma = ARMA()
+    arma = AutoregressiveMovingAverage()
 
     for i in range(10):
         rng = np.random.RandomState(i)

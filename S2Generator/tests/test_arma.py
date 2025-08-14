@@ -7,7 +7,7 @@ Created on 2025/08/13 23:47:51
 import unittest
 import numpy as np
 
-from S2Generator.incentive import ARMA
+from S2Generator.incentive import AutoregressiveMovingAverage
 
 
 class TestARMA(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestARMA(unittest.TestCase):
     rng = np.random.RandomState(42)
 
     # Instance object for testing
-    arma = ARMA()
+    arma = AutoregressiveMovingAverage()
 
     def test_setup(self) -> None:
         """Test module creation process"""
@@ -25,9 +25,13 @@ class TestARMA(unittest.TestCase):
             for q_max in [2, 3, 4, 5]:
                 for upper_bound in [100, 200, 300, 400]:
                     # Building an incentive time series generator
-                    arma = ARMA(p_max, q_max, upper_bound=upper_bound)
+                    arma = AutoregressiveMovingAverage(
+                        p_max, q_max, upper_bound=upper_bound
+                    )
                     self.assertIsInstance(
-                        arma, cls=ARMA, msg="Wrong ARMA type in `test_setup` method"
+                        arma,
+                        cls=AutoregressiveMovingAverage,
+                        msg="Wrong ARMA type in `test_setup` method",
                     )
 
     def test_create_autoregressive_params(self) -> None:
@@ -150,7 +154,7 @@ class TestARMA(unittest.TestCase):
             # Ergodic autoregressive order
             for q_max in [2, 3, 4, 5]:
                 # Ergodic moving average process order
-                arma = ARMA(p_max=p_max, q_max=q_max)
+                arma = AutoregressiveMovingAverage(p_max=p_max, q_max=q_max)
 
                 # Execute the data generation algorithm
                 for length in [32, 128, 256]:

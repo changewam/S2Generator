@@ -66,10 +66,10 @@ class MixedDistribution(BaseIncentive):
         self.means, self.covariances, self.rotations = None, None, None
 
     def __call__(
-            self,
-            rng: np.random.RandomState,
-            n_inputs_points: int = 512,
-            input_dimension: int = 1,
+        self,
+        rng: np.random.RandomState,
+        n_inputs_points: int = 512,
+        input_dimension: int = 1,
     ) -> np.ndarray:
         """Call the `generate` method to stimulate time series generation"""
         return self.generate(
