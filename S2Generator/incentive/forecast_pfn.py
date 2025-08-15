@@ -3,13 +3,22 @@ import pandas as pd
 from collections import defaultdict
 from datetime import date
 
-from numpy import ndarray, dtype, floating
 from pandas.tseries.frequencies import to_offset
 from scipy.stats import beta
 
 from dataclasses import dataclass
 
 from typing import Optional, Tuple, List, Any
+
+from S2Generator.incentive.base_incentive import BaseIncentive
+
+
+class ForecastPNF(BaseIncentive):
+
+    def __init__(self,
+
+                 dtype: np.dtype,):
+
 
 
 # ========================series_configs.py
@@ -487,7 +496,7 @@ if __name__ == "__main__":
     N = 50
     options = {}
     # 这个参数控制的是生成序列的长度
-    size = CONTEXT_LENGTH = 1_000
+    size = CONTEXT_LENGTH = 1000
 
     for freq, freq_index in Config.freq_and_index:
         print("freq", freq, freq_index)
