@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on 2025/01/23 17:37:24
-@author: Whenxuan Wang
-@email: wwhenxuan@gmail.com
-
-Edited on 2025/08/09 16:51:36
-@author:Yifan Wu
-@email: wy3370868155@outlook.com
+@author: Whenxuan Wang, Yifan Wu
+@email: wwhenxuan@gmail.com, wy3370868155@outlook.com
+@url: https://github.com/wwhenxuan/S2Generator
 """
 import copy
 import numpy as np

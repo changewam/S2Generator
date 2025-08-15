@@ -4,7 +4,6 @@ from collections import defaultdict
 from datetime import date
 
 from numpy import ndarray, dtype, floating
-from numpy._typing import _32Bit
 from pandas.tseries.frequencies import to_offset
 from scipy.stats import beta
 
