@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from collections import defaultdict
-from datetime import date
+from datetime import date, datetime
 
 from pandas.tseries.frequencies import to_offset
 from scipy.stats import beta
@@ -11,91 +11,6 @@ from dataclasses import dataclass
 from typing import Optional, Tuple, List, Any
 
 from S2Generator.incentive.base_incentive import BaseIncentive
-
-
-class ForecastPNF(BaseIncentive):
-
-    def __init__(self,
-
-                 dtype: np.dtype,):
-
-
-
-# ========================series_configs.py
-@dataclass
-class ComponentScale:
-    base: float
-    linear: float = None
-    exp: float = None
-    a: np.ndarray = None
-    q: np.ndarray = None
-    m: np.ndarray = None
-    w: np.ndarray = None
-    h: np.ndarray = None
-    minute: np.ndarray = None
-
-
-@dataclass
-class ComponentNoise:
-    # shape parameter for the weibull distribution
-    k: float
-    median: float
-
-    # noise will be finally calculated as
-    # noise_term = (1 + scale * (noise - E(noise)))
-    # no noise can be represented by scale = 0
-    scale: float
-
-
-@dataclass
-class SeriesConfig:
-    scale: ComponentScale
-    offset: ComponentScale
-    noise_config: ComponentNoise
-
-    def __str__(self):
-        return f"L{1000 * self.scale.linear:+02.0f}E{10000 * (self.scale.exp - 1):+02.0f}A{100 * self.scale.a:02.0f}M{100 * self.scale.m:02.0f}W{100 * self.scale.w:02.0f}"
-
-
-class Config:
-    frequencies = None
-    frequency_names = None
-    freq_and_index = None
-    transition = False
-
-    @classmethod
-    def set_freq_variables(cls, is_sub_day):
-        if is_sub_day:
-            # TODO: 这里的 is_sub_day 是什么含义
-            # cls.frequencies = [("min", 1/1440), ("h", 1/24), ("D", 1), ("W", 7), ("MS", 30), ("YE", 12)]
-            # cls.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly", "yearly"]
-            # cls.freq_and_index = (("minute", 0), ("hourly", 1), ("daily", 2), ("weekly", 3), ("monthly", 4), ("yearly", 5))
-
-            # Whenxuan: we remove the frequencies of year (YE)
-            cls.frequencies = [
-                ("min", 1 / 1440),
-                ("h", 1 / 24),
-                ("D", 1),
-                ("W", 7),
-                ("MS", 30),
-            ]
-            cls.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly"]
-            cls.freq_and_index = (
-                ("minute", 0),
-                ("hourly", 1),
-                ("daily", 2),
-                ("weekly", 3),
-                ("monthly", 4),
-            )
-        else:
-            cls.frequencies = [("D", 1), ("W", 7), ("MS", 30)]
-            cls.frequency_names = ["daily", "weekly", "monthly"]
-            cls.freq_and_index = (("daily", 0), ("weekly", 1), ("monthly", 2))
-
-    @classmethod
-    def set_transition(cls, transition):
-        cls.transition = transition
-
 
 # ========================utils.py
 def weibull_noise(
@@ -209,7 +124,7 @@ def get_transition_coefficients(context_length: int) -> np.ndarray:
 
 def make_series_trend(
     series: SeriesConfig, dates: pd.DatetimeIndex
-) -> ndarray[Any, dtype[Any]]:
+) -> np.ndarray[Any, np.dtype[Any]]:
     """
     Function to generate the trend(t) component of synthetic series.
 
@@ -363,7 +278,7 @@ def make_series(
 
     return dataframe_data
 
-
+# TODO: 这两个常数变量要设置为类属性
 BASE_START = date.fromisoformat("1885-01-01").toordinal()
 BASE_END = date.fromisoformat("2050-12-31").toordinal() + 1
 
@@ -378,6 +293,161 @@ PRODUCT_SCHEMA = {
         {"name": "noise", "type": ["float"]},
     ],
 }
+
+
+class ForecastPNF(BaseIncentive):
+
+    def __init__(self,
+                 is_sub_day: Optional[bool] = True,
+                 transition: Optional[bool] = True,
+                 start_time: Optional[str] = "1500-01-01",
+                 end_time: Optional[str] = None,
+                 dtype: np.dtype = np.float64,) -> None:
+        super().__init__(dtype=dtype)
+        # TODO: 目前这个dtype是不是还没有起作用
+
+        self.is_sub_day = is_sub_day
+        self.transition = transition
+
+        # basic config for time series generation in ForecastPFN
+        self.frequencies = None
+        self.frequency_names = None
+        self.freq_and_index = None
+        self.transition = False
+
+        # Set the basis config in frequency and transition
+        self.set_freq_variables(is_sub_day=self.is_sub_day)
+        self.set_transition(transition=self.transition)
+
+        # 记录用户输入的开始和结束的时间
+        self.user_start_time = start_time
+        self.user_end_time = end_time if end_time is not None else datetime.now().strftime('%Y-%m-%d')
+
+        # 获取开始和结束的时间信息
+        self.base_start = date.fromisoformat(start_time).toordinal()
+        self.base_end = date.fromisoformat(self.user_end_time).toordinal()
+
+    def set_freq_variables(self, is_sub_day: Optional[bool] = None):
+
+        # 使用新传入的参数或是默认参数
+        is_sub_day = self.is_sub_day if is_sub_day is None else is_sub_day
+
+        if is_sub_day:
+            # TODO: 这里的 is_sub_day 是什么含义
+            # cls.frequencies = [("min", 1/1440), ("h", 1/24), ("D", 1), ("W", 7), ("MS", 30), ("YE", 12)]
+            # cls.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly", "yearly"]
+            # cls.freq_and_index = (("minute", 0), ("hourly", 1), ("daily", 2), ("weekly", 3), ("monthly", 4), ("yearly", 5))
+
+            # Whenxuan: we remove the frequencies of year (YE)
+            self.frequencies = [
+                ("min", 1 / 1440),
+                ("h", 1 / 24),
+                ("D", 1),
+                ("W", 7),
+                ("MS", 30),
+            ]
+            self.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly"]
+            self.freq_and_index = (
+                ("minute", 0),
+                ("hourly", 1),
+                ("daily", 2),
+                ("weekly", 3),
+                ("monthly", 4),
+            )
+        else:
+            self.frequencies = [("D", 1), ("W", 7), ("MS", 30)]
+            self.frequency_names = ["daily", "weekly", "monthly"]
+            self.freq_and_index = (("daily", 0), ("weekly", 1), ("monthly", 2))
+
+    def set_transition(self, transition):
+        self.transition = transition
+
+
+    def generate(
+        self, rng: np.random.RandomState, n_inputs_points: int = 512, input_dimension=1
+    ) -> np.ndarray:
+        pass
+
+
+
+
+# ========================series_configs.py
+@dataclass
+class ComponentScale:
+    base: float
+    linear: float = None
+    exp: float = None
+    a: np.ndarray = None
+    q: np.ndarray = None
+    m: np.ndarray = None
+    w: np.ndarray = None
+    h: np.ndarray = None
+    minute: np.ndarray = None
+
+
+@dataclass
+class ComponentNoise:
+    # shape parameter for the weibull distribution
+    k: float
+    median: float
+
+    # noise will be finally calculated as
+    # noise_term = (1 + scale * (noise - E(noise)))
+    # no noise can be represented by scale = 0
+    scale: float
+
+
+@dataclass
+class SeriesConfig:
+    scale: ComponentScale
+    offset: ComponentScale
+    noise_config: ComponentNoise
+
+    def __str__(self):
+        return f"L{1000 * self.scale.linear:+02.0f}E{10000 * (self.scale.exp - 1):+02.0f}A{100 * self.scale.a:02.0f}M{100 * self.scale.m:02.0f}W{100 * self.scale.w:02.0f}"
+
+
+class Config:
+    frequencies = None
+    frequency_names = None
+    freq_and_index = None
+    transition = False
+
+    @classmethod
+    def set_freq_variables(cls, is_sub_day):
+        if is_sub_day:
+            # TODO: 这里的 is_sub_day 是什么含义
+            # cls.frequencies = [("min", 1/1440), ("h", 1/24), ("D", 1), ("W", 7), ("MS", 30), ("YE", 12)]
+            # cls.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly", "yearly"]
+            # cls.freq_and_index = (("minute", 0), ("hourly", 1), ("daily", 2), ("weekly", 3), ("monthly", 4), ("yearly", 5))
+
+            # Whenxuan: we remove the frequencies of year (YE)
+            cls.frequencies = [
+                ("min", 1 / 1440),
+                ("h", 1 / 24),
+                ("D", 1),
+                ("W", 7),
+                ("MS", 30),
+            ]
+            cls.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly"]
+            cls.freq_and_index = (
+                ("minute", 0),
+                ("hourly", 1),
+                ("daily", 2),
+                ("weekly", 3),
+                ("monthly", 4),
+            )
+        else:
+            cls.frequencies = [("D", 1), ("W", 7), ("MS", 30)]
+            cls.frequency_names = ["daily", "weekly", "monthly"]
+            cls.freq_and_index = (("daily", 0), ("weekly", 1), ("monthly", 2))
+
+    @classmethod
+    def set_transition(cls, transition):
+        cls.transition = transition
+
+
+
 
 
 def __generate(
