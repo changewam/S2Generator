@@ -382,7 +382,7 @@ BASE_START = date.fromisoformat("1885-01-01").toordinal()
 BASE_END = date.fromisoformat("2050-12-31").toordinal() + 1
 
 
-class ForecastPNF(BaseIncentive):
+class ForecastPFN(BaseIncentive):
     """
     这个方法来自哪里
     都使用了那些数据结构
@@ -394,7 +394,7 @@ class ForecastPNF(BaseIncentive):
         self,
         is_sub_day: Optional[bool] = True,
         transition: Optional[bool] = True,
-        start_time: Optional[str] = "1500-01-01",
+        start_time: Optional[str] = "1885-01-01",
         end_time: Optional[str] = None,
         random_walk: bool = False,
         dtype: np.dtype = np.float64,
@@ -439,7 +439,7 @@ class ForecastPNF(BaseIncentive):
         self._scale_config: Optional[ComponentScale] = None
 
         # 记录生成时间序列数据的偏移配置
-        self._offset_config = Optional[ComponentScale] = None
+        self._offset_config: Optional[ComponentScale] = None
 
         # 记录生成时间序列数据的噪声配置
         self._noise_config: Optional[ComponentNoise] = None
@@ -494,32 +494,52 @@ class ForecastPNF(BaseIncentive):
 
     def set_frequency_components(self, frequency: str) -> None:
         """
-        根据用户输入的frequency信息去改变当前记录每种频率分量的类属性。
+        Configures frequency component weights based on input frequency type.
 
-        :param frequency: str,
+        Sets randomized component weights optimized for different temporal patterns:
+        - min: Optimized for minute-level data (high minute variation, low hourly)
+        - h: Optimized for hourly data (low minute variation, high hourly)
+        - D: Optimized for daily data (high weekly seasonality, low monthly)
+        - W: Optimized for weekly data (balanced monthly/annual seasonality)
+        - MS: Optimized for monthly starts (low weekly, moderate annual seasonality)
+        - YE: Optimized for year-end data (low weekly, high annual seasonality)
+
+        Note: Weight ranges are empirically determined and can be modified as class properties.
+
+        :param frequency: Temporal frequency identifier specifying the data type
+        :type frequency: str
+        :raises NotImplementedError: For unsupported frequency identifiers
         """
-        # TODO: 这里面的参数的最大值是否都可以进行改动
-        # FIX: 将其添加到类属性中
+        # TODO: Make range limits configurable as class properties
         if frequency == "min":
-            self._minutely = np.random.uniform(0.0, 1.0)
-            self._hourly = np.random.uniform(0.0, 0.2)
+            # Minute-level data: emphasize minutely variations
+            self._minutely = np.random.uniform(0.0, 1.0)  # High weight
+            self._hourly = np.random.uniform(0.0, 0.2)  # Low weight
         elif frequency == "h":
-            self._minutely = np.random.uniform(0.0, 0.2)
-            self._hourly = np.random.uniform(0.0, 1)
+            # Hourly data: emphasize hourly patterns
+            self._minutely = np.random.uniform(0.0, 0.2)  # Low weight
+            self._hourly = np.random.uniform(0.0, 1)  # High weight
         elif frequency == "D":
-            self._weekly = np.random.uniform(0.0, 1.0)
-            self._monthly = np.random.uniform(0.0, 0.2)
+            # Daily data: emphasize weekly seasonality
+            self._weekly = np.random.uniform(0.0, 1.0)  # High weight
+            self._monthly = np.random.uniform(0.0, 0.2)  # Low weight
         elif frequency == "W":
-            self._monthly = np.random.uniform(0.0, 0.3)
-            self._annual = np.random.uniform(0.0, 0.3)
+            # Weekly data: balanced monthly/annual patterns
+            self._monthly = np.random.uniform(0.0, 0.3)  # Moderate weight
+            self._annual = np.random.uniform(0.0, 0.3)  # Moderate weight
         elif frequency == "MS":
-            self._weekly = np.random.uniform(0.0, 0.1)
-            self._annual = np.random.uniform(0.0, 0.5)
+            # Month-start data: emphasize annual seasonality
+            self._weekly = np.random.uniform(0.0, 0.1)  # Low weight
+            self._annual = np.random.uniform(0.0, 0.5)  # Moderate weight
         elif frequency == "YE":
-            self._weekly = np.random.uniform(0.0, 0.2)
-            self._annual = np.random.uniform(0.0, 1)
+            # Year-end data: emphasize annual patterns
+            self._weekly = np.random.uniform(0.0, 0.2)  # Low weight
+            self._annual = np.random.uniform(0.0, 1)  # High weight
         else:
-            raise NotImplementedError
+            raise NotImplementedError(
+                f"Unsupported frequency type: {frequency}. "
+                "Valid options: ['min', 'h', 'D', 'W', 'MS', 'YE']"
+            )
 
     def get_component_scale_config(
         self,
@@ -688,11 +708,21 @@ class ForecastPNF(BaseIncentive):
         options: Optional[dict] = None,
     ) -> np.ndarray:
         """
+        内部方法，不支持外部调用。
         生成两段时间序列数据，为什么是两端呢要看`get_transition_coefficients`函数
         从`make_series`函数中生成的字典信息中选择出所需的时间序列数据.
 
+        Transition series refers to the linear combination of 2 series
+        S1 and S2 such that the series S represents S1 for a period and S2
+        for the remaining period.
 
-        :param time_series: The time series dict with np.ndarray and pd.Series to be selected.
+        Function to construct synthetic series configs and generate synthetic series.
+
+        :param rng: The random number generator in NumPy with fixed seed.
+        :param length: The length of time series to generate.
+        :param freq_index: The frequency of time series to generate.
+        :param start: The start date of time series to generate.
+        :param options: Options dict for generating series.
         :return: The selected time series data with `np.ndarray`.
         """
         series1 = self.generate_series(
@@ -722,6 +752,7 @@ class ForecastPNF(BaseIncentive):
         else:
             values = series1["values"]
 
+        print(values.shape)
         return values
 
     def generate(
@@ -737,6 +768,58 @@ class ForecastPNF(BaseIncentive):
 
         if random_walk is not None:
             self.random_walk = random_walk
+
+        # 创建用于存放最终结果的空数组
+        time_series = self.create_zeros(
+            n_inputs_points=n_inputs_points, input_dimension=input_dimension
+        )
+
+        for i in range(input_dimension):
+            # 遍历每个维度来生成数据
+            time_series[:, i] = self._select_ndarray_from_dict(
+                rng=rng,
+                length=n_inputs_points,
+                freq_index=freq_index,
+                start=start,
+                options=options,
+            )
+        return time_series
+
+    @property
+    def annual(self) -> float | np.ndarray:
+        return self._annual
+
+    @property
+    def monthly(self) -> float | np.ndarray:
+        return self._monthly
+
+    @property
+    def weekly(self) -> float | np.ndarray:
+        return self._weekly
+
+    @property
+    def hourly(self) -> float | np.ndarray:
+        return self._hourly
+
+    @property
+    def minutely(self) -> float | np.ndarray:
+        return self._minutely
+
+    @property
+    def scale_config(self) -> ComponentScale:
+        return self._scale_config
+
+    @property
+    def offset_config(self) -> ComponentScale:
+        return self._offset_config
+
+    @property
+    def noise_config(self) -> ComponentNoise:
+        return self._noise_config
+
+    @property
+    def time_series_config(self) -> SeriesConfig:
+        return self._time_series_config
 
 
 def __generate(
@@ -823,65 +906,75 @@ def __generate(
     return make_series(cfg, to_offset(freq), n, start, options, random_walk)
 
 
-def generate(
-    n=100,
-    freq_index: int = None,
-    start: pd.Timestamp = None,
-    options: dict = {},
-    random_walk: bool = False,
-) -> np.ndarray:
-    """
-    Function to generate a synthetic series for a given config
-    """
-
-    series1 = __generate(n, freq_index, start, options, random_walk)
-    series2 = __generate(n, freq_index, start, options, random_walk)
-
-    if Config.transition:
-        coeff = get_transition_coefficients(CONTEXT_LENGTH)
-        values = coeff * series1["values"] + (1 - coeff) * series2["values"]
-    else:
-        values = series1["values"]
-
-    return values
+# def generate(
+#     n=100,
+#     freq_index: int = None,
+#     start: pd.Timestamp = None,
+#     options: dict = {},
+#     random_walk: bool = False,
+# ) -> np.ndarray:
+#     """
+#     Function to generate a synthetic series for a given config
+#     """
+#
+#     series1 = __generate(n, freq_index, start, options, random_walk)
+#     series2 = __generate(n, freq_index, start, options, random_walk)
+#
+#     if Config.transition:
+#         coeff = get_transition_coefficients(CONTEXT_LENGTH)
+#         values = coeff * series1["values"] + (1 - coeff) * series2["values"]
+#     else:
+#         values = series1["values"]
+#
+#     return values
 
 
 if __name__ == "__main__":
 
     from matplotlib import pyplot as plt
 
-    # 这两个参数是可以控制的
-    Config.set_freq_variables(True)
-    Config.set_transition(True)
+    # # 这两个参数是可以控制的
+    # Config.set_freq_variables(True)
+    # Config.set_transition(True)
+    #
+    # # 这个控制的应该是生成序列的次数
+    # N = 10
+    # options = {}
+    # # 这个参数控制的是生成序列的长度
+    # size = CONTEXT_LENGTH = 256
+    #
+    # for freq, freq_index in Config.freq_and_index:
+    #     # 这里是从确定的频率中进行筛选
+    #     print("freq", freq, freq_index)
+    #     start = None
+    #
+    #     for i in range(N):
+    #         if i % 1000 == 0:
+    #             print(f"Completed: {i}")
+    #
+    #         if i < N * options.get("linear_random_walk_frac", 0):
+    #             sample = generate(
+    #                 size,
+    #                 freq_index=freq_index,
+    #                 start=start,
+    #                 options=options,
+    #                 random_walk=True,
+    #             )
+    #         else:
+    #             sample = generate(
+    #                 size, freq_index=freq_index, start=start, options=options
+    #             )
+    #
+    #         plt.plot(sample, color="royalblue")
+    #         plt.show()
 
-    # 这个控制的应该是生成序列的次数
-    N = 50
-    options = {}
-    # 这个参数控制的是生成序列的长度
-    size = CONTEXT_LENGTH = 1000
+    # 实例化对象
+    forecast_pfn = ForecastPFN()
 
-    for freq, freq_index in Config.freq_and_index:
-        print("freq", freq, freq_index)
-        start = None
-
-        for i in range(N):
-            if i % 1000 == 0:
-                print(f"Completed: {i}")
-
-            if i < N * options.get("linear_random_walk_frac", 0):
-                sample = generate(
-                    size,
-                    freq_index=freq_index,
-                    start=start,
-                    options=options,
-                    random_walk=True,
-                )
-            else:
-                sample = generate(
-                    size, freq_index=freq_index, start=start, options=options
-                )
-            break
-
-        plt.plot(sample, color="royalblue")
+    for i in range(10):
+        time_series = forecast_pfn.generate(
+            rng=np.random.RandomState(i), n_inputs_points=256, input_dimension=1
+        )
+        plt.plot(time_series)
         plt.show()
-        break
+        # plt.savefig(f"../../data/forecast_pfn_{i}.jpg", dpi=300, bbox_inches="tight")
