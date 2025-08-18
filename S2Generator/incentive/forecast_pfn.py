@@ -51,47 +51,6 @@ class SeriesConfig:
         return f"L{1000 * self.scale.linear:+02.0f}E{10000 * (self.scale.exp - 1):+02.0f}A{100 * self.scale.a:02.0f}M{100 * self.scale.m:02.0f}W{100 * self.scale.w:02.0f}"
 
 
-class Config:
-    frequencies = None
-    frequency_names = None
-    freq_and_index = None
-    transition = False
-
-    @classmethod
-    def set_freq_variables(cls, is_sub_day):
-        if is_sub_day:
-            # TODO: 这里的 is_sub_day 是什么含义
-            # cls.frequencies = [("min", 1/1440), ("h", 1/24), ("D", 1), ("W", 7), ("MS", 30), ("YE", 12)]
-            # cls.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly", "yearly"]
-            # cls.freq_and_index = (("minute", 0), ("hourly", 1), ("daily", 2), ("weekly", 3), ("monthly", 4), ("yearly", 5))
-
-            # Whenxuan: we remove the frequencies of year (YE)
-            cls.frequencies = [
-                ("min", 1 / 1440),
-                ("h", 1 / 24),
-                ("D", 1),
-                ("W", 7),
-                ("MS", 30),
-            ]
-            cls.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly"]
-            cls.freq_and_index = (
-                ("minute", 0),
-                ("hourly", 1),
-                ("daily", 2),
-                ("weekly", 3),
-                ("monthly", 4),
-            )
-        else:
-            cls.frequencies = [("D", 1), ("W", 7), ("MS", 30)]
-            cls.frequency_names = ["daily", "weekly", "monthly"]
-            cls.freq_and_index = (("daily", 0), ("weekly", 1), ("monthly", 2))
-
-    @classmethod
-    def set_transition(cls, transition):
-        cls.transition = transition
-
-
-# ========================utils.py
 def weibull_noise(
     k: Optional[float] = 2, length: Optional[int] = 1, median: Optional[int] = 1
 ) -> np.ndarray:
@@ -377,94 +336,119 @@ def make_series(
     return dataframe_data
 
 
-# TODO: 这两个常数变量要设置为类属性
-BASE_START = date.fromisoformat("1885-01-01").toordinal()
-BASE_END = date.fromisoformat("2050-12-31").toordinal() + 1
-
-
 class ForecastPFN(BaseIncentive):
     """
-    这个方法来自哪里
-    都使用了那些数据结构
-    我们对原本的代码做出了那些优化和调整
-    其中的一些方法都具有哪些含义
+    Generates incentive time series by simulating combinations of trends, seasonality, and noise.
+
+    This implementation is inspired by ForecastPFN: Synthetically-Trained Zero-Shot Forecasting
+    (https://arxiv.org/abs/2311.01933) with significant enhancements:
+    1. Unified data generation interface
+    2. Extended hyperparameter configuration
+    3. Flexible temporal component weighting
+    4. Improved time range handling
+    5. Customizable frequency components
+
+    Key innovations over the original implementation:
+    - Support for sub-daily frequencies
+    - Configurable transition behaviors
+    - Component-specific scaling/offset/noise
+    - Random walk option for non-stationary series
     """
 
     def __init__(
-        self,
-        is_sub_day: Optional[bool] = True,
-        transition: Optional[bool] = True,
-        start_time: Optional[str] = "1885-01-01",
-        end_time: Optional[str] = None,
-        random_walk: bool = False,
-        dtype: np.dtype = np.float64,
+            self,
+            is_sub_day: Optional[bool] = True,
+            transition: Optional[bool] = True,
+            start_time: Optional[str] = "1885-01-01",
+            end_time: Optional[str] = None,
+            random_walk: bool = False,
+            dtype: np.dtype = np.float64,
     ) -> None:
+        """
+        Initializes the time series generator with configuration parameters.
+
+        :param is_sub_day: Enable sub-daily frequency components (minutes/hours)
+        :type is_sub_day: Optional[bool]
+        :param transition: Enable smooth transitions between frequency components
+        :type transition: Optional[bool]
+        :param start_time: Start timestamp for generated series (ISO format: YYYY-MM-DD)
+        :type start_time: Optional[str]
+        :param end_time: End timestamp for generated series. Uses current date if None.
+        :type end_time: Optional[str]
+        :param random_walk: Enable random walk transformation for non-stationary series
+        :type random_walk: bool
+        :param dtype: Numerical precision for output series
+        :type dtype: np.dtype
+        """
         super().__init__(dtype=dtype)
-        # TODO: 目前这个dtype是不是还没有起作用
+        # TODO: Implement dtype handling throughout generation process
 
         self.is_sub_day = is_sub_day
         self.transition = transition
 
-        # basic config for time series generation in ForecastPFN
-        self.frequencies = None
-        self.frequency_names = None
-        self.freq_and_index = None
-        self.transition = False
+        # Configuration for temporal components
+        self.frequencies = None  # Frequency tuples (name, days)
+        self.frequency_names = None  # Human-readable frequency names
+        self.freq_and_index = None  # Mapping between names and indices
 
-        # Set the basis config in frequency and transition
+        # Initialize frequency and transition settings
         self.set_freq_variables(is_sub_day=self.is_sub_day)
         self.set_transition(transition=self.transition)
 
-        # 记录用户输入的开始和结束的时间
+        # Process time range parameters
         self.user_start_time = start_time
         self.user_end_time = (
             end_time if end_time is not None else datetime.now().strftime("%Y-%m-%d")
         )
 
-        # 获取开始和结束的时间信息
+        # Convert to ordinal dates for efficient date arithmetic
         self.base_start = date.fromisoformat(start_time).toordinal()
         self.base_end = date.fromisoformat(self.user_end_time).toordinal()
 
-        # Whether to generate a random walk series with a specified length
+        # Non-stationary series configuration
         self.random_walk = random_walk
 
-        # 记录当前的时间频率成分：annual, monthly, weekly, hourly and minutely components
-        self._annual: Optional[np.ndarray | float] = 0.0
-        self._monthly: Optional[np.ndarray | float] = 0.0
-        self._weekly: Optional[np.ndarray | float] = 0.0
-        self._hourly: Optional[np.ndarray | float] = 0.0
-        self._minutely: Optional[np.ndarray | float] = 0.0
+        # Initialize frequency component weights
+        self._annual: Optional[Union[np.ndarray, float]] = 0.0
+        self._monthly: Optional[Union[np.ndarray, float]] = 0.0
+        self._weekly: Optional[Union[np.ndarray, float]] = 0.0
+        self._hourly: Optional[Union[np.ndarray, float]] = 0.0
+        self._minutely: Optional[Union[np.ndarray, float]] = 0.0
 
-        # 记录生成时间序列数据的尺度配置
-        self._scale_config: Optional[ComponentScale] = None
+        # Component configuration parameters
+        self._scale_config: Optional[ComponentScale] = None  # Amplitude scaling
+        self._offset_config: Optional[ComponentScale] = None  # Baseline offsets
+        self._noise_config: Optional[ComponentNoise] = None  # Noise parameters
 
-        # 记录生成时间序列数据的偏移配置
-        self._offset_config: Optional[ComponentScale] = None
-
-        # 记录生成时间序列数据的噪声配置
-        self._noise_config: Optional[ComponentNoise] = None
-
-        # 记录用于生成总时间序列的配置
+        # Global series configuration
         self._time_series_config: Optional[SeriesConfig] = None
 
-    def set_freq_variables(self, is_sub_day: Optional[bool] = None):
+    def set_freq_variables(self, is_sub_day: Optional[bool] = None) -> None:
+        """
+        Configures frequency components based on temporal resolution.
 
-        # 使用新传入的参数或是默认参数
-        is_sub_day = self.is_sub_day if is_sub_day is None else is_sub_day
+        For sub-daily series (is_sub_day=True):
+          - Includes minute, hourly, daily, weekly, monthly components
+          - Excludes yearly components for stability
+
+        For daily+ series (is_sub_day=False):
+          - Includes daily, weekly, monthly components
+
+        :param is_sub_day: Enable sub-daily components. Uses class default if None.
+        :type is_sub_day: Optional[bool]
+        """
+        # Use class default if parameter not provided
+        if is_sub_day is None:
+            is_sub_day = self.is_sub_day
 
         if is_sub_day:
-            # TODO: 这里的 is_sub_day 是什么含义
-            # cls.frequencies = [("min", 1/1440), ("h", 1/24), ("D", 1), ("W", 7), ("MS", 30), ("YE", 12)]
-            # cls.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly", "yearly"]
-            # cls.freq_and_index = (("minute", 0), ("hourly", 1), ("daily", 2), ("weekly", 3), ("monthly", 4), ("yearly", 5))
-
-            # Whenxuan: we remove the frequencies of year (YE)
+            # Sub-daily configuration (minutes to months)
             self.frequencies = [
-                ("min", 1 / 1440),
-                ("h", 1 / 24),
-                ("D", 1),
-                ("W", 7),
-                ("MS", 30),
+                ("min", 1 / 1440),  # Minutes (1/1440 days)
+                ("h", 1 / 24),  # Hours (1/24 days)
+                ("D", 1),  # Days
+                ("W", 7),  # Weeks
+                ("MS", 30),  # Months (~30 days)
             ]
             self.frequency_names = ["minute", "hourly", "daily", "weekly", "monthly"]
             self.freq_and_index = (
@@ -475,15 +459,34 @@ class ForecastPFN(BaseIncentive):
                 ("monthly", 4),
             )
         else:
-            self.frequencies = [("D", 1), ("W", 7), ("MS", 30)]
+            # Daily+ configuration (days to months)
+            self.frequencies = [
+                ("D", 1),  # Days
+                ("W", 7),  # Weeks
+                ("MS", 30),  # Months
+            ]
             self.frequency_names = ["daily", "weekly", "monthly"]
-            self.freq_and_index = (("daily", 0), ("weekly", 1), ("monthly", 2))
+            self.freq_and_index = (
+                ("daily", 0),
+                ("weekly", 1),
+                ("monthly", 2),
+            )
 
-    def set_transition(self, transition):
+    def set_transition(self, transition: bool) -> None:
+        """
+        Enables/disables smooth transitions between frequency components.
+
+        When enabled, creates gradual changes between seasonal patterns rather
+        than abrupt shifts. Particularly useful for simulating business cycles
+        or economic regime changes.
+
+        :param transition: Enable component transition smoothing.
+        :type transition: bool
+        """
         self.transition = transition
 
     def reset_frequency_components(self) -> None:
-        """重置当前类中记录的频率成分"""
+        """Reset the frequency components recorded in the current class"""
         self._annual, self._monthly, self._weekly, self._hourly, self._minutely = (
             0.0,
             0.0,
@@ -765,7 +768,13 @@ class ForecastPFN(BaseIncentive):
         options: Optional[Dict] = None,
         random_walk: bool = None,  # 这个改为类参数
     ) -> np.ndarray:
+        """
+        执行ForecastPFN算法生成激励时间序列数据。
+        该算法来自于论文：ForecastPFN: Synthetically-Trained Zero-Shot Forecasting
 
+        """
+
+        # 处理类属性参数
         if random_walk is not None:
             self.random_walk = random_walk
 
@@ -822,113 +831,6 @@ class ForecastPFN(BaseIncentive):
         return self._time_series_config
 
 
-def __generate(
-    n=100,
-    freq_index: int = None,
-    start: pd.Timestamp = None,
-    options=None,
-    random_walk: bool = False,
-):
-    """
-    Function to construct synthetic series configs and generate synthetic series.
-
-    :param n: The length of time series to generate.
-    :param freq_index: The frequency of time series to generate.
-    :param start: The start date of time series to generate.
-    :param options: Options dict for generating series.
-    :param random_walk: Whether to generate random walk or not.
-    """
-    if options is None:
-        options = {}
-
-    if freq_index is None:
-        # TODO: 这里完全可以在这个地方就随机指定
-        freq_index = np.random.choice(len(Config.frequencies))
-
-    # 获取时间频率
-    freq, timescale = Config.frequencies[freq_index]
-
-    # annual, monthly, weekly, hourly and minutely components
-    a, m, w, h, minute = 0.0, 0.0, 0.0, 0.0, 0.0
-    if freq == "min":
-        minute = np.random.uniform(0.0, 1.0)
-        h = np.random.uniform(0.0, 0.2)
-    elif freq == "h":
-        minute = np.random.uniform(0.0, 0.2)
-        h = np.random.uniform(0.0, 1)
-    elif freq == "D":
-        w = np.random.uniform(0.0, 1.0)
-        m = np.random.uniform(0.0, 0.2)
-    elif freq == "W":
-        m = np.random.uniform(0.0, 0.3)
-        a = np.random.uniform(0.0, 0.3)
-    elif freq == "MS":
-        w = np.random.uniform(0.0, 0.1)
-        a = np.random.uniform(0.0, 0.5)
-    elif freq == "YE":
-        w = np.random.uniform(0.0, 0.2)
-        a = np.random.uniform(0.0, 1)
-    else:
-        raise NotImplementedError
-
-    if start is None:
-        # start = pd.Timestamp(date.fromordinal(np.random.randint(BASE_START, BASE_END)))
-        start = pd.Timestamp(
-            date.fromordinal(int((BASE_START - BASE_END) * beta.rvs(5, 1) + BASE_START))
-        )
-
-    scale_config = ComponentScale(
-        1.0,
-        np.random.normal(0, 0.01),
-        np.random.normal(1, 0.005 / timescale),
-        a=a,
-        m=m,
-        w=w,
-        minute=minute,
-        h=h,
-    )
-
-    offset_config = ComponentScale(
-        0,
-        np.random.uniform(-0.1, 0.5),
-        np.random.uniform(-0.1, 0.5),
-        a=np.random.uniform(0.0, 1.0),
-        m=np.random.uniform(0.0, 1.0),
-        w=np.random.uniform(0.0, 1.0),
-    )
-
-    noise_config = ComponentNoise(
-        k=np.random.uniform(1, 5), median=1, scale=sample_scale()
-    )
-
-    cfg = SeriesConfig(scale_config, offset_config, noise_config)
-
-    return make_series(cfg, to_offset(freq), n, start, options, random_walk)
-
-
-# def generate(
-#     n=100,
-#     freq_index: int = None,
-#     start: pd.Timestamp = None,
-#     options: dict = {},
-#     random_walk: bool = False,
-# ) -> np.ndarray:
-#     """
-#     Function to generate a synthetic series for a given config
-#     """
-#
-#     series1 = __generate(n, freq_index, start, options, random_walk)
-#     series2 = __generate(n, freq_index, start, options, random_walk)
-#
-#     if Config.transition:
-#         coeff = get_transition_coefficients(CONTEXT_LENGTH)
-#         values = coeff * series1["values"] + (1 - coeff) * series2["values"]
-#     else:
-#         values = series1["values"]
-#
-#     return values
-
-
 if __name__ == "__main__":
 
     from matplotlib import pyplot as plt
@@ -971,7 +873,7 @@ if __name__ == "__main__":
     # 实例化对象
     forecast_pfn = ForecastPFN()
 
-    for i in range(10):
+    for i in range(2):
         time_series = forecast_pfn.generate(
             rng=np.random.RandomState(i), n_inputs_points=256, input_dimension=1
         )
