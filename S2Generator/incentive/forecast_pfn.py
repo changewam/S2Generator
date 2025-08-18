@@ -3,12 +3,14 @@ import pandas as pd
 from collections import defaultdict
 from datetime import date, datetime
 
+from pandas import DatetimeIndex
+
 from pandas.tseries.frequencies import to_offset
 from scipy.stats import beta
 
 from dataclasses import dataclass
 
-from typing import Optional, Tuple, List, Any
+from typing import Optional, Dict, Tuple, List, Any
 
 from S2Generator.incentive.base_incentive import BaseIncentive
 
@@ -91,7 +93,7 @@ class Config:
 
 # ========================utils.py
 def weibull_noise(
-        k: Optional[float] = 2, length: Optional[int] = 1, median: Optional[int] = 1
+    k: Optional[float] = 2, length: Optional[int] = 1, median: Optional[int] = 1
 ) -> np.ndarray:
     """
     Function to generate weibull noise with a fixed median.
@@ -116,7 +118,7 @@ def weibull_noise(
 
 
 def shift_axis(
-        days: pd.DatetimeIndex, shift: Optional[pd.DatetimeIndex] = None
+    days: pd.DatetimeIndex, shift: Optional[pd.DatetimeIndex] = None
 ) -> pd.DatetimeIndex:
     """
     Used to adjust the relative position of a time series (or other numerical series),
@@ -165,7 +167,7 @@ def sample_scale(rng: np.random.RandomState = None) -> np.ndarray | float:
     :return: The sampled scale for noise generation.
     """
     if rng is None:
-        # 当未指定随机数生成器时
+        # When no random number generator is specified
         rand = np.random.rand()
 
         # very low noise
@@ -179,7 +181,7 @@ def sample_scale(rng: np.random.RandomState = None) -> np.ndarray | float:
             return np.random.uniform(0.6, 0.8)
 
     else:
-        # 当指定了随机数生成器后
+        # When a random number generator is specified
         rand = rng.rand()
 
         # very low noise
@@ -219,7 +221,7 @@ def get_transition_coefficients(context_length: int) -> np.ndarray:
 
 
 def make_series_trend(
-        series: SeriesConfig, dates: pd.DatetimeIndex
+    series: SeriesConfig, dates: pd.DatetimeIndex
 ) -> np.ndarray[Any, np.dtype[Any]]:
     """
     Function to generate the trend(t) component of synthetic series.
@@ -240,7 +242,7 @@ def make_series_trend(
 
 
 def get_freq_component(
-        dates_feature: pd.Index, n_harmonics: int, n_total: int
+    dates_feature: pd.Index, n_harmonics: int, n_total: int
 ) -> np.ndarray | Any:
     """
     Method to get systematic movement of values across time
@@ -327,13 +329,13 @@ def make_series_seasonal(series: SeriesConfig, dates: pd.DatetimeIndex) -> Any:
 
 
 def make_series(
-        series: SeriesConfig,
-        freq: pd.DateOffset,
-        periods: int,
-        start: pd.Timestamp,
-        options: dict,
-        random_walk: bool,
-):
+    series: SeriesConfig,
+    freq: pd.DateOffset,
+    periods: int,
+    start: pd.Timestamp,
+    options: dict,
+    random_walk: bool,
+) -> Dict[str, pd.Series | np.ndarray | pd.DataFrame | DatetimeIndex]:
     """
     make series of the following form
     series(t) = trend(t) * seasonal(t)
@@ -362,7 +364,7 @@ def make_series(
         # expected value of this term is 0
         # for no noise, scale is set to 0
         scaled_noise_term = series.noise_config.scale * (
-                weibull_noise_term - noise_expected_val
+            weibull_noise_term - noise_expected_val
         )
 
     dataframe_data = {
@@ -381,14 +383,21 @@ BASE_END = date.fromisoformat("2050-12-31").toordinal() + 1
 
 
 class ForecastPNF(BaseIncentive):
+    """
+    这个方法来自哪里
+    都使用了那些数据结构
+    我们对原本的代码做出了那些优化和调整
+    其中的一些方法都具有哪些含义
+    """
 
     def __init__(
-            self,
-            is_sub_day: Optional[bool] = True,
-            transition: Optional[bool] = True,
-            start_time: Optional[str] = "1500-01-01",
-            end_time: Optional[str] = None,
-            dtype: np.dtype = np.float64,
+        self,
+        is_sub_day: Optional[bool] = True,
+        transition: Optional[bool] = True,
+        start_time: Optional[str] = "1500-01-01",
+        end_time: Optional[str] = None,
+        random_walk: bool = False,
+        dtype: np.dtype = np.float64,
     ) -> None:
         super().__init__(dtype=dtype)
         # TODO: 目前这个dtype是不是还没有起作用
@@ -416,6 +425,9 @@ class ForecastPNF(BaseIncentive):
         self.base_start = date.fromisoformat(start_time).toordinal()
         self.base_end = date.fromisoformat(self.user_end_time).toordinal()
 
+        # Whether to generate a random walk series with a specified length
+        self.random_walk = random_walk
+
         # 记录当前的时间频率成分：annual, monthly, weekly, hourly and minutely components
         self._annual: Optional[np.ndarray | float] = 0.0
         self._monthly: Optional[np.ndarray | float] = 0.0
@@ -431,6 +443,9 @@ class ForecastPNF(BaseIncentive):
 
         # 记录生成时间序列数据的噪声配置
         self._noise_config: Optional[ComponentNoise] = None
+
+        # 记录用于生成总时间序列的配置
+        self._time_series_config: Optional[SeriesConfig] = None
 
     def set_freq_variables(self, is_sub_day: Optional[bool] = None):
 
@@ -507,15 +522,15 @@ class ForecastPNF(BaseIncentive):
             raise NotImplementedError
 
     def get_component_scale_config(
-            self,
-            base: float,
-            linear: Optional[float] = None,
-            exp: Optional[float] = None,
-            annual: Optional[np.ndarray] = None,
-            monthly: Optional[np.ndarray] = None,
-            weekly: Optional[np.ndarray] = None,
-            hourly: Optional[np.ndarray] = None,
-            minutely: Optional[np.ndarray] = None,
+        self,
+        base: float,
+        linear: Optional[float] = None,
+        exp: Optional[float] = None,
+        annual: Optional[np.ndarray] = None,
+        monthly: Optional[np.ndarray] = None,
+        weekly: Optional[np.ndarray] = None,
+        hourly: Optional[np.ndarray] = None,
+        minutely: Optional[np.ndarray] = None,
     ) -> ComponentScale:
         """
         这部分代码我们利用了来自ForecastPFN中的数据结构。
@@ -545,27 +560,48 @@ class ForecastPNF(BaseIncentive):
         return config
 
     def get_component_noise_config(
-            self,
-            k: float, median: float, scale: float
+        self, k: float, median: float, scale: float
     ) -> ComponentNoise:
         """
-
+        这里的参数都分别有什么含义
+        是否可以将其指定为类参数
         """
         config = ComponentNoise(k=k, median=median, scale=scale)
 
+        return config
+
+    def get_time_series_config(
+        self,
+        scale_config: ComponentScale = None,
+        offset_config: ComponentScale = None,
+        noise_config: ComponentNoise = None,
+    ) -> SeriesConfig:
+        """
+        构建用于生成时间序列数据的总配置,
+        其中将包括用于生成尺度、偏移和噪声分量的配置模块。
+        """
+        config = SeriesConfig(
+            scale=self._scale_config if scale_config is None else scale_config,
+            offset=self._offset_config if offset_config is None else offset_config,
+            noise_config=self._noise_config if noise_config is None else noise_config,
+        )
+
+        return config
+
     def generate_series(
-            self,
-            rng: np.random.RandomState,
-            n=100,
-            freq_index: int = None,
-            start: pd.Timestamp = None,
-            options: Optional[dict] = None,
-            random_walk: bool = False,  # TODO: 是否可以添加为类属性
-    ) -> pd.Series:
+        self,
+        rng: np.random.RandomState,
+        length=100,
+        freq_index: int = None,
+        start: pd.Timestamp = None,
+        options: Optional[dict] = None,
+        random_walk: bool = False,  # TODO: 是否可以添加为类属性
+    ) -> Dict[str, pd.Series | np.ndarray | pd.DataFrame | DatetimeIndex]:
         """
         Function to construct synthetic series configs and generate synthetic series.
 
-        :param n: The length of time series to generate.
+        :param rng: The random number generator in NumPy with fixed seed.
+        :param length: The length of time series to generate.
         :param freq_index: The frequency of time series to generate.
         :param start: The start date of time series to generate.
         :param options: Options dict for generating series.
@@ -601,32 +637,114 @@ class ForecastPNF(BaseIncentive):
             )
 
         # 构建各个频率分量的数据结构
-        self._scale_config = self.get_component_scale_config(base=1.0, linear=rng.normal(loc=0.0, scale=0.01),
-                                                             exp=rng.normal(loc=1.0, scale=0.005 / timescale),
-                                                             annual=self._annual, monthly=self._monthly,
-                                                             weekly=self._weekly, hourly=self._hourly,
-                                                             minutely=self._minutely)  # TODO: 设置为类属性 done
+        self._scale_config = self.get_component_scale_config(
+            base=1.0,
+            linear=rng.normal(loc=0.0, scale=0.01),
+            exp=rng.normal(loc=1.0, scale=0.005 / timescale),
+            annual=self._annual,
+            monthly=self._monthly,
+            weekly=self._weekly,
+            hourly=self._hourly,
+            minutely=self._minutely,
+        )  # TODO: 设置为类属性 done
 
         # 构建各个频率分量的时间尺度偏移配置
-        self._offset_config = self.get_component_scale_config(base=0.0, linear=rng.normal(loc=-0.1, scale=0.5),
-                                                              exp=rng.normal(loc=-0.1, scale=0.5), annual=self._annual,
-                                                              monthly=self._monthly, weekly=self._weekly)
+        self._offset_config = self.get_component_scale_config(
+            base=0.0,
+            linear=rng.normal(loc=-0.1, scale=0.5),
+            exp=rng.normal(loc=-0.1, scale=0.5),
+            annual=self._annual,
+            monthly=self._monthly,
+            weekly=self._weekly,
+        )
 
         # 构建生成随机噪声序列的配置
-        self._noise_config = ...
+        self._noise_config = self.get_component_noise_config(
+            k=rng.uniform(low=1.0, high=5.0), median=1.0, scale=sample_scale(rng=rng)
+        )
+
+        # 构建用于生成时间序列数据的总配置
+        self._time_series_config = self.get_time_series_config(
+            scale_config=self._scale_config,
+            offset_config=self._offset_config,
+            noise_config=self._noise_config,
+        )
+
+        return make_series(
+            series=self._time_series_config,
+            freq=to_offset(freq),
+            periods=length,
+            start=start,
+            options=options,
+            random_walk=random_walk,
+        )
+
+    def _select_ndarray_from_dict(
+        self,
+        rng: np.random.RandomState,
+        length: int = 100,
+        freq_index: int = None,
+        start: pd.Timestamp = None,
+        options: Optional[dict] = None,
+    ) -> np.ndarray:
+        """
+        生成两段时间序列数据，为什么是两端呢要看`get_transition_coefficients`函数
+        从`make_series`函数中生成的字典信息中选择出所需的时间序列数据.
+
+
+        :param time_series: The time series dict with np.ndarray and pd.Series to be selected.
+        :return: The selected time series data with `np.ndarray`.
+        """
+        series1 = self.generate_series(
+            rng=rng,
+            length=length,
+            freq_index=freq_index,
+            start=start,
+            options=options,
+            random_walk=self.random_walk,
+        )
+
+        series2 = self.generate_series(
+            rng=rng,
+            length=length,
+            freq_index=freq_index,
+            start=start,
+            options=options,
+            random_walk=self.random_walk,
+        )
+
+        if self.transition:
+            coefficients = get_transition_coefficients(context_length=length)
+            values = (
+                coefficients * series1["values"]
+                + (1 - coefficients) * series2["values"]
+            )
+        else:
+            values = series1["values"]
+
+        return values
 
     def generate(
-            self, rng: np.random.RandomState, n_inputs_points: int = 512, input_dimension=1
+        self,
+        rng: np.random.RandomState,
+        n_inputs_points: int = 512,
+        input_dimension=1,
+        freq_index: int = None,
+        start: pd.Timestamp = None,
+        options: Optional[Dict] = None,
+        random_walk: bool = None,  # 这个改为类参数
     ) -> np.ndarray:
-        pass
+
+        if random_walk is not None:
+            self.random_walk = random_walk
 
 
 def __generate(
-        n=100,
-        freq_index: int = None,
-        start: pd.Timestamp = None,
-        options=None,
-        random_walk: bool = False,
+    n=100,
+    freq_index: int = None,
+    start: pd.Timestamp = None,
+    options=None,
+    random_walk: bool = False,
 ):
     """
     Function to construct synthetic series configs and generate synthetic series.
@@ -706,11 +824,11 @@ def __generate(
 
 
 def generate(
-        n=100,
-        freq_index: int = None,
-        start: pd.Timestamp = None,
-        options: dict = {},
-        random_walk: bool = False,
+    n=100,
+    freq_index: int = None,
+    start: pd.Timestamp = None,
+    options: dict = {},
+    random_walk: bool = False,
 ) -> np.ndarray:
     """
     Function to generate a synthetic series for a given config
