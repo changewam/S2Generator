@@ -8,10 +8,10 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 
-class BaseIncentive(ABC):
-    """用于生成激励时间序列数据的基类"""
+class BaseExcitation(ABC):
+    """Base class for generating stimulus time series data"""
 
-    def __init__(self, dtype: np.dtype):
+    def __init__(self, dtype: np.dtype = np.float64) -> None:
         self.data_type = dtype
 
     def __str__(self) -> str:
@@ -21,20 +21,21 @@ class BaseIncentive(ABC):
         self, n_inputs_points: int = 512, input_dimension: int = 1
     ) -> np.ndarray:
         """
-        构建指定长度和维度的空时间序列数据.
+        Constructs an empty time series data of the specified length and dimension.
 
-        :param n_inputs_points:
-        :param input_dimension:
-        :return: The zeros time series with
+        :param n_inputs_points: The length of the generated time series data.
+        :param input_dimension: The dimension of the generated time series data.
+        :return: The zeros time series with the specified dimension and length.
         """
         return np.zeros(shape=(n_inputs_points, input_dimension), dtype=self.data_type)
 
     @property
     def dtype(self) -> np.dtype:
+        """Get the current data type"""
         return self.data_type
 
     @abstractmethod
     def generate(
         self, rng: np.random.RandomState, n_inputs_points: int = 512, input_dimension=1
     ) -> np.ndarray:
-        """生成激励时间序列数据"""
+        """Generate a unified interface for time series data"""
