@@ -7,7 +7,7 @@ Created on 2025/08/13 23:47:51
 import unittest
 import numpy as np
 
-from S2Generator.incentive import AutoregressiveMovingAverage
+from S2Generator.excitation import AutoregressiveMovingAverage
 
 
 class TestARMA(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestARMA(unittest.TestCase):
         for p_max in [2, 3, 4, 5]:
             for q_max in [2, 3, 4, 5]:
                 for upper_bound in [100, 200, 300, 400]:
-                    # Building an incentive time series generator
+                    # Building an excitation time series generator
                     arma = AutoregressiveMovingAverage(
                         p_max, q_max, upper_bound=upper_bound
                     )

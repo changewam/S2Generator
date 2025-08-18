@@ -20,7 +20,7 @@ from sklearn.gaussian_process.kernels import (
 )
 from typing import Tuple, List, Optional, Any, Callable
 
-from S2Generator.incentive.base_incentive import BaseIncentive
+from S2Generator.excitation.base_excitation import BaseExcitation
 
 
 def get_exp_sine_squared(length: Optional[int] = 256) -> List[Kernel]:
@@ -220,7 +220,7 @@ def sample_from_gp_prior_efficient(
     return ts
 
 
-class KernelSynth(BaseIncentive):
+class KernelSynth(BaseExcitation):
     """Generate a synthetic time series from KernelSynth."""
 
     def __init__(

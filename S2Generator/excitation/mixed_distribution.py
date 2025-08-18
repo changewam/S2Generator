@@ -9,11 +9,11 @@ from scipy.stats import special_ortho_group
 from pysdkit.utils import max_min_normalization
 
 from typing import Optional, Dict, Tuple, List
-from S2Generator.incentive.base_incentive import BaseIncentive
+from S2Generator.excitation.base_excitation import BaseExcitation
 
 
-class MixedDistribution(BaseIncentive):
-    """Generate incentive time series data through mixed distribution."""
+class MixedDistribution(BaseExcitation):
+    """Generate excitation time series data through mixed distribution."""
 
     def __init__(
         self,
