@@ -9,7 +9,7 @@ from scipy.stats import beta
 from dataclasses import dataclass
 from typing import Optional, Union, Dict, Tuple, List, Any
 
-from S2Generator.incentive.base_incentive import BaseIncentive
+from S2Generator.excitation.base_excitation import BaseIncentive
 
 
 @dataclass
@@ -399,7 +399,7 @@ def make_series(
 
 class ForecastPFN(BaseIncentive):
     """
-    Generates incentive time series by simulating combinations of trends, seasonality, and noise.
+    Generates excitation time series by simulating combinations of trends, seasonality, and noise.
 
     This implementation is inspired by ForecastPFN: Synthetically-Trained Zero-Shot Forecasting
     (https://arxiv.org/abs/2311.01933) with significant enhancements:

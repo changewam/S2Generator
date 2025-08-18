@@ -16,7 +16,7 @@ from pysdkit.data import (
 from pysdkit.utils import max_min_normalization
 
 from typing import Optional, Dict, List, Tuple, Any, Callable
-from S2Generator.incentive.base_incentive import BaseIncentive
+from S2Generator.excitation.base_excitation import BaseIncentive
 
 # A dictionary of all available Eigenmodel functions
 ALL_IMF_DICT = {
@@ -119,7 +119,7 @@ def get_adaptive_sampling_rate(duration: float, length: int) -> float:
 
 class IntrinsicModeFunction(BaseIncentive):
     """
-    Generates incentive time series in the form of Intrinsic Mode Functions (IntrinsicModeFunction).
+    Generates excitation time series in the form of Intrinsic Mode Functions (IntrinsicModeFunction).
 
     This class creates composite signals by combining fundamental waveform components
     through Empirical Mode Decomposition (EMD)-like synthesis. The generated signals
