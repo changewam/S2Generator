@@ -169,7 +169,7 @@ def random_binary_map(a: Kernel, b: Kernel) -> np.ndarray:
 
 
 def sample_from_gp_prior(
-        kernel: Kernel, time_series: np.ndarray, random_seed: Optional[int] = None
+    kernel: Kernel, time_series: np.ndarray, random_seed: Optional[int] = None
 ) -> np.ndarray:
     """
     Draw a sample from a GP prior.
@@ -190,10 +190,10 @@ def sample_from_gp_prior(
 
 
 def sample_from_gp_prior_efficient(
-        kernel: Kernel,
-        time_series: np.ndarray,
-        random_seed: Optional[int] = None,
-        method: str = "eigh",
+    kernel: Kernel,
+    time_series: np.ndarray,
+    random_seed: Optional[int] = None,
+    method: str = "eigh",
 ) -> np.ndarray:
     """
     Draw a sample from a GP prior. An efficient version that allows specification
@@ -224,16 +224,16 @@ class KernelSynth(BaseIncentive):
     """Generate a synthetic time series from KernelSynth."""
 
     def __init__(
-            self,
-            min_kernels: Optional[int] = 1,
-            max_kernels: Optional[int] = 5,
-            exp_sine_squared: Optional[bool] = True,
-            dot_product: Optional[bool] = True,
-            rbf: Optional[bool] = True,
-            rational_quadratic: Optional[bool] = True,
-            white_kernel: Optional[bool] = True,
-            constant_kernel: Optional[bool] = True,
-            dtype: np.dtype = np.float64,
+        self,
+        min_kernels: Optional[int] = 1,
+        max_kernels: Optional[int] = 5,
+        exp_sine_squared: Optional[bool] = True,
+        dot_product: Optional[bool] = True,
+        rbf: Optional[bool] = True,
+        rational_quadratic: Optional[bool] = True,
+        white_kernel: Optional[bool] = True,
+        constant_kernel: Optional[bool] = True,
+        dtype: np.dtype = np.float64,
     ) -> None:
         """
         :param min_kernels: The minimum number of kernels to use.
@@ -271,10 +271,10 @@ class KernelSynth(BaseIncentive):
         self._kernel_bank = None
 
     def __call__(
-            self,
-            rng: np.random.RandomState,
-            n_inputs_points: int = 512,
-            input_dimension: int = 1,
+        self,
+        rng: np.random.RandomState,
+        n_inputs_points: int = 512,
+        input_dimension: int = 1,
     ) -> np.ndarray:
         """Call the `generate` method to stimulate time series generation"""
         return self.generate(
@@ -343,7 +343,7 @@ class KernelSynth(BaseIncentive):
         return self._kernel_bank
 
     def generate_kernel_synth(
-            self, rng: np.random.RandomState, length: Optional[int] = 256
+        self, rng: np.random.RandomState, length: Optional[int] = 256
     ) -> np.ndarray[Any, np.dtype[Any] | Any] | None:
         """
         Generate a synthetic time series from KernelSynth.
@@ -376,7 +376,7 @@ class KernelSynth(BaseIncentive):
             return ts.squeeze()
 
     def generate(
-            self, rng: np.random.RandomState, n_inputs_points: int = 512, input_dimension=1
+        self, rng: np.random.RandomState, n_inputs_points: int = 512, input_dimension=1
     ) -> np.ndarray:
         """
         Generate a time series from KernelSynth, which comes from Chronos.
