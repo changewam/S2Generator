@@ -2,57 +2,105 @@ import numpy as np
 import pandas as pd
 from collections import defaultdict
 from datetime import date, datetime
-
 from pandas import DatetimeIndex
-
 from pandas.tseries.frequencies import to_offset
 from scipy.stats import beta
 
 from dataclasses import dataclass
-
-from typing import Optional, Dict, Tuple, List, Any
+from typing import Optional, Union, Dict, Tuple, List, Any
 
 from S2Generator.incentive.base_incentive import BaseIncentive
 
 
-# ========================series_configs.py
 @dataclass
 class ComponentScale:
-    base: float
-    linear: float = None
-    exp: float = None
-    a: np.ndarray = None
-    # q: np.ndarray = None
-    m: np.ndarray = None
-    w: np.ndarray = None
-    h: np.ndarray = None
-    minute: np.ndarray = None
+    """
+    Represents scaling factors for time series components.
+
+    Each attribute controls the amplitude scaling of a specific temporal component:
+    - base: Constant baseline scaling
+    - linear: Linear trend scaling (slope)
+    - exp: Exponential growth/decay factor
+    - a: Annual seasonality scaling
+    - m: Monthly seasonality scaling
+    - w: Weekly seasonality scaling
+    - h: Hourly seasonality scaling
+    - minute: Minute-level seasonality scaling
+
+    Scaling formula:
+        component_value = base + linear*t + exp^t + a*annual + m*monthly + ...
+    """
+
+    base: float  #: Constant baseline offset
+    linear: float = None  #: Linear trend coefficient (slope)
+    exp: float = None  #: Exponential growth/decay base (e.g., 1.01 for 1% growth)
+    a: np.ndarray = None  #: Annual seasonality scaling vector
+    m: np.ndarray = None  #: Monthly seasonality scaling vector
+    w: np.ndarray = None  #: Weekly seasonality scaling vector
+    h: np.ndarray = None  #: Hourly seasonality scaling vector
+    minute: np.ndarray = None  #: Minute-level seasonality scaling vector
 
 
 @dataclass
 class ComponentNoise:
-    # shape parameter for the weibull distribution
-    k: float
-    median: float
+    """
+    Configures noise properties for time series generation.
 
-    # noise will be finally calculated as
-    # noise_term = (1 + scale * (noise - E(noise)))
-    # no noise can be represented by scale = 0
-    scale: float
+    Models multiplicative Weibull-distributed noise with scaling:
+        noise_term = (1 + scale * (weibull_noise - E[noise]))
+
+    Weibull distribution parameters:
+        k: Shape parameter (k > 0)
+        median: Median value of the distribution
+
+    Special case:
+        scale = 0 → No noise (deterministic series)
+    """
+
+    k: float  #: Weibull shape parameter (k > 0)
+    median: float  #: Median value of Weibull distribution
+    scale: float  #: Noise scaling factor (0 = no noise)
 
 
 @dataclass
 class SeriesConfig:
-    scale: ComponentScale
-    offset: ComponentScale
-    noise_config: ComponentNoise
+    """
+    Comprehensive configuration for time series generation.
+
+    Combines:
+    1. scale: Amplitude scaling components (ComponentScale)
+    2. offset: Baseline offset components (ComponentScale)
+    3. noise_config: Stochastic noise parameters (ComponentNoise)
+
+    The string representation encodes key parameters in compact format:
+        "L{linear}E{exp}A{annual}M{monthly}W{weekly}"
+    - Linear (L): 1000 × linear
+    - Exponential (E): 10000 × (exp - 1)
+    - Annual (A): 100 × annual_scale
+    - Monthly (M): 100 × monthly_scale
+    - Weekly (W): 100 × weekly_scale
+    """
+
+    scale: ComponentScale  #: Amplitude scaling configuration
+    offset: ComponentScale  #: Baseline offset configuration
+    noise_config: ComponentNoise  #: Noise generation configuration
 
     def __str__(self):
-        return f"L{1000 * self.scale.linear:+02.0f}E{10000 * (self.scale.exp - 1):+02.0f}A{100 * self.scale.a:02.0f}M{100 * self.scale.m:02.0f}W{100 * self.scale.w:02.0f}"
+        """Compact string representation encoding key parameters"""
+        return (
+            f"L{1000 * self.scale.linear:+02.0f}"
+            f"E{10000 * (self.scale.exp - 1):+02.0f}"
+            f"A{100 * self.scale.a:02.0f}"
+            f"M{100 * self.scale.m:02.0f}"
+            f"W{100 * self.scale.w:02.0f}"
+        )
 
 
 def weibull_noise(
-    k: Optional[float] = 2, length: Optional[int] = 1, median: Optional[int] = 1
+    rng: np.random.RandomState,
+    k: Optional[float] = 2,
+    length: Optional[int] = 1,
+    median: Optional[float] = 1,
 ) -> np.ndarray:
     """
     Function to generate weibull noise with a fixed median.
@@ -62,6 +110,7 @@ def weibull_noise(
     To achieve a fixed median, the function inversely solves for the scale parameter λ using the median formula:
     lamda = median / (np.log(2) ** (1 / k))
 
+    :param rng: Random number generator used to generate random values.
     :param k: Shape parameter, determines the shape of the distribution:
               1. k < 1: Decreasing failure rate;
               2. k = 1: Exponential distribution;
@@ -73,7 +122,7 @@ def weibull_noise(
     # we set lambda so that median is a given value
     lamda = median / (np.log(2) ** (1 / k))
 
-    return lamda * np.random.weibull(k, length)
+    return lamda * rng.weibull(k, length)
 
 
 def shift_axis(
@@ -92,11 +141,14 @@ def shift_axis(
     return days - shift * days[-1]
 
 
-def get_random_walk_series(length: int, movements: Optional[List[int]] = None):
+def get_random_walk_series(
+    rng: np.random.RandomState, length: int, movements: Optional[List[int]] = None
+):
     """
     Function to generate a random walk series with a specified length.
     This is a random process model widely used in finance, physics, statistics and other fields.
 
+    :param rng: Random number generator used to generate random values.
     :param length: Shape parameter, determines the shape of the distribution:
     :param movements: Shape parameter, possible step sizes:
                       1. Default: Binary Random Walk (±1);
@@ -107,9 +159,9 @@ def get_random_walk_series(length: int, movements: Optional[List[int]] = None):
         movements = [-1, 1]
 
     random_walk = list()
-    random_walk.append(np.random.choice(movements))
+    random_walk.append(rng.choice(movements))
     for i in range(1, length):
-        movement = np.random.choice(movements)
+        movement = rng.choice(movements)
         value = random_walk[i - 1] + movement
         random_walk.append(value)
 
@@ -174,8 +226,8 @@ def get_transition_coefficients(context_length: int) -> np.ndarray:
 
     m = (a + b) / 2
     k = 1 / (a - m) * np.log(f_a / (1 - f_a))
-
     coeff = 1 / (1 + np.exp(-k * (np.arange(1, context_length + 1) - m)))
+
     return coeff
 
 
@@ -201,7 +253,10 @@ def make_series_trend(
 
 
 def get_freq_component(
-    dates_feature: pd.Index, n_harmonics: int, n_total: int
+    rng: np.random.RandomState,
+    dates_feature: pd.Index,
+    n_harmonics: Union[int, float],
+    n_total: Union[int, float],
 ) -> np.ndarray | Any:
     """
     Method to get systematic movement of values across time
@@ -210,6 +265,7 @@ def get_freq_component(
     in a year we will use months of a date, while for day-wise patterns in
     a month, we will use days as the feature
 
+    :param rng: The random number generator in NumPy with fixed seed.
     :param n_harmonics: number of harmonics to include.
                         For example, for monthly trend, we use 12/2 = 6 harmonics
     :param n_total: total cycle length
@@ -224,8 +280,8 @@ def get_freq_component(
 
     # choose coefficients inversely proportional to the harmonic
     for idx, harmonic in enumerate(harmonics):
-        sin_coef[idx] = np.random.normal(scale=1 / harmonic)
-        cos_coef[idx] = np.random.normal(scale=1 / harmonic)
+        sin_coef[idx] = rng.normal(scale=1 / harmonic)
+        cos_coef[idx] = rng.normal(scale=1 / harmonic)
 
     # normalize the coefficients such that their sum of squares is 1
     coef_sq_sum = np.sqrt(np.sum(np.square(sin_coef)) + np.sum(np.square(cos_coef)))
@@ -246,11 +302,14 @@ def get_freq_component(
     return return_val
 
 
-def make_series_seasonal(series: SeriesConfig, dates: pd.DatetimeIndex) -> Any:
+def make_series_seasonal(
+    rng: np.random.RandomState, series: SeriesConfig, dates: pd.DatetimeIndex
+) -> Any:
     """
     Function to generate the seasonal(t) component of synthetic series.
     It represents the systematic pattern-based movement over time
 
+    :param rng: The random number generator in NumPy with fixed seed.
     :param series: series config used for generating values
     :param dates: dates on which the data needs to be calculated
     """
@@ -259,27 +318,27 @@ def make_series_seasonal(series: SeriesConfig, dates: pd.DatetimeIndex) -> Any:
     seasonal_components = defaultdict(lambda: 1)
     if series.scale.minute is not None:
         seasonal_components["minute"] = 1 + series.scale.minute * get_freq_component(
-            dates.minute, 10, 60
+            rng=rng, dates_feature=dates.minute, n_harmonics=10, n_total=60
         )
         seasonal *= seasonal_components["minute"]
     if series.scale.h is not None:
         seasonal_components["h"] = 1 + series.scale.h * get_freq_component(
-            dates.hour, 10, 24
+            rng=rng, dates_feature=dates.hour, n_harmonics=10, n_total=24
         )
         seasonal *= seasonal_components["h"]
     if series.scale.a is not None:
         seasonal_components["a"] = 1 + series.scale.a * get_freq_component(
-            dates.month, 6, 12
+            rng=rng, dates_feature=dates.month, n_harmonics=6, n_total=12
         )
         seasonal *= seasonal_components["a"]
     if series.scale.m is not None:
         seasonal_components["m"] = 1 + series.scale.m * get_freq_component(
-            dates.day, 10, 30.5
+            rng=rng, dates_feature=dates.day, n_harmonics=10, n_total=30.5
         )
         seasonal *= seasonal_components["m"]
     if series.scale.w is not None:
         seasonal_components["w"] = 1 + series.scale.w * get_freq_component(
-            dates.dayofweek, 4, 7
+            rng=rng, dates_feature=dates.dayofweek, n_harmonics=4, n_total=7
         )
         seasonal *= seasonal_components["w"]
 
@@ -288,6 +347,7 @@ def make_series_seasonal(series: SeriesConfig, dates: pd.DatetimeIndex) -> Any:
 
 
 def make_series(
+    rng: np.random.RandomState,
     series: SeriesConfig,
     freq: pd.DateOffset,
     periods: int,
@@ -304,14 +364,15 @@ def make_series(
     scaled_noise_term = 0
 
     if random_walk:
-        values = get_random_walk_series(len(dates))
+        values = get_random_walk_series(rng=rng, length=len(dates))
     else:
-        values_trend = make_series_trend(series, dates)
-        values_seasonal = make_series_seasonal(series, dates)
+        values_trend = make_series_trend(series=series, dates=dates)
+        values_seasonal = make_series_seasonal(rng=rng, series=series, dates=dates)
 
         values = values_trend * values_seasonal["seasonal"]
 
         weibull_noise_term = weibull_noise(
+            rng=rng,
             k=series.noise_config.k,
             median=series.noise_config.median,
             length=len(values),
@@ -356,13 +417,13 @@ class ForecastPFN(BaseIncentive):
     """
 
     def __init__(
-            self,
-            is_sub_day: Optional[bool] = True,
-            transition: Optional[bool] = True,
-            start_time: Optional[str] = "1885-01-01",
-            end_time: Optional[str] = None,
-            random_walk: bool = False,
-            dtype: np.dtype = np.float64,
+        self,
+        is_sub_day: Optional[bool] = True,
+        transition: Optional[bool] = True,
+        start_time: Optional[str] = "1885-01-01",
+        end_time: Optional[str] = None,
+        random_walk: bool = False,
+        dtype: np.dtype = np.float64,
     ) -> None:
         """
         Initializes the time series generator with configuration parameters.
@@ -381,8 +442,6 @@ class ForecastPFN(BaseIncentive):
         :type dtype: np.dtype
         """
         super().__init__(dtype=dtype)
-        # TODO: Implement dtype handling throughout generation process
-
         self.is_sub_day = is_sub_day
         self.transition = transition
 
@@ -495,7 +554,9 @@ class ForecastPFN(BaseIncentive):
             0.0,
         )
 
-    def set_frequency_components(self, frequency: str) -> None:
+    def set_frequency_components(
+        self, rng: np.random.RandomState, frequency: str
+    ) -> None:
         """
         Configures frequency component weights based on input frequency type.
 
@@ -509,6 +570,7 @@ class ForecastPFN(BaseIncentive):
 
         Note: Weight ranges are empirically determined and can be modified as class properties.
 
+        :param rng: The random number generator in NumPy with fixed seed.
         :param frequency: Temporal frequency identifier specifying the data type
         :type frequency: str
         :raises NotImplementedError: For unsupported frequency identifiers
@@ -516,28 +578,28 @@ class ForecastPFN(BaseIncentive):
         # TODO: Make range limits configurable as class properties
         if frequency == "min":
             # Minute-level data: emphasize minutely variations
-            self._minutely = np.random.uniform(0.0, 1.0)  # High weight
-            self._hourly = np.random.uniform(0.0, 0.2)  # Low weight
+            self._minutely = rng.uniform(0.0, 1.0)  # High weight
+            self._hourly = rng.uniform(0.0, 0.2)  # Low weight
         elif frequency == "h":
             # Hourly data: emphasize hourly patterns
-            self._minutely = np.random.uniform(0.0, 0.2)  # Low weight
-            self._hourly = np.random.uniform(0.0, 1)  # High weight
+            self._minutely = rng.uniform(0.0, 0.2)  # Low weight
+            self._hourly = rng.uniform(0.0, 1)  # High weight
         elif frequency == "D":
             # Daily data: emphasize weekly seasonality
-            self._weekly = np.random.uniform(0.0, 1.0)  # High weight
-            self._monthly = np.random.uniform(0.0, 0.2)  # Low weight
+            self._weekly = rng.uniform(0.0, 1.0)  # High weight
+            self._monthly = rng.uniform(0.0, 0.2)  # Low weight
         elif frequency == "W":
             # Weekly data: balanced monthly/annual patterns
-            self._monthly = np.random.uniform(0.0, 0.3)  # Moderate weight
-            self._annual = np.random.uniform(0.0, 0.3)  # Moderate weight
+            self._monthly = rng.uniform(0.0, 0.3)  # Moderate weight
+            self._annual = rng.uniform(0.0, 0.3)  # Moderate weight
         elif frequency == "MS":
             # Month-start data: emphasize annual seasonality
-            self._weekly = np.random.uniform(0.0, 0.1)  # Low weight
-            self._annual = np.random.uniform(0.0, 0.5)  # Moderate weight
+            self._weekly = rng.uniform(0.0, 0.1)  # Low weight
+            self._annual = rng.uniform(0.0, 0.5)  # Moderate weight
         elif frequency == "YE":
             # Year-end data: emphasize annual patterns
-            self._weekly = np.random.uniform(0.0, 0.2)  # Low weight
-            self._annual = np.random.uniform(0.0, 1)  # High weight
+            self._weekly = rng.uniform(0.0, 0.2)  # Low weight
+            self._annual = rng.uniform(0.0, 1)  # High weight
         else:
             raise NotImplementedError(
                 f"Unsupported frequency type: {frequency}. "
@@ -556,21 +618,36 @@ class ForecastPFN(BaseIncentive):
         minutely: Optional[np.ndarray] = None,
     ) -> ComponentScale:
         """
-        这部分代码我们利用了来自ForecastPFN中的数据结构。
-        该函数用于构建每一个频率尺度分量的配置大小。
+        Creates scaling configuration for time series components.
 
-        :param base: float,
-        :param linear: float,
-        :param exp: float,
-        :param annual: float,
-        :param monthly: float,
-        :param weekly: float,
-        :param hourly: float,
-        :param minutely: float,
-        :return: ComponentScale
+        This function follows the ForecastPFN architecture to define amplitude scaling:
+        1. Uses class-level component weights as defaults when parameters are None
+        2. Allows custom override of specific components
+        3. Handles both fundamental (base, linear, exp) and seasonal components
+
+        :param base: Constant baseline scaling factor
+        :type base: float
+        :param linear: Linear trend coefficient (slope). Default: class-stored value
+        :type linear: Optional[float]
+        :param exp: Exponential growth/decay base. Default: class-stored value
+        :type exp: Optional[float]
+        :param annual: Annual seasonality scaling vector. Default: self._annual
+        :type annual: Optional[np.ndarray]
+        :param monthly: Monthly seasonality scaling vector. Default: self._monthly
+        :type monthly: Optional[np.ndarray]
+        :param weekly: Weekly seasonality scaling vector. Default: self._weekly
+        :type weekly: Optional[np.ndarray]
+        :param hourly: Hourly seasonality scaling vector. Default: self._hourly
+        :type hourly: Optional[np.ndarray]
+        :param minutely: Minute-level seasonality scaling vector. Default: self._minutely
+        :type minutely: Optional[np.ndarray]
+        :return: Component scaling configuration
+        :rtype: ComponentScale
+        :note: The base, linear, and exp parameters could be moved to class attributes
         """
+        # TODO: Consider making base, linear, exp class-level parameters
         config = ComponentScale(
-            base=base,  # TODO: 这三个参数完全可以设置为类属性
+            base=base,
             linear=linear,
             exp=exp,
             a=self._annual if annual is None else annual,
@@ -582,15 +659,33 @@ class ForecastPFN(BaseIncentive):
 
         return config
 
+    @staticmethod
     def get_component_noise_config(
-        self, k: float, median: float, scale: float
+        k: float, median: float, scale: float
     ) -> ComponentNoise:
         """
-        这里的参数都分别有什么含义
-        是否可以将其指定为类参数
-        """
-        config = ComponentNoise(k=k, median=median, scale=scale)
+        Creates noise configuration for time series generation.
 
+        Parameters define multiplicative Weibull-distributed noise:
+        :param k: Shape parameter for Weibull distribution (k > 0)
+                   - k < 1: Decreasing failure rate
+                   - k = 1: Exponential distribution (constant failure rate)
+                   - k > 1: Increasing failure rate
+        :type k: float
+        :param median: Median value of Weibull distribution (location parameter)
+        :type median: float
+        :param scale: Noise scaling factor where:
+                      0 = no noise (deterministic series)
+                      0-0.1 = low noise
+                      0.1-0.5 = moderate noise
+                      >0.5 = high noise
+        :type scale: float
+        :return: Noise configuration object
+        :rtype: ComponentNoise
+        :note: These parameters could be set as class attributes for consistency
+        """
+        # TODO: Consider making these parameters class-level constants
+        config = ComponentNoise(k=k, median=median, scale=scale)
         return config
 
     def get_time_series_config(
@@ -600,15 +695,29 @@ class ForecastPFN(BaseIncentive):
         noise_config: ComponentNoise = None,
     ) -> SeriesConfig:
         """
-        构建用于生成时间序列数据的总配置,
-        其中将包括用于生成尺度、偏移和噪声分量的配置模块。
+        Creates comprehensive configuration for time series generation.
+
+        Combines three essential aspects of time series modeling:
+        1. Scale: Component amplitude scaling
+        2. Offset: Baseline offsets
+        3. Noise: Stochastic properties
+
+        Uses class-stored configurations when parameters are None.
+
+        :param scale_config: Amplitude scaling configuration. Default: self._scale_config
+        :type scale_config: Optional[ComponentScale]
+        :param offset_config: Baseline offset configuration. Default: self._offset_config
+        :type offset_config: Optional[ComponentScale]
+        :param noise_config: Noise generation parameters. Default: self._noise_config
+        :type noise_config: Optional[ComponentNoise]
+        :return: Complete series generation configuration
+        :rtype: SeriesConfig
         """
         config = SeriesConfig(
             scale=self._scale_config if scale_config is None else scale_config,
             offset=self._offset_config if offset_config is None else offset_config,
             noise_config=self._noise_config if noise_config is None else noise_config,
         )
-
         return config
 
     def generate_series(
@@ -629,26 +738,26 @@ class ForecastPFN(BaseIncentive):
         :param start: The start date of time series to generate.
         :param options: Options dict for generating series.
         :param random_walk: Whether to generate random walk or not.
+        :return: The generated series dict.
         """
         if options is None:
             options = {}
 
         if freq_index is None:
-            # TODO: 这里完全可以在这个地方就随机指定
-            # 从现有的时间戳频率列表中随机挑选出一种
+            # Randomly pick a timestamp frequency from the existing list
             freq_index = rng.choice(len(self.frequencies))
 
-        # 获取时间戳的频率信息
+        # Get the frequency information of the timestamp
         freq, timescale = self.frequencies[freq_index]
 
-        # 重置类属性中的各种频率分量
+        # Reset various frequency components in class attributes
         self.reset_frequency_components()
 
-        # 重新选择各种类属性的频率分量
-        self.set_frequency_components(frequency=freq)
+        # Reselect the frequency components of various class attributes
+        self.set_frequency_components(rng=rng, frequency=freq)
 
         if start is None:
-            # 检验用户是否指定了开始的时间戳
+            # Check if the user specified a start timestamp
             # start = pd.Timestamp(date.fromordinal(np.random.randint(BASE_START, BASE_END)))
             start = pd.Timestamp(
                 date.fromordinal(
@@ -659,7 +768,7 @@ class ForecastPFN(BaseIncentive):
                 )
             )
 
-        # 构建各个频率分量的数据结构
+        # Construct the data structure of each frequency component
         self._scale_config = self.get_component_scale_config(
             base=1.0,
             linear=rng.normal(loc=0.0, scale=0.01),
@@ -669,9 +778,9 @@ class ForecastPFN(BaseIncentive):
             weekly=self._weekly,
             hourly=self._hourly,
             minutely=self._minutely,
-        )  # TODO: 设置为类属性 done
+        )
 
-        # 构建各个频率分量的时间尺度偏移配置
+        # Constructing time scale offset configurations for each frequency component
         self._offset_config = self.get_component_scale_config(
             base=0.0,
             linear=rng.normal(loc=-0.1, scale=0.5),
@@ -681,12 +790,12 @@ class ForecastPFN(BaseIncentive):
             weekly=self._weekly,
         )
 
-        # 构建生成随机噪声序列的配置
+        # Build a configuration for generating random noise sequences
         self._noise_config = self.get_component_noise_config(
             k=rng.uniform(low=1.0, high=5.0), median=1.0, scale=sample_scale(rng=rng)
         )
 
-        # 构建用于生成时间序列数据的总配置
+        # Build an overall configuration for generating time series data
         self._time_series_config = self.get_time_series_config(
             scale_config=self._scale_config,
             offset_config=self._offset_config,
@@ -694,6 +803,7 @@ class ForecastPFN(BaseIncentive):
         )
 
         return make_series(
+            rng=rng,
             series=self._time_series_config,
             freq=to_offset(freq),
             periods=length,
@@ -711,9 +821,9 @@ class ForecastPFN(BaseIncentive):
         options: Optional[dict] = None,
     ) -> np.ndarray:
         """
-        内部方法，不支持外部调用。
-        生成两段时间序列数据，为什么是两端呢要看`get_transition_coefficients`函数
-        从`make_series`函数中生成的字典信息中选择出所需的时间序列数据.
+        This method is internal and does not support external calls.
+        Generates two time series data segments. Why two segments? See the `get_transition_coefficients` function for details.
+        Select the desired time series data from the dictionary generated by the `make_series` function.
 
         Transition series refers to the linear combination of 2 series
         S1 and S2 such that the series S represents S1 for a period and S2
@@ -762,29 +872,45 @@ class ForecastPFN(BaseIncentive):
         self,
         rng: np.random.RandomState,
         n_inputs_points: int = 512,
-        input_dimension=1,
-        freq_index: int = None,
-        start: pd.Timestamp = None,
+        input_dimension: int = 1,
+        freq_index: Optional[int] = None,
+        start: Optional[pd.Timestamp] = None,
         options: Optional[Dict] = None,
-        random_walk: bool = None,  # 这个改为类参数
+        random_walk: Optional[bool] = None,
     ) -> np.ndarray:
         """
-        执行ForecastPFN算法生成激励时间序列数据。
-        该算法来自于论文：ForecastPFN: Synthetically-Trained Zero-Shot Forecasting
+        Generates time series using the ForecastPFN algorithm.
 
+        Implementation based on:
+        ForecastPFN: Synthetically-Trained Zero-Shot Forecasting
+        (https://arxiv.org/abs/2311.01933)
+
+        The algorithm combines:
+        1. Multiple seasonal components (annual, monthly, weekly, etc.)
+        2. Trend components (linear, exponential)
+        3. Noise components (Weibull-distributed)
+        4. Optional random walk transformation
+
+        :param rng: Seeded random number generator for reproducibility.
+        :param n_inputs_points: Number of time points to generate per dimension
+        :param input_dimension: Number of independent time series dimensions to generate
+        :param freq_index: Index of frequency configuration to use (0-4 for sub-daily)
+        :param start: Custom start timestamp for the series. Uses class default if None.
+        :param options: Additional generation options (reserved for future extensions)
+        :param random_walk: Enable random walk transformation. Overrides class default.
+        :return: Generated time series array of shape (n_inputs_points, input_dimension)
         """
-
-        # 处理类属性参数
+        # Handle random walk override
         if random_walk is not None:
             self.random_walk = random_walk
 
-        # 创建用于存放最终结果的空数组
+        # Initialize output array
         time_series = self.create_zeros(
             n_inputs_points=n_inputs_points, input_dimension=input_dimension
         )
 
+        # Generate each dimension independently
         for i in range(input_dimension):
-            # 遍历每个维度来生成数据
             time_series[:, i] = self._select_ndarray_from_dict(
                 rng=rng,
                 length=n_inputs_points,
@@ -795,39 +921,48 @@ class ForecastPFN(BaseIncentive):
         return time_series
 
     @property
-    def annual(self) -> float | np.ndarray:
+    def annual(self) -> Union[float, np.ndarray]:
+        """Annual seasonality component weight(s)"""
         return self._annual
 
     @property
-    def monthly(self) -> float | np.ndarray:
+    def monthly(self) -> Union[float, np.ndarray]:
+        """Monthly seasonality component weight(s)"""
         return self._monthly
 
     @property
-    def weekly(self) -> float | np.ndarray:
+    def weekly(self) -> Union[float, np.ndarray]:
+        """Weekly seasonality component weight(s)"""
         return self._weekly
 
     @property
-    def hourly(self) -> float | np.ndarray:
+    def hourly(self) -> Union[float, np.ndarray]:
+        """Hourly seasonality component weight(s)"""
         return self._hourly
 
     @property
-    def minutely(self) -> float | np.ndarray:
+    def minutely(self) -> Union[float, np.ndarray]:
+        """Minute-level seasonality component weight(s)"""
         return self._minutely
 
     @property
     def scale_config(self) -> ComponentScale:
+        """Amplitude scaling configuration for time series components"""
         return self._scale_config
 
     @property
     def offset_config(self) -> ComponentScale:
+        """Baseline offset configuration for time series components"""
         return self._offset_config
 
     @property
     def noise_config(self) -> ComponentNoise:
+        """Noise generation configuration for time series"""
         return self._noise_config
 
     @property
     def time_series_config(self) -> SeriesConfig:
+        """Comprehensive configuration for time series generation"""
         return self._time_series_config
 
 
@@ -835,42 +970,6 @@ if __name__ == "__main__":
 
     from matplotlib import pyplot as plt
 
-    # # 这两个参数是可以控制的
-    # Config.set_freq_variables(True)
-    # Config.set_transition(True)
-    #
-    # # 这个控制的应该是生成序列的次数
-    # N = 10
-    # options = {}
-    # # 这个参数控制的是生成序列的长度
-    # size = CONTEXT_LENGTH = 256
-    #
-    # for freq, freq_index in Config.freq_and_index:
-    #     # 这里是从确定的频率中进行筛选
-    #     print("freq", freq, freq_index)
-    #     start = None
-    #
-    #     for i in range(N):
-    #         if i % 1000 == 0:
-    #             print(f"Completed: {i}")
-    #
-    #         if i < N * options.get("linear_random_walk_frac", 0):
-    #             sample = generate(
-    #                 size,
-    #                 freq_index=freq_index,
-    #                 start=start,
-    #                 options=options,
-    #                 random_walk=True,
-    #             )
-    #         else:
-    #             sample = generate(
-    #                 size, freq_index=freq_index, start=start, options=options
-    #             )
-    #
-    #         plt.plot(sample, color="royalblue")
-    #         plt.show()
-
-    # 实例化对象
     forecast_pfn = ForecastPFN()
 
     for i in range(2):
