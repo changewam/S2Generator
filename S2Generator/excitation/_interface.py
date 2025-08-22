@@ -10,6 +10,7 @@ Created on 2025/08/18 23:31:37
 """
 import numpy as np
 
+from S2Generator.params import SeriesParams
 from S2Generator.excitation import (
     MixedDistribution,
     AutoregressiveMovingAverage,
@@ -21,8 +22,9 @@ from S2Generator.excitation import (
 
 class Excitation(object):
 
-    def __init__(self, series_params) -> None:
-        pass
+    def __init__(self, series_params: SeriesParams) -> None:
+        # 实例化
+        self.series_params = series_params
 
     def generate(
         self,

@@ -15,13 +15,13 @@ class TestSeriesParams(unittest.TestCase):
     """Test parameter object used to generate stimulus time series data"""
 
     def test_create(self) -> None:
-        """Creation of verification class"""
+        """Test the creation of verification class"""
         series_params = SeriesParams()
         # Verify that the data in the class is correct
         self.assertIsInstance(obj=series_params, cls=SeriesParams)
 
     def test_sampling_methods(self) -> None:
-        """Verify that the sampling method in the class attributes is correct"""
+        """Test and verify that the sampling method in the class attributes is correct"""
         # Create a class instance object
         series_params = SeriesParams()
         # Iterate through different sampling methods
@@ -45,7 +45,7 @@ class TestSeriesParams(unittest.TestCase):
             )
 
     def test_prob_array(self) -> None:
-        """Verify that the probability array is correct"""
+        """Test and verify that the probability array is correct"""
         # First verify the default parameters
         series_params = SeriesParams()
         prob_array = series_params.prob_array

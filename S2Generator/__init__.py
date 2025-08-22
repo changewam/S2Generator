@@ -7,6 +7,7 @@ __all__ = [
     "NodeList",
     # "Params",
     "SeriesParams",
+    "SymbolParams",
     "Generator",
     "plot_series",
     "plot_symbol",
@@ -20,7 +21,7 @@ from .base import Node, NodeList
 
 # Parameter control of S2 data generation
 # from .params import Params
-from .params import SeriesParams
+from .params import SeriesParams, SymbolParams
 
 # S2 Data Generator
 # TODO: 在这里的Generator中可以给出一个参数来控制是否显示生成的信息

@@ -12,38 +12,52 @@ import numpy as np
 from typing import Optional, Union, Dict, List, Tuple
 
 
+def check_inputs_probability(probability: float) -> float:
+    """
+    Check if probability is between 0 and 1.
+
+    :param probability: The user inputs probability.
+    :return: The legal probability.
+    """
+    if probability < 0 or probability > 1:
+        raise ValueError("Probability must be between 0 and 1.")
+    return probability
+
+
 class SymbolParams(object):
     """Parameter Control The Generation of Complex Systems (Symbolic Expression) in S2 (Series-Symbol) Data Generation."""
 
     def __init__(
-            self,
-            prob_const: Optional[float] = 0.0,
-            prob_rand: Optional[float] = 0.0,
-            min_binary_ops_per_dim: Optional[int] = 0,
-            max_binary_ops_per_dim: Optional[int] = 1,
-            max_binary_ops_offset: Optional[int] = 4,
-            min_unary_ops: Optional[int] = 0,
-            max_unary_ops: Optional[int] = 5,
-            float_precision: Optional[int] = 3,
-            mantissa_len: Optional[int] = 1,
-            max_int: Optional[int] = 10,
-            max_exponent: Optional[int] = 3,
-            max_exponent_prefactor: Optional[int] = 1,
-            use_abs: Optional[bool] = True,
-            operators_to_downsample: Optional[str] = None,
-            max_unary_depth: Optional[int] = 6,
-            required_operators: Optional[str] = "",
-            extra_unary_operators: Optional[str] = "",
-            extra_binary_operators: Optional[str] = "",
-            extra_constants: Optional[str] = "",
-            use_sympy: Optional[bool] = False,
-            reduce_num_constants: Optional[bool] = True,
-            solve_diff: Optional[int] = 0,
-            decimals: Optional[int] = 6,
+        self,
+        prob_rand: Optional[
+            float
+        ] = 0.25,  # TODO: 需要给符号表达式增添一个措施使其不管怎么与都起码有一个叶子节点
+        prob_const: Optional[float] = 0.25,
+        min_binary_ops_per_dim: Optional[int] = 0,
+        max_binary_ops_per_dim: Optional[int] = 1,
+        max_binary_ops_offset: Optional[int] = 4,
+        min_unary_ops: Optional[int] = 0,
+        max_unary_ops: Optional[int] = 5,
+        float_precision: Optional[int] = 3,
+        mantissa_len: Optional[int] = 1,
+        max_int: Optional[int] = 10,
+        max_exponent: Optional[int] = 3,
+        max_exponent_prefactor: Optional[int] = 1,
+        use_abs: Optional[bool] = True,
+        operators_to_downsample: Optional[str] = None,
+        max_unary_depth: Optional[int] = 6,
+        required_operators: Optional[str] = "",
+        extra_unary_operators: Optional[str] = "",
+        extra_binary_operators: Optional[str] = "",
+        extra_constants: Optional[str] = "",
+        use_sympy: Optional[bool] = False,
+        reduce_num_constants: Optional[bool] = True,
+        solve_diff: Optional[int] = 0,
+        decimals: Optional[int] = 6,
     ) -> None:
         """
-        :param prob_const: Probability to generate integer in leafs.
         :param prob_rand: Probability to generate n in leafs.
+        :param prob_const: Probability to generate integer in leafs.
         :param min_binary_ops_per_dim: Min number of binary operators per input dimension.
         :param max_binary_ops_per_dim: Max number of binary operators per input dimension.
         :param max_binary_ops_offset: Offset for max number of binary operators.
@@ -67,7 +81,11 @@ class SymbolParams(object):
         :param decimals: Number of digits reserved for floating-point numbers in symbolic expressions.
         """
         # Parameters about leaf node generation constants and random number probabilities
-        self.prob_const, self.prob_rand = prob_const, prob_rand
+        # 这两个参数的控制在`generate_leaf`方法中有所体现
+        self.prob_const, self.prob_rand = check_inputs_probability(
+            probability=prob_const
+        ), check_inputs_probability(probability=prob_rand)
+        self.fix_inputs_prob_rand()
 
         # Maximum and minimum numbers of unary and binary operators
         self.min_binary_ops_per_dim, self.max_binary_ops_per_dim = (
@@ -111,9 +129,16 @@ class SymbolParams(object):
         )
         self.extra_constants = extra_constants
         self.use_sympy = use_sympy
+
+        # This traversal controls whether to perform radiation transformations
+        # to further increase the diversity of symbolic expressions
         self.reduce_num_constants = reduce_num_constants
 
     @property
     def operators_to_downsample(self) -> str:
         """Get the string of operators to be removed."""
         return self._operators_to_downsample
+
+    def fix_inputs_prob_rand(self) -> None:
+        """Control the probability of random number generation for input not to be too large"""
+        self.prob_rand = min(self.prob_rand, 0.5)

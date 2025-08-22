@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 
 if __name__ == "__main__":
     # Creating a test case loader
-    test_suite = unittest.defaultTestLoader.discover("", "*test_*.py")
+    test_suite = unittest.defaultTestLoader.discover(".", "*test_*.py")
     # Test case runner
     test_runner = unittest.TextTestRunner(
         resultclass=unittest.TextTestResult, verbosity=2
