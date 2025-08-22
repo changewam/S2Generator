@@ -16,7 +16,7 @@ from scipy.stats import special_ortho_group
 
 from typing import Optional, Union, Tuple, List
 
-from S2Generator.params import Params
+from S2Generator.old_params import Params
 from S2Generator.base import Node, NodeList
 from S2Generator.base import operators_real
 from S2Generator.base import math_constants, all_operators, SPECIAL_WORDS

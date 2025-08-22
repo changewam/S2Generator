@@ -6,9 +6,8 @@ Created on 2025/08/19 11:06:31
 @url: https://github.com/wwhenxuan/S2Generator
 """
 import numpy as np
-from pysdkit.utils import max_min_normalization
 
-from typing import Optional, Union, Dict, List
+from typing import Optional, Dict, List
 
 
 class SeriesParams(object):
@@ -69,7 +68,49 @@ class SeriesParams(object):
         dtype: np.dtype = np.float64,
     ):
         """
-
+        :param mixed_distribution: The probability of generating using the mixed distribution sampling.
+        :param autoregressive_moving_average: The probability of generating using the autoregressive moving average.
+        :param forecast_pfn: The probability of generating using the forecast pattern.
+        :param kernel_synth: The probability of generating using the kernel synthesis.
+        :param intrinsic_mode_function: The probability of generating using the intrinsic mode function.
+        :param min_centroids: Minimum number of distributions used in mixture distribution sampling.
+        :param max_centroids: Maximum number of distributions used in mixture distribution sampling.
+        :param rotate: Whether to rotate the generated distribution or not.
+        :param gaussian: Whether to use Gaussian distribution in mixed distribution sampling.
+        :param uniform: Whether to use uniform distribution in mixed distribution sampling.
+        :param mixed_distribution_dict: A dictionary that determines the probability of a certain distribution being sampled in a mixed distribution.
+        :param mixed_distribution_list: A list that determines the probability of a certain distribution being sampled from a mixed distribution.
+        :param p_min: Minimum value for the AR(p) process in Autoregressive model.
+        :param p_max: Maximum value for the AR(p) process in Autoregressive model.
+        :param q_min: Minimum value for the MA(q) process in Moving Average model.
+        :param q_max: Maximum value for the MA(q) process in Moving Average model.
+        :param upper_bound: Upper bound for the ARMA(p, q) process.
+        :param is_sub_day: Enable sub-daily frequency components (minutes/hours).
+        :param transition: Enable smooth transitions between frequency components.
+        :param start_time: Start timestamp for generated series (ISO format: YYYY-MM-DD).
+        :param end_time: End timestamp for generated series. Uses current date if None.
+        :param random_walk: Enable random walk transformation for non-stationary series.
+        :param min_kernels: The minimum number of kernels to use.
+        :param max_kernels: Max number of kernels for the input distribution in KernelSynth methods.
+        :param exp_sine_squared: Boolean, whether to use the exponential square root of kernel.
+        :param dot_product: Boolean, whether to use the dot product of kernel length and kernel.
+        :param rbf: Boolean, whether to use the RBF kernel.
+        :param rational_quadratic: Boolean, whether to use the rational quadratic kernel.
+        :param white_kernel: Boolean, whether to use the white kernel.
+        :param constant_kernel: Boolean, whether to use the constant kernel.
+        :param min_base_imfs: Minimum number of fundamental IMF components to generate.
+        :param max_base_imfs: Maximum number of fundamental IMF components to generate.
+        :param min_choice_imfs: Minimum number of IntrinsicModeFunction to select from available types.
+        :param max_choice_imfs: Maximum number of IntrinsicModeFunction to select from available types.
+        :param probability_dict: Custom probability distribution for IMF types, with keys matching available IMF names.
+        :param probability_list: Custom probability weights for IMF types in predefined order (overrides probability_dict).
+        :param min_duration: Minimum signal duration in seconds.
+        :param max_duration: Maximum signal duration in seconds.
+        :param min_amplitude: Minimum amplitude for generated signal components.
+        :param max_amplitude: Maximum amplitude for generated signal components.
+        :param min_frequency: Minimum frequency for signal components (Hz).
+        :param max_frequency: Maximum frequency for signal components (Hz).
+        :param noise_level: Amplitude of Gaussian noise to add (relative to signal amplitude).
         """
         # Record the probability of generating using different incentive methods
         self._mixed_distribution = mixed_distribution
@@ -172,7 +213,18 @@ class SeriesParams(object):
         )
 
         # Normalizes and returns the probability array of the sampling method of the stimulus time series
-        return max_min_normalization(prob_array)
+        return prob_array / np.sum(prob_array)
+
+    @property
+    def sampling_methods(self) -> List[str]:
+        """Returns a list of various sampling methods"""
+        return [
+            "mixed_distribution",
+            "autoregressive_moving_average",
+            "forecast_pfn",
+            "kernel_synth",
+            "intrinsic_mode_function",
+        ]
 
     @property
     def prob_array(self) -> np.ndarray:

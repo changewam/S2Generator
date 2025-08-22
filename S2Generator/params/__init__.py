@@ -9,3 +9,4 @@ Created on 2025/08/19 11:03:53"
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+from ._series_params import SeriesParams
