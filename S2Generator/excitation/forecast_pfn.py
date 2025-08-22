@@ -97,10 +97,10 @@ class SeriesConfig:
 
 
 def weibull_noise(
-        rng: np.random.RandomState,
-        k: Optional[float] = 2,
-        length: Optional[int] = 1,
-        median: Optional[float] = 1,
+    rng: np.random.RandomState,
+    k: Optional[float] = 2,
+    length: Optional[int] = 1,
+    median: Optional[float] = 1,
 ) -> np.ndarray:
     """
     Function to generate weibull noise with a fixed median.
@@ -126,7 +126,7 @@ def weibull_noise(
 
 
 def shift_axis(
-        days: pd.DatetimeIndex, shift: Optional[pd.DatetimeIndex] = None
+    days: pd.DatetimeIndex, shift: Optional[pd.DatetimeIndex] = None
 ) -> pd.DatetimeIndex:
     """
     Used to adjust the relative position of a time series (or other numerical series),
@@ -142,7 +142,7 @@ def shift_axis(
 
 
 def get_random_walk_series(
-        rng: np.random.RandomState, length: int, movements: Optional[List[int]] = None
+    rng: np.random.RandomState, length: int, movements: Optional[List[int]] = None
 ):
     """
     Function to generate a random walk series with a specified length.
@@ -232,7 +232,7 @@ def get_transition_coefficients(context_length: int) -> np.ndarray:
 
 
 def make_series_trend(
-        series: SeriesConfig, dates: pd.DatetimeIndex
+    series: SeriesConfig, dates: pd.DatetimeIndex
 ) -> np.ndarray[Any, np.dtype[Any]]:
     """
     Function to generate the trend(t) component of synthetic series.
@@ -253,10 +253,10 @@ def make_series_trend(
 
 
 def get_freq_component(
-        rng: np.random.RandomState,
-        dates_feature: pd.Index,
-        n_harmonics: Union[int, float],
-        n_total: Union[int, float],
+    rng: np.random.RandomState,
+    dates_feature: pd.Index,
+    n_harmonics: Union[int, float],
+    n_total: Union[int, float],
 ) -> np.ndarray | Any:
     """
     Method to get systematic movement of values across time
@@ -303,7 +303,7 @@ def get_freq_component(
 
 
 def make_series_seasonal(
-        rng: np.random.RandomState, series: SeriesConfig, dates: pd.DatetimeIndex
+    rng: np.random.RandomState, series: SeriesConfig, dates: pd.DatetimeIndex
 ) -> Any:
     """
     Function to generate the seasonal(t) component of synthetic series.
@@ -347,13 +347,13 @@ def make_series_seasonal(
 
 
 def make_series(
-        rng: np.random.RandomState,
-        series: SeriesConfig,
-        freq: pd.DateOffset,
-        periods: int,
-        start: pd.Timestamp,
-        options: dict,
-        random_walk: bool,
+    rng: np.random.RandomState,
+    series: SeriesConfig,
+    freq: pd.DateOffset,
+    periods: int,
+    start: pd.Timestamp,
+    options: dict,
+    random_walk: bool,
 ) -> Dict[str, pd.Series | np.ndarray | pd.DataFrame | DatetimeIndex]:
     """
     make series of the following form
@@ -384,7 +384,7 @@ def make_series(
         # expected value of this term is 0
         # for no noise, scale is set to 0
         scaled_noise_term = series.noise_config.scale * (
-                weibull_noise_term - noise_expected_val
+            weibull_noise_term - noise_expected_val
         )
 
     dataframe_data = {
@@ -417,13 +417,13 @@ class ForecastPFN(BaseExcitation):
     """
 
     def __init__(
-            self,
-            is_sub_day: Optional[bool] = True,
-            transition: Optional[bool] = True,
-            start_time: Optional[str] = "1885-01-01",
-            end_time: Optional[str] = None,
-            random_walk: bool = False,
-            dtype: np.dtype = np.float64,
+        self,
+        is_sub_day: Optional[bool] = True,
+        transition: Optional[bool] = True,
+        start_time: Optional[str] = "1885-01-01",
+        end_time: Optional[str] = None,
+        random_walk: bool = False,
+        dtype: np.dtype = np.float64,
     ) -> None:
         """
         Initializes the time series generator with configuration parameters.
@@ -483,10 +483,10 @@ class ForecastPFN(BaseExcitation):
         self._time_series_config: Optional[SeriesConfig] = None
 
     def __call__(
-            self,
-            rng: np.random.RandomState,
-            n_inputs_points: int = 512,
-            input_dimension: int = 1,
+        self,
+        rng: np.random.RandomState,
+        n_inputs_points: int = 512,
+        input_dimension: int = 1,
     ) -> np.ndarray:
         """Call the `generate` method to stimulate time series generation"""
         return self.generate(
@@ -570,7 +570,7 @@ class ForecastPFN(BaseExcitation):
         )
 
     def set_frequency_components(
-            self, rng: np.random.RandomState, frequency: str
+        self, rng: np.random.RandomState, frequency: str
     ) -> None:
         """
         Configures frequency component weights based on input frequency type.
@@ -622,15 +622,15 @@ class ForecastPFN(BaseExcitation):
             )
 
     def get_component_scale_config(
-            self,
-            base: float,
-            linear: Optional[float] = None,
-            exp: Optional[float] = None,
-            annual: Optional[np.ndarray] = None,
-            monthly: Optional[np.ndarray] = None,
-            weekly: Optional[np.ndarray] = None,
-            hourly: Optional[np.ndarray] = None,
-            minutely: Optional[np.ndarray] = None,
+        self,
+        base: float,
+        linear: Optional[float] = None,
+        exp: Optional[float] = None,
+        annual: Optional[np.ndarray] = None,
+        monthly: Optional[np.ndarray] = None,
+        weekly: Optional[np.ndarray] = None,
+        hourly: Optional[np.ndarray] = None,
+        minutely: Optional[np.ndarray] = None,
     ) -> ComponentScale:
         """
         Creates scaling configuration for time series components.
@@ -676,7 +676,7 @@ class ForecastPFN(BaseExcitation):
 
     @staticmethod
     def get_component_noise_config(
-            k: float, median: float, scale: float
+        k: float, median: float, scale: float
     ) -> ComponentNoise:
         """
         Creates noise configuration for time series generation.
@@ -704,10 +704,10 @@ class ForecastPFN(BaseExcitation):
         return config
 
     def get_time_series_config(
-            self,
-            scale_config: ComponentScale = None,
-            offset_config: ComponentScale = None,
-            noise_config: ComponentNoise = None,
+        self,
+        scale_config: ComponentScale = None,
+        offset_config: ComponentScale = None,
+        noise_config: ComponentNoise = None,
     ) -> SeriesConfig:
         """
         Creates comprehensive configuration for time series generation.
@@ -736,13 +736,13 @@ class ForecastPFN(BaseExcitation):
         return config
 
     def generate_series(
-            self,
-            rng: np.random.RandomState,
-            length=100,
-            freq_index: int = None,
-            start: pd.Timestamp = None,
-            options: Optional[dict] = None,
-            random_walk: bool = False,  # TODO: 是否可以添加为类属性
+        self,
+        rng: np.random.RandomState,
+        length=100,
+        freq_index: int = None,
+        start: pd.Timestamp = None,
+        options: Optional[dict] = None,
+        random_walk: bool = False,  # TODO: 是否可以添加为类属性
     ) -> Dict[str, pd.Series | np.ndarray | pd.DataFrame | DatetimeIndex]:
         """
         Function to construct synthetic series configs and generate synthetic series.
@@ -828,12 +828,12 @@ class ForecastPFN(BaseExcitation):
         )
 
     def _select_ndarray_from_dict(
-            self,
-            rng: np.random.RandomState,
-            length: int = 100,
-            freq_index: int = None,
-            start: pd.Timestamp = None,
-            options: Optional[dict] = None,
+        self,
+        rng: np.random.RandomState,
+        length: int = 100,
+        freq_index: int = None,
+        start: pd.Timestamp = None,
+        options: Optional[dict] = None,
     ) -> np.ndarray:
         """
         This method is internal and does not support external calls.
@@ -874,8 +874,8 @@ class ForecastPFN(BaseExcitation):
         if self.transition:
             coefficients = get_transition_coefficients(context_length=length)
             values = (
-                    coefficients * series1["values"]
-                    + (1 - coefficients) * series2["values"]
+                coefficients * series1["values"]
+                + (1 - coefficients) * series2["values"]
             )
         else:
             values = series1["values"]
@@ -884,14 +884,14 @@ class ForecastPFN(BaseExcitation):
         return values
 
     def generate(
-            self,
-            rng: np.random.RandomState,
-            n_inputs_points: int = 512,
-            input_dimension: int = 1,
-            freq_index: Optional[int] = None,
-            start: Optional[pd.Timestamp] = None,
-            options: Optional[Dict] = None,
-            random_walk: Optional[bool] = None,
+        self,
+        rng: np.random.RandomState,
+        n_inputs_points: int = 512,
+        input_dimension: int = 1,
+        freq_index: Optional[int] = None,
+        start: Optional[pd.Timestamp] = None,
+        options: Optional[Dict] = None,
+        random_walk: Optional[bool] = None,
     ) -> np.ndarray:
         """
         Generates time series using the ForecastPFN algorithm.

@@ -1,24 +1,35 @@
 # -*- coding: utf-8 -*-
 """
-该模块用于构建多种不同激励时间序列生成的统一接口。
-并为多种不同的数据生成机制分配其特定的参数进行管理。
+This module is used to build a unified interface for generating time series using various different incentives.
+It also manages the allocation of specific parameters for various data generation mechanisms.
 
-Created on 2025/08/18 23:31:37"
+Created on 2025/08/18 23:31:37
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan
 """
 import numpy as np
 
+from S2Generator.excitation import (
+    MixedDistribution,
+    AutoregressiveMovingAverage,
+    ForecastPFN,
+    KernelSynth,
+    IntrinsicModeFunction,
+)
 
-from S2Generator.excitation import MixedDistribution, AutoregressiveMovingAverage, ForecastPFN, KernelSynth, IntrinsicModeFunction
 
 class Excitation(object):
 
     def __init__(self, series_params) -> None:
         pass
 
+    def generate(
+        self,
+    ) -> np.ndarray:
+        pass
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     md = MixedDistribution()
     print(md)
