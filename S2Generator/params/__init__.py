@@ -9,4 +9,8 @@ Created on 2025/08/19 11:03:53"
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+# Parameters used to control the generation of stimulus time series data
 from ._series_params import SeriesParams
+
+# Parameters used to generate complex systems (symbolic expressions)
+from ._symbol_params import SymbolParams

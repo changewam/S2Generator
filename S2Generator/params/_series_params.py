@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+This module mainly stores the parameters used to control the generation of the stimulus time series.
+
 Created on 2025/08/19 11:06:31
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
