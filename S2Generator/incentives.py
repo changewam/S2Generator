@@ -23,7 +23,7 @@ from sklearn.gaussian_process.kernels import (
 
 from typing import Tuple, List, Optional
 
-from S2Generator.params import Params
+from S2Generator.old_params import Params
 
 
 class Incentives(object):

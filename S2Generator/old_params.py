@@ -17,7 +17,7 @@ class Params(object):
         min_output_dimension: Optional[int] = 1,
         max_output_dimension: Optional[int] = 12,
         n_points: Optional[int] = 256,
-        max_trials: Optional[int] = 128,
+        max_trials: Optional[int] = 128,  # Done
         max_int: Optional[int] = 10,
         prob_const: Optional[float] = 0.0,
         prob_rand: Optional[float] = 0.0,

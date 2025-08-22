@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+TODO: 可以读取用户提供的复杂系统
+
 Created on 2025/01/23 17:37:24
 @author: Whenxuan Wang, Yifan Wu
 @email: wwhenxuan@gmail.com, wy3370868155@outlook.com
@@ -14,7 +16,7 @@ from scipy.stats import special_ortho_group
 
 from typing import Optional, Union, Tuple, List
 
-from S2Generator.params import Params
+from S2Generator.old_params import Params
 from S2Generator.base import Node, NodeList
 from S2Generator.base import operators_real
 from S2Generator.base import math_constants, all_operators, SPECIAL_WORDS
@@ -148,7 +150,7 @@ class Generator(object):
         self.equation_words = sorted(list(set(self.symbols)))
         self.equation_words = special_words + self.equation_words
         # breakpoint()
-        self.n_used_dims = None
+
         self.decimals = (
             self.params.decimals
         )  # Number of decimal places for floating-point numbers in symbolic expressions
@@ -160,6 +162,9 @@ class Generator(object):
         self.q_min, self.q_max = params.q_min, params.q_max
 
         self.rotate = params.rotate
+
+        # 记录符号表达式中目前已经生成了多少个维度的变量了
+        self._n_used_dims = 0
 
     def generate_dist(self, max_ops: int) -> List:
         """
@@ -209,21 +214,38 @@ class Generator(object):
         return str(rng.choice(self.constants + self.extra_constants))
 
     def generate_leaf(self, rng: RandomState, input_dimension: int) -> str:
-        """Generate a leaf node in the sampling expression"""
+        """
+        Generate a leaf node in the sampling expression.
+
+        The logic behind this code generation process first determines whether to generate a random number.
+        If no random number is generated, leaf node variables are generated.
+        If all leaf node variables have been traversed and there are still leaf nodes remaining,
+        integer nodes or random leaf nodes are generated based on the specified probability.
+
+        :param rng: The random number generator in NumPy with fixed seed.
+        :param input_dimension: The dimension of the symbolic expression.
+        :return: The leaf node, rand, x_{dimension} or int.
+        """
         if rng.rand() < self.prob_rand:
+            # Prioritize random number generation nodes
             return "rand"  # Generate a random number
         else:
             if self.n_used_dims < input_dimension:
                 # When the number of used variables is less than the specified number
                 dimension = self.n_used_dims
-                self.n_used_dims += 1
+                # self.n_used_dims += 1
+                # Add the already used dimension
+                self.add_used_dims(dims=1)
                 return f"x_{dimension}"
             else:
                 # Generate an integer or a random symbolic variable
                 draw = rng.rand()
                 if draw < self.prob_const:
+                    # Generate random constant leaf nodes
                     return self.generate_int(rng)
                 else:
+                    # When all dimensions have been traversed
+                    # And if there are still free leaf nodes, return a random traversal node
                     dimension = rng.randint(0, input_dimension)
                     return f"x_{dimension}"
 
@@ -259,11 +281,38 @@ class Generator(object):
         e %= nb_empty
         return e, arity
 
+    @property
+    def n_used_dims(self) -> int:
+        """Get the number of nodes currently generated (the used dimensions)"""
+        return self._n_used_dims
+
+    def reset_used_dims(self) -> None:
+        """Reset the used dimensions to zero"""
+        self._n_used_dims = 0
+
+    def add_used_dims(self, dims: Optional[int] = 1) -> None:
+        """
+        Add the used dimensions to the current used dimensions.
+
+        :param dims: Number of used dimensions, defaults to 1.
+        :return: None.
+        """
+        self._n_used_dims += dims
+
     def generate_tree(
         self, rng: RandomState, nb_binary_ops: int, input_dimension: int
     ) -> Node:
-        """Function to generate a tree, which is essentially an expression"""
-        self.n_used_dims = 0
+        """
+        Function to generate a tree, which is essentially an expression.
+
+        :param rng: The random number generator in NumPy with fixed seed.
+        :param nb_binary_ops: Number of binary operators used in a binary expression.
+        :param input_dimension: Number of dimensions used in a binary expression.
+        :return: The generated tree (symbolic expression or complex system).
+        """
+        # Reset the pointer that currently records the number of generated nodes
+        self.reset_used_dims()
+
         tree = Node(0, self.params)  # Initialize the first root node of the tree
         empty_nodes = [tree]
         next_en = 0
@@ -296,6 +345,24 @@ class Generator(object):
         nb_binary_ops: Optional[int] = None,
         return_all: bool = False,
     ):
+        """
+        Generates a multivariate set of symbolic expressions with channel
+        dependencies based on input parameters and a random number generator.
+
+        Specific steps for generating a tree:
+        (1) Determine hyperparameters: First, determine the relevant hyperparameters. If the user specifies them, use the user-input parameters; otherwise, randomly generate the parameters.
+        (2) Generate the trunk of the binary tree: Use binary operators to form the basic structure of the symbolic expression and add leaf nodes of random numbers and variables.
+        (3) Add unary operators: Randomly insert unary operators into the constructed binary tree data to enrich its operations.
+        (4) Final improvement: Add other variables or perform radial transformations to further improve its diversity.
+
+        :param rng: The random number generator in NumPy with fixed seed.
+        :param input_dimension: Number of input dimensions in the target symbolic expression to be generated.
+        :param output_dimension: Number of output dimensions in the generated symbolic expression to be generated.
+        :param nb_unary_ops: Number of binary operators used in a binary expression.
+        :param nb_binary_ops: Number of binary operators used in a binary expression.
+        :param return_all: Whether to return all information in the generation of the trees.
+        :return: The generated trees (symbolic expression or complex system).
+        """
         trees = []  # Initialize a list to store multiple symbolic expressions
         if input_dimension is None:
             # If the input dimension is not specified, initialize it randomly
@@ -313,6 +380,7 @@ class Generator(object):
             # If the number of binary operators is not specified, initialize it based on the input dimension
             min_binary_ops = self.min_binary_ops_per_dim * input_dimension
             max_binary_ops = self.max_binary_ops_per_dim * input_dimension
+
             # Initialize randomly within the range of minimum to maximum operators plus an offset
             nb_binary_ops_to_use = [
                 rng.randint(
@@ -320,11 +388,13 @@ class Generator(object):
                 )
                 for dim in range(output_dimension)
             ]  # Initialize for each dimension
-        # If a specific number is provided, use that number for each dimension
+
         elif isinstance(nb_binary_ops, int):
+            # If a specific number is provided, use that number for each dimension
             nb_binary_ops_to_use = [nb_binary_ops for _ in range(output_dimension)]
-        # If it's not a number, it must be a list
+
         else:
+            # If it's not a number, it must be a list
             nb_binary_ops_to_use = nb_binary_ops
 
         if nb_unary_ops is None:
@@ -338,13 +408,14 @@ class Generator(object):
         else:
             nb_unary_ops_to_use = nb_unary_ops
 
-        for i in range(
-            output_dimension
-        ):  # Iterate over the specified number of output dimensions to generate data
+        for i in range(output_dimension):
+            # Iterate over the specified number of output dimensions to generate data
             # Generate a binary tree as the basic framework
             tree = self.generate_tree(rng, nb_binary_ops_to_use[i], input_dimension)
+
             # Insert unary operators into the binary tree
             tree = self.add_unaries(rng, tree, nb_unary_ops_to_use[i])
+
             # Adding constants
             if self.params.reduce_num_constants:
                 tree = self.add_prefactors(rng, tree)
@@ -353,10 +424,11 @@ class Generator(object):
                 tree = self.add_linear_transformations(rng, tree, target=self.variables)
                 tree = self.add_linear_transformations(rng, tree, target=self.unaries)
             trees.append(tree)  # Add to the specified storage list
+
         # Construct a data structure to store multi-dimensional symbolic expressions
         tree = NodeList(trees)
 
-        if return_all is True:
+        if return_all:
             # Iterate over the expressions to count the used symbols
             nb_unary_ops_to_use = [
                 len([x for x in tree_i.prefix().split(",") if x in self.unaries])
@@ -372,7 +444,7 @@ class Generator(object):
                     rng, input_dimension, output_dimension, nb_unary_ops, nb_binary_ops
                 )
 
-        if return_all is True:
+        if return_all:
             return (
                 tree,
                 input_dimension,
@@ -802,9 +874,6 @@ class Generator(object):
                     )
                 else:
                     raise ValueError("Unknown sampling type!")
-
-            # for test
-            print(x[0].shape)
 
             # Standardize the multi-channels sequences obtained from sampling
             x = np.hstack(x)
