@@ -21,14 +21,13 @@ __all__ = [
 from .base import Node, NodeList
 
 # Parameter control of S2 data generation
-# from .params import Params
 from .params import SeriesParams, SymbolParams
 
 # S2 Data Generator
 # TODO: 在这里的Generator中可以给出一个参数来控制是否显示生成的信息
 from .generators import Generator
 
-# 生成激励时间序列数据的通用接口
+# Generic interface for generating stimulus time series data
 from .excitation import Excitation
 
 # Visualize the generated S2 object
@@ -54,6 +53,7 @@ def print_ascii() -> None:
 def print_hello() -> None:
     print("Hello, S2Generator!")
     print("=" * 30)
+    print("Version:", __version__)
     print(
         "This is a Python package for generating time series data with symbolic representations."
     )

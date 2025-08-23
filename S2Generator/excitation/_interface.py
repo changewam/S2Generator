@@ -26,17 +26,16 @@ from S2Generator.utils import z_score_normalization, max_min_normalization
 class Excitation(object):
 
     def __init__(self, series_params: Optional[SeriesParams] = None) -> None:
-        # 选择用户输入设置的超参数或是
+        """ """
+        # Select hyperparameters set by user input
         self._series_params = (
             series_params if series_params is not None else SeriesParams()
         )
 
-        # 根据用户输入的超参数创建算法实例对象
+        # Create an algorithm instance object based on the hyperparameters entered by the user
         self._sampling_dict = self.create_sampling_dict(
             series_params=self._series_params
         )
-
-        # 根据概率选择对参数进行实例化
 
     def create_sampling_dict(
         self, series_params: Optional[SeriesParams] = None
@@ -79,7 +78,7 @@ class Excitation(object):
         self, series_params: Optional[SeriesParams] = None
     ) -> MixedDistribution:
         """
-        构建混合分布采样的激励时间序列生成。
+        Constructing excitation time series generation for sampling from mixture distributions.
 
         :param series_params: The parameters for generating management incentive time series data.
         :return:
@@ -100,7 +99,7 @@ class Excitation(object):
         self, series_params: Optional[SeriesParams] = None
     ) -> AutoregressiveMovingAverage:
         """
-        构建混合分布采样的激励时间序列生成。
+        Constructing excitation time series generation for sampling from autoregressive moving averages process.
 
         :param series_params: The parameters for generating management incentive time series data.
         :return:
@@ -119,7 +118,7 @@ class Excitation(object):
         self, series_params: Optional[SeriesParams] = None
     ) -> ForecastPFN:
         """
-        构建混合分布采样的激励时间序列生成。
+        Constructing excitation time series generation for sampling from ForecastPFN.
 
         :param series_params: The parameters for generating management incentive time series data.
         :return:
@@ -138,7 +137,7 @@ class Excitation(object):
         self, series_params: Optional[SeriesParams] = None
     ) -> KernelSynth:
         """
-        构建混合分布采样的激励时间序列生成。
+        Constructing excitation time series generation for sampling from KernelSynth.
 
         :param series_params: The parameters for generating management incentive time series data.
         :return:
@@ -160,7 +159,7 @@ class Excitation(object):
         self, series_params: Optional[SeriesParams] = None
     ) -> IntrinsicModeFunction:
         """
-        构建混合分布采样的激励时间序列生成。
+        Constructing excitation time series generation for sampling from intrinsic mode function.
 
         :param series_params: The parameters for generating management incentive time series data.
         :return:
@@ -226,10 +225,10 @@ class Excitation(object):
         normalization: Optional[str] = None,
     ) -> np.ndarray:
         """ """
-        # 1. 根据指定的概率随机选取不同的采样方式
+        # 1. Randomly select different sampling methods according to the specified probability
         choice_list = self.choice(rng=rng, input_dimension=input_dimension)
 
-        # 2. 遍历数组从采样字典中获取具体的可运行的实例化对象
+        # 2. Traverse the array to get the specific runnable instantiation object from the sampling dictionary
         time_series = np.hstack(
             [
                 self.sampling_dict[name].generate(
@@ -241,7 +240,7 @@ class Excitation(object):
             ]
         )
 
-        # 3. 是否要对激励时间序列数据进行标准化处理
+        # 3. Whether to normalize the stimulus time series data
         if normalization is None:
             return time_series
         if normalization == "z-score":
@@ -251,7 +250,9 @@ class Excitation(object):
             for dim in range(input_dimension):
                 time_series[:, dim] = max_min_normalization(x=time_series[:, dim])
         else:
-            raise ValueError("The normalization option must be 'z-score' or 'max-min' or None!")
+            raise ValueError(
+                "The normalization option must be 'z-score' or 'max-min' or None!"
+            )
 
         return time_series
 
@@ -262,7 +263,9 @@ if __name__ == "__main__":
     excitation = Excitation()
 
     for i in range(20, 60):
-        time_series = excitation.generate(np.random.RandomState(i), n_inputs_points=100, input_dimension=3)
+        time_series = excitation.generate(
+            np.random.RandomState(i), n_inputs_points=100, input_dimension=3
+        )
         print(time_series.shape)
         # plt.plot(time_series)
         # plt.show()
