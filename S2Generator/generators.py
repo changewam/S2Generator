@@ -17,66 +17,76 @@ from scipy.stats import special_ortho_group
 from typing import Optional, Union, Tuple, List
 
 from S2Generator.old_params import Params
+from S2Generator.params import SeriesParams, SymbolParams
 from S2Generator.base import Node, NodeList
 from S2Generator.base import operators_real
 from S2Generator.base import math_constants, all_operators, SPECIAL_WORDS
 from S2Generator.incentives import generate_KernelSynth
 from S2Generator.encoders import GeneralEncoder
+from S2Generator.excitation import Excitation
 
 
 class Generator(object):
     """Interface for constructing symbolic expressions and sampling time series"""
 
     def __init__(
-        self, params: Optional[Params] = None, special_words: Optional[dict] = None
+        self,
+            series_params: Optional[SeriesParams] = None,
+            symbol_params: Optional[SymbolParams] = None,
+            params: Optional[Params] = None, special_words: Optional[dict] = None
     ) -> None:
-        self.params = Params() if params is None else params
+        self.series_params = SeriesParams() if series_params is None else series_params
+        self.symbol_params = SymbolParams() if symbol_params is None else symbol_params
+
+
         special_words = SPECIAL_WORDS if special_words is None else special_words
-        self.prob_const = params.prob_const  # Probability to generate integer in leafs
-        self.prob_rand = params.prob_rand  # Probability to generate n in leafs
-        self.max_int = params.max_int  # Maximal integer in symbolic expressions
+        self.prob_const = symbol_params.prob_const  # Probability to generate integer in leafs
+        self.prob_rand = symbol_params.prob_rand  # Probability to generate n in leafs
+        self.max_int = symbol_params.max_int  # Maximal integer in symbolic expressions
         self.min_binary_ops_per_dim = (
-            params.min_binary_ops_per_dim
+            symbol_params.min_binary_ops_per_dim
         )  # Min number of binary operators per input dimension
         self.max_binary_ops_per_dim = (
-            params.max_binary_ops_per_dim
+            symbol_params.max_binary_ops_per_dim
         )  # Max number of binary operators per input dimension
-        self.min_unary_ops = params.min_unary_ops  # Min number of unary operators
-        self.max_unary_ops = params.max_unary_ops  # Max number of unary operators
-        # Maximum and minimum input dimensions
-        self.min_output_dimension = params.min_output_dimension
-        self.min_input_dimension = params.min_input_dimension
-        self.max_input_dimension = params.max_input_dimension
-        self.max_output_dimension = params.max_output_dimension
+        self.min_unary_ops = symbol_params.min_unary_ops  # Min number of unary operators
+        self.max_unary_ops = symbol_params.max_unary_ops  # Max number of unary operators
+
+        # Maximum and minimum input dimensions TODO: 这部分参数看来还是需要的
+        self.min_output_dimension = symbol_params.min_output_dimension
+        self.min_input_dimension = symbol_params.min_input_dimension
+        self.max_input_dimension = symbol_params.max_input_dimension
+        self.max_output_dimension = symbol_params.max_output_dimension
+
         # Maximum numerical range
-        self.max_number = 10**params.max_exponent
+        self.max_number = 10**symbol_params.max_exponent
+
         # Operators that can be used with copy
         self.operators = copy.deepcopy(operators_real)
-
         self.operators_dowsample_ratio = defaultdict(float)
-        if params.operators_to_downsample != "":
+        if symbol_params.operators_to_downsample != "":
             # Some invalid operations need to be removed, such as div0
-            for operator in self.params.operators_to_downsample.split(","):
+            for operator in self.symbol_params.operators_to_downsample.split(","):
                 operator, ratio = operator.split("_")
                 # Specify the probability of certain expressions appearing here
                 ratio = float(ratio)
                 self.operators_dowsample_ratio[operator] = ratio
 
-        if params.required_operators != "":
+        if symbol_params.required_operators != "":
             # Specify the symbolic expressions to be removed
-            self.required_operators = self.params.required_operators.split(",")
+            self.required_operators = self.symbol_params.required_operators.split(",")
         else:
             self.required_operators = []
 
-        if params.extra_binary_operators != "":
+        if symbol_params.extra_binary_operators != "":
             # Additional binary operators
-            self.extra_binary_operators = self.params.extra_binary_operators.split(",")
+            self.extra_binary_operators = self.symbol_params.extra_binary_operators.split(",")
         else:
             self.extra_binary_operators = []
 
-        if params.extra_unary_operators != "":
+        if symbol_params.extra_unary_operators != "":
             # Additional unary operators
-            self.extra_unary_operators = self.params.extra_unary_operators.split(",")
+            self.extra_unary_operators = self.symbol_params.extra_unary_operators.split(",")
         else:
             self.extra_unary_operators = []
 
@@ -135,13 +145,13 @@ class Generator(object):
             + ["|", "INT+", "INT-", "FLOAT+", "FLOAT-", "pow", "0"]
         )
         self.constants.remove("CONSTANT")
-        if self.params.extra_constants is not None:
-            self.extra_constants = self.params.extra_constants.split(",")
+        if self.symbol_params.extra_constants is not None:
+            self.extra_constants = self.symbol_params.extra_constants.split(",")
         else:
             self.extra_constants = []
 
         # Obtain the numerical encoder and symbol encoder
-        self.general_encoder = GeneralEncoder(params, self.symbols, all_operators)
+        self.general_encoder = GeneralEncoder(symbol_params, self.symbols, all_operators)
         # Encoder for input and output sequences
         self.float_encoder = self.general_encoder.float_encoder
         self.float_words = special_words + sorted(list(set(self.float_encoder.symbols)))
@@ -152,19 +162,27 @@ class Generator(object):
         # breakpoint()
 
         self.decimals = (
-            self.params.decimals
+            self.symbol_params.decimals
         )  # Number of decimal places for floating-point numbers in symbolic expressions
         # List of sampling methods
         self.num_type = len(self.sampling_type)
 
-        # Model order when generating ARMA sequences
-        self.p_min, self.p_max = params.p_min, params.p_max
-        self.q_min, self.q_max = params.q_min, params.q_max
-
-        self.rotate = params.rotate
+        # TODO: 这些参数目前已经不需要了
+        # # Model order when generating ARMA sequences
+        # self.p_min, self.p_max = params.p_min, params.p_max
+        # self.q_min, self.q_max = params.q_min, params.q_max
+        #
+        # self.rotate = params.rotate
 
         # 记录符号表达式中目前已经生成了多少个维度的变量了
         self._n_used_dims = 0
+
+        # 创建用于生成激励时间序列数据的接口
+        self.excitation = self.create_excitation(series_params=series_params)
+
+    def create_excitation(self, series_params: Optional[SeriesParams] = None) -> Excitation:
+        """"""
+        return Excitation(series_params=self.series_params if series_params is None else series_params)
 
     def generate_dist(self, max_ops: int) -> List:
         """

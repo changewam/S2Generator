@@ -8,6 +8,7 @@ import numpy as np
 from numpy import ndarray
 from S2Generator.base import Node, NodeList
 from S2Generator.old_params import Params
+from S2Generator.params import SymbolParams
 
 from typing import Union, List, Dict, Tuple
 
@@ -16,7 +17,7 @@ class GeneralEncoder(object):
     """General encoder for handling S2 data"""
 
     def __init__(
-        self, params: Params, symbols: List[str], all_operators: Dict[str, str]
+        self, params: SymbolParams, symbols: List[str], all_operators: Dict[str, str]
     ) -> None:
         # Create a numerical encoder
         self.float_encoder = FloatSequences(params)
@@ -29,7 +30,7 @@ class GeneralEncoder(object):
 class FloatSequences(object):
     """Float number encoder for S2 data generation"""
 
-    def __init__(self, params: Params) -> None:
+    def __init__(self, params: SymbolParams) -> None:
         # Floating-point precision
         self.float_precision = params.float_precision
         self.mantissa_len = params.mantissa_len
@@ -116,7 +117,7 @@ class Equation(object):
 
     def __init__(
         self,
-        params: Params,
+        params: SymbolParams,
         symbols: List[str],
         float_encoder: FloatSequences,
         all_operators: Dict[str, str],

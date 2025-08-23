@@ -28,32 +28,36 @@ class SymbolParams(object):
     """Parameter Control The Generation of Complex Systems (Symbolic Expression) in S2 (Series-Symbol) Data Generation."""
 
     def __init__(
-        self,
-        prob_rand: Optional[
-            float
-        ] = 0.25,  # TODO: 需要给符号表达式增添一个措施使其不管怎么与都起码有一个叶子节点
-        prob_const: Optional[float] = 0.25,
-        min_binary_ops_per_dim: Optional[int] = 0,
-        max_binary_ops_per_dim: Optional[int] = 1,
-        max_binary_ops_offset: Optional[int] = 4,
-        min_unary_ops: Optional[int] = 0,
-        max_unary_ops: Optional[int] = 5,
-        float_precision: Optional[int] = 3,
-        mantissa_len: Optional[int] = 1,
-        max_int: Optional[int] = 10,
-        max_exponent: Optional[int] = 3,
-        max_exponent_prefactor: Optional[int] = 1,
-        use_abs: Optional[bool] = True,
-        operators_to_downsample: Optional[str] = None,
-        max_unary_depth: Optional[int] = 6,
-        required_operators: Optional[str] = "",
-        extra_unary_operators: Optional[str] = "",
-        extra_binary_operators: Optional[str] = "",
-        extra_constants: Optional[str] = "",
-        use_sympy: Optional[bool] = False,
-        reduce_num_constants: Optional[bool] = True,
-        solve_diff: Optional[int] = 0,
-        decimals: Optional[int] = 6,
+            self,
+            prob_rand: Optional[
+                float
+            ] = 0.25,  # TODO: 需要给符号表达式增添一个措施使其不管怎么与都起码有一个叶子节点
+            prob_const: Optional[float] = 0.25,
+            min_binary_ops_per_dim: Optional[int] = 0,
+            max_binary_ops_per_dim: Optional[int] = 1,
+            max_binary_ops_offset: Optional[int] = 4,
+            min_unary_ops: Optional[int] = 0,
+            max_unary_ops: Optional[int] = 5,
+            float_precision: Optional[int] = 3,
+            mantissa_len: Optional[int] = 1,
+            max_int: Optional[int] = 10,
+            max_exponent: Optional[int] = 3,
+            max_exponent_prefactor: Optional[int] = 1,
+            use_abs: Optional[bool] = True,
+            operators_to_downsample: Optional[str] = None,
+            max_unary_depth: Optional[int] = 6,
+            required_operators: Optional[str] = "",
+            extra_unary_operators: Optional[str] = "",
+            extra_binary_operators: Optional[str] = "",
+            extra_constants: Optional[str] = "",
+            use_sympy: Optional[bool] = False,
+            reduce_num_constants: Optional[bool] = True,
+            solve_diff: Optional[int] = 0,
+            decimals: Optional[int] = 6,
+            min_input_dimension: Optional[int] = 1,
+            max_input_dimension: Optional[int] = 6,
+            min_output_dimension: Optional[int] = 1,
+            max_output_dimension: Optional[int] = 12,
     ) -> None:
         """
         :param prob_rand: Probability to generate n in leafs.
@@ -79,6 +83,10 @@ class SymbolParams(object):
         :param reduce_num_constants: Use minimal amount of constants in eqs.
         :param solve_diff: Order of differential equation solving (0: no diff, 1: first order, etc.).
         :param decimals: Number of digits reserved for floating-point numbers in symbolic expressions.
+        :param min_input_dimension: Minimum input dimension (minimum number of variables) for symbolic expressions
+        :param max_input_dimension: Maximum input dimension of symbolic expressions (maximum number of variables)
+        :param min_output_dimension: Minimum output dimension of multivariate symbolic expressions
+        :param max_output_dimension: Maximum output dimension of multivariate symbolic expressions
         """
         # Parameters about leaf node generation constants and random number probabilities
         # 这两个参数的控制在`generate_leaf`方法中有所体现
@@ -133,6 +141,15 @@ class SymbolParams(object):
         # This traversal controls whether to perform radiation transformations
         # to further increase the diversity of symbolic expressions
         self.reduce_num_constants = reduce_num_constants
+
+        self.min_input_dimension, self.max_input_dimension = (
+            min_input_dimension,
+            max_input_dimension,
+        )
+        self.min_output_dimension, self.max_output_dimension = (
+            min_output_dimension,
+            max_output_dimension,
+        )
 
     @property
     def operators_to_downsample(self) -> str:

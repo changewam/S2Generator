@@ -198,7 +198,14 @@ class Excitation(object):
         return list(self._sampling_dict.values())
 
     @property
-    def sampling_dict(self):
+    def sampling_dict(self) -> Dict[
+        str,
+        MixedDistribution
+        | AutoregressiveMovingAverage
+        | ForecastPFN
+        | KernelSynth
+        | IntrinsicModeFunction,
+    ]:
         return self._sampling_dict
 
     @property
@@ -217,12 +224,11 @@ class Excitation(object):
         n_inputs_points: int,
         input_dimension: Optional[int] = 1,
         normalize: bool = False,
-
     ) -> np.ndarray:
         """ """
         # 1. 根据指定的概率随机选取不同的采样方式
         choice_list = self.choice(rng=rng, input_dimension=input_dimension)
-        print(choice_list)
+
         # 2. 遍历数组从采样字典中获取具体的可运行的实例化对象
         time_series = np.hstack(
             [
@@ -249,9 +255,11 @@ if __name__ == "__main__":
     excitation = Excitation()
 
     for i in range(20, 60):
-        time_series = excitation.generate(np.random.RandomState(i),
-                                          n_inputs_points=100,
-                                          input_dimension=3,)
+        time_series = excitation.generate(
+            np.random.RandomState(i),
+            n_inputs_points=100,
+            input_dimension=3,
+        )
         print(time_series.shape)
         # plt.plot(time_series)
         # plt.show()
