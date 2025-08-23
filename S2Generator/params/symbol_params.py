@@ -95,9 +95,7 @@ class SymbolParams(object):
 
         # Parameters about leaf node generation constants and random number probabilities
         # 这两个参数的控制在`generate_leaf`方法中有所体现
-        self.prob_const, self.prob_rand = check_inputs_probability(
-            probability=prob_const
-        ), check_inputs_probability(probability=prob_rand)
+        self.prob_const, self.prob_rand = (check_inputs_probability(probability=prob_const), check_inputs_probability(probability=prob_rand))
         self.fix_inputs_prob_rand()
 
         # Maximum and minimum numbers of unary and binary operators

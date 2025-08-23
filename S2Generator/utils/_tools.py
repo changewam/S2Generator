@@ -3,7 +3,7 @@
 Created on 2025/08/23 17:09:18
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
-@url: https://github.com/wwhenxuan
+@url: https://github.com/wwhenxuan/S2Generator
 """
 import numpy as np
 
