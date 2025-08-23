@@ -3,6 +3,7 @@
 Created on 2025/08/13 23:47:59
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
+@url: https://github.com/wwhenxuan/S2Generator
 """
 # 通过混合分布采样的方式生成激励时间序列
 from .mixed_distribution import MixedDistribution

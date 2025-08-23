@@ -9,7 +9,6 @@ Created on 2025/08/18 23:31:37
 @url: https://github.com/wwhenxuan
 """
 import numpy as np
-from pysdkit.utils import z_score_normalization
 
 from typing import Optional, List, Tuple, Dict, Any
 
@@ -21,6 +20,7 @@ from S2Generator.excitation import (
     KernelSynth,
     IntrinsicModeFunction,
 )
+from S2Generator.utils import z_score_normalization, max_min_normalization
 
 
 class Excitation(object):
@@ -223,7 +223,7 @@ class Excitation(object):
         rng: np.random.RandomState,
         n_inputs_points: int,
         input_dimension: Optional[int] = 1,
-        normalize: bool = False,
+        normalization: Optional[str] = None,
     ) -> np.ndarray:
         """ """
         # 1. 根据指定的概率随机选取不同的采样方式
@@ -242,9 +242,16 @@ class Excitation(object):
         )
 
         # 3. 是否要对激励时间序列数据进行标准化处理
-        if normalize:
+        if normalization is None:
+            return time_series
+        if normalization == "z-score":
             for dim in range(input_dimension):
                 time_series[:, dim] = z_score_normalization(x=time_series[:, dim])
+        elif normalization == "max-min":
+            for dim in range(input_dimension):
+                time_series[:, dim] = max_min_normalization(x=time_series[:, dim])
+        else:
+            raise ValueError("The normalization option must be 'z-score' or 'max-min' or None!")
 
         return time_series
 
@@ -255,11 +262,7 @@ if __name__ == "__main__":
     excitation = Excitation()
 
     for i in range(20, 60):
-        time_series = excitation.generate(
-            np.random.RandomState(i),
-            n_inputs_points=100,
-            input_dimension=3,
-        )
+        time_series = excitation.generate(np.random.RandomState(i), n_inputs_points=100, input_dimension=3)
         print(time_series.shape)
         # plt.plot(time_series)
         # plt.show()

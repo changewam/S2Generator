@@ -5,7 +5,6 @@ __version__ = "0.0.1"
 __all__ = [
     "Node",
     "NodeList",
-    # "Params",
     "SeriesParams",
     "SymbolParams",
     "Generator",
@@ -13,7 +12,9 @@ __all__ = [
     "plot_symbol",
     "print_ascii",
     "print_hello",
+    "excitation",
     "utils",
+    "params",
 ]
 
 # The basic data structure of symbolic expressions
@@ -27,11 +28,14 @@ from .params import SeriesParams, SymbolParams
 # TODO: 在这里的Generator中可以给出一个参数来控制是否显示生成的信息
 from .generators import Generator
 
+# 生成激励时间序列数据的通用接口
+from .excitation import Excitation
+
 # Visualize the generated S2 object
-from .utils import plot_series
+from .utils.visualization import plot_series
 
 # Visualize the symbol expression
-from .utils import plot_symbol
+from .utils.visualization import plot_symbol
 
 
 def print_ascii() -> None:
