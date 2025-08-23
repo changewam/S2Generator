@@ -3,6 +3,7 @@
 Created on 2025/08/13 23:47:59
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
+@url: https://github.com/wwhenxuan/S2Generator
 """
 # 通过混合分布采样的方式生成激励时间序列
 from .mixed_distribution import MixedDistribution
@@ -18,3 +19,6 @@ from .kernel_synth import KernelSynth
 
 # 通过信号分解的观点构造周期性极强的本征模态函数来生成激励时间序列
 from .intrinsic_mode_functions import IntrinsicModeFunction
+
+# 生成激励时间序列数据的通用接口
+from ._interface import Excitation

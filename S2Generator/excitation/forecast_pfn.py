@@ -880,7 +880,6 @@ class ForecastPFN(BaseExcitation):
         else:
             values = series1["values"]
 
-        print(values.shape)
         return values
 
     def generate(

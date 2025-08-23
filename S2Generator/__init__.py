@@ -5,7 +5,6 @@ __version__ = "0.0.1"
 __all__ = [
     "Node",
     "NodeList",
-    # "Params",
     "SeriesParams",
     "SymbolParams",
     "Generator",
@@ -13,25 +12,29 @@ __all__ = [
     "plot_symbol",
     "print_ascii",
     "print_hello",
+    "excitation",
     "utils",
+    "params",
 ]
 
 # The basic data structure of symbolic expressions
 from .base import Node, NodeList
 
 # Parameter control of S2 data generation
-# from .params import Params
 from .params import SeriesParams, SymbolParams
 
 # S2 Data Generator
 # TODO: 在这里的Generator中可以给出一个参数来控制是否显示生成的信息
 from .generators import Generator
 
+# Generic interface for generating stimulus time series data
+from .excitation import Excitation
+
 # Visualize the generated S2 object
-from .utils import plot_series
+from .utils.visualization import plot_series
 
 # Visualize the symbol expression
-from .utils import plot_symbol
+from .utils.visualization import plot_symbol
 
 
 def print_ascii() -> None:
@@ -50,6 +53,7 @@ def print_ascii() -> None:
 def print_hello() -> None:
     print("Hello, S2Generator!")
     print("=" * 30)
+    print("Version:", __version__)
     print(
         "This is a Python package for generating time series data with symbolic representations."
     )

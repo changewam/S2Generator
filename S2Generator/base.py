@@ -13,7 +13,7 @@ from numpy import ndarray
 import scipy.special
 from typing import Optional, Union, List
 from scipy.integrate import cumulative_trapezoid
-from S2Generator.old_params import Params
+from S2Generator.params import SymbolParams
 from scipy.ndimage import gaussian_filter1d  # 用于平滑微分
 
 operators_real = {
@@ -65,7 +65,7 @@ class Node(object):
     """Generate a node in the sampling tree"""
 
     def __init__(
-        self, value: Union[str, int], params: Params, children: list = None
+        self, value: Union[str, int], params: SymbolParams, children: list = None
     ) -> None:
         # The specific value stored in the current node
         self.value = value

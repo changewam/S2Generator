@@ -328,14 +328,17 @@ class KernelSynth(BaseExcitation):
         length = self.length if length is None else length
 
         # Create a kernel bank with the new length
-        kernel_bank = [
-            kernel_function(length=length) for kernel_function in self.bank_list
-        ]
+        # kernel_bank = [
+        #     kernel_function(length=length) for kernel_function in self.bank_list
+        # ]
+        kernel_bank = []
+        for kernel_function in self.bank_list:
+            kernel_bank += kernel_function(length=length)
 
         return kernel_bank
 
     @property
-    def kernel_bank(self) -> List[Callable]:
+    def kernel_bank(self) -> List:
         """External interface for accessing kernel_back private properties"""
         if self._kernel_bank is None:
             # Unable to get kernel bank when `set_length` or `generate` method has not been executed
@@ -399,3 +402,13 @@ class KernelSynth(BaseExcitation):
                 for _ in range(input_dimension)
             ]
         ).T
+
+
+if __name__ == "__main__":
+    from matplotlib import pyplot as plt
+
+    rng = np.random.RandomState(10)
+    imfs_generator = KernelSynth()
+
+    plt.plot(imfs_generator.generate(rng, n_inputs_points=512, input_dimension=1))
+    plt.show()

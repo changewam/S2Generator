@@ -9,7 +9,7 @@ Created on 2025/08/19 11:07:39
 """
 import numpy as np
 
-from typing import Optional, Union, Dict, List, Tuple
+from typing import Optional
 
 
 def check_inputs_probability(probability: float) -> float:
@@ -29,6 +29,7 @@ class SymbolParams(object):
 
     def __init__(
         self,
+        max_trials: Optional[int] = 64,
         prob_rand: Optional[
             float
         ] = 0.25,  # TODO: 需要给符号表达式增添一个措施使其不管怎么与都起码有一个叶子节点
@@ -54,8 +55,13 @@ class SymbolParams(object):
         reduce_num_constants: Optional[bool] = True,
         solve_diff: Optional[int] = 0,
         decimals: Optional[int] = 6,
+        min_input_dimension: Optional[int] = 1,
+        max_input_dimension: Optional[int] = 6,
+        min_output_dimension: Optional[int] = 1,
+        max_output_dimension: Optional[int] = 12,
     ) -> None:
         """
+        :param max_trials: Maximum number of trials to generate.
         :param prob_rand: Probability to generate n in leafs.
         :param prob_const: Probability to generate integer in leafs.
         :param min_binary_ops_per_dim: Min number of binary operators per input dimension.
@@ -79,12 +85,20 @@ class SymbolParams(object):
         :param reduce_num_constants: Use minimal amount of constants in eqs.
         :param solve_diff: Order of differential equation solving (0: no diff, 1: first order, etc.).
         :param decimals: Number of digits reserved for floating-point numbers in symbolic expressions.
+        :param min_input_dimension: Minimum input dimension (minimum number of variables) for symbolic expressions
+        :param max_input_dimension: Maximum input dimension of symbolic expressions (maximum number of variables)
+        :param min_output_dimension: Minimum output dimension of multivariate symbolic expressions
+        :param max_output_dimension: Maximum output dimension of multivariate symbolic expressions
         """
+        # Handle overflow outside the domain of the generation attempt
+        self.max_trials = max_trials
+
         # Parameters about leaf node generation constants and random number probabilities
         # 这两个参数的控制在`generate_leaf`方法中有所体现
-        self.prob_const, self.prob_rand = check_inputs_probability(
-            probability=prob_const
-        ), check_inputs_probability(probability=prob_rand)
+        self.prob_const, self.prob_rand = (
+            check_inputs_probability(probability=prob_const),
+            check_inputs_probability(probability=prob_rand),
+        )
         self.fix_inputs_prob_rand()
 
         # Maximum and minimum numbers of unary and binary operators
@@ -133,6 +147,15 @@ class SymbolParams(object):
         # This traversal controls whether to perform radiation transformations
         # to further increase the diversity of symbolic expressions
         self.reduce_num_constants = reduce_num_constants
+
+        self.min_input_dimension, self.max_input_dimension = (
+            min_input_dimension,
+            max_input_dimension,
+        )
+        self.min_output_dimension, self.max_output_dimension = (
+            min_output_dimension,
+            max_output_dimension,
+        )
 
     @property
     def operators_to_downsample(self) -> str:
