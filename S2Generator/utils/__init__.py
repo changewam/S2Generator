@@ -12,3 +12,9 @@ from .visualization import plot_symbol
 
 # Transform the symbol from string to latex
 from .print_symbol import symbol_to_markdown
+
+# The z-score standardization
+from ._tools import z_score_normalization
+
+# The min-max normalization
+from ._tools import max_min_normalization

@@ -28,38 +28,40 @@ class SymbolParams(object):
     """Parameter Control The Generation of Complex Systems (Symbolic Expression) in S2 (Series-Symbol) Data Generation."""
 
     def __init__(
-            self,
-            prob_rand: Optional[
-                float
-            ] = 0.25,  # TODO: 需要给符号表达式增添一个措施使其不管怎么与都起码有一个叶子节点
-            prob_const: Optional[float] = 0.25,
-            min_binary_ops_per_dim: Optional[int] = 0,
-            max_binary_ops_per_dim: Optional[int] = 1,
-            max_binary_ops_offset: Optional[int] = 4,
-            min_unary_ops: Optional[int] = 0,
-            max_unary_ops: Optional[int] = 5,
-            float_precision: Optional[int] = 3,
-            mantissa_len: Optional[int] = 1,
-            max_int: Optional[int] = 10,
-            max_exponent: Optional[int] = 3,
-            max_exponent_prefactor: Optional[int] = 1,
-            use_abs: Optional[bool] = True,
-            operators_to_downsample: Optional[str] = None,
-            max_unary_depth: Optional[int] = 6,
-            required_operators: Optional[str] = "",
-            extra_unary_operators: Optional[str] = "",
-            extra_binary_operators: Optional[str] = "",
-            extra_constants: Optional[str] = "",
-            use_sympy: Optional[bool] = False,
-            reduce_num_constants: Optional[bool] = True,
-            solve_diff: Optional[int] = 0,
-            decimals: Optional[int] = 6,
-            min_input_dimension: Optional[int] = 1,
-            max_input_dimension: Optional[int] = 6,
-            min_output_dimension: Optional[int] = 1,
-            max_output_dimension: Optional[int] = 12,
+        self,
+        max_trials: Optional[int] = 64,
+        prob_rand: Optional[
+            float
+        ] = 0.25,  # TODO: 需要给符号表达式增添一个措施使其不管怎么与都起码有一个叶子节点
+        prob_const: Optional[float] = 0.25,
+        min_binary_ops_per_dim: Optional[int] = 0,
+        max_binary_ops_per_dim: Optional[int] = 1,
+        max_binary_ops_offset: Optional[int] = 4,
+        min_unary_ops: Optional[int] = 0,
+        max_unary_ops: Optional[int] = 5,
+        float_precision: Optional[int] = 3,
+        mantissa_len: Optional[int] = 1,
+        max_int: Optional[int] = 10,
+        max_exponent: Optional[int] = 3,
+        max_exponent_prefactor: Optional[int] = 1,
+        use_abs: Optional[bool] = True,
+        operators_to_downsample: Optional[str] = None,
+        max_unary_depth: Optional[int] = 6,
+        required_operators: Optional[str] = "",
+        extra_unary_operators: Optional[str] = "",
+        extra_binary_operators: Optional[str] = "",
+        extra_constants: Optional[str] = "",
+        use_sympy: Optional[bool] = False,
+        reduce_num_constants: Optional[bool] = True,
+        solve_diff: Optional[int] = 0,
+        decimals: Optional[int] = 6,
+        min_input_dimension: Optional[int] = 1,
+        max_input_dimension: Optional[int] = 6,
+        min_output_dimension: Optional[int] = 1,
+        max_output_dimension: Optional[int] = 12,
     ) -> None:
         """
+        :param max_trials: Maximum number of trials to generate.
         :param prob_rand: Probability to generate n in leafs.
         :param prob_const: Probability to generate integer in leafs.
         :param min_binary_ops_per_dim: Min number of binary operators per input dimension.
@@ -88,6 +90,9 @@ class SymbolParams(object):
         :param min_output_dimension: Minimum output dimension of multivariate symbolic expressions
         :param max_output_dimension: Maximum output dimension of multivariate symbolic expressions
         """
+        # Handle overflow outside the domain of the generation attempt
+        self.max_trials = max_trials
+
         # Parameters about leaf node generation constants and random number probabilities
         # 这两个参数的控制在`generate_leaf`方法中有所体现
         self.prob_const, self.prob_rand = check_inputs_probability(

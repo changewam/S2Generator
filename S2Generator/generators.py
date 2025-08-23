@@ -24,6 +24,7 @@ from S2Generator.base import math_constants, all_operators, SPECIAL_WORDS
 from S2Generator.incentives import generate_KernelSynth
 from S2Generator.encoders import GeneralEncoder
 from S2Generator.excitation import Excitation
+from S2Generator.utils import z_score_normalization
 
 
 class Generator(object):
@@ -31,16 +32,18 @@ class Generator(object):
 
     def __init__(
         self,
-            series_params: Optional[SeriesParams] = None,
-            symbol_params: Optional[SymbolParams] = None,
-            params: Optional[Params] = None, special_words: Optional[dict] = None
+        series_params: Optional[SeriesParams] = None,
+        symbol_params: Optional[SymbolParams] = None,
+        params: Optional[Params] = None,
+        special_words: Optional[dict] = None,
     ) -> None:
         self.series_params = SeriesParams() if series_params is None else series_params
         self.symbol_params = SymbolParams() if symbol_params is None else symbol_params
 
-
         special_words = SPECIAL_WORDS if special_words is None else special_words
-        self.prob_const = symbol_params.prob_const  # Probability to generate integer in leafs
+        self.prob_const = (
+            symbol_params.prob_const
+        )  # Probability to generate integer in leafs
         self.prob_rand = symbol_params.prob_rand  # Probability to generate n in leafs
         self.max_int = symbol_params.max_int  # Maximal integer in symbolic expressions
         self.min_binary_ops_per_dim = (
@@ -49,8 +52,12 @@ class Generator(object):
         self.max_binary_ops_per_dim = (
             symbol_params.max_binary_ops_per_dim
         )  # Max number of binary operators per input dimension
-        self.min_unary_ops = symbol_params.min_unary_ops  # Min number of unary operators
-        self.max_unary_ops = symbol_params.max_unary_ops  # Max number of unary operators
+        self.min_unary_ops = (
+            symbol_params.min_unary_ops
+        )  # Min number of unary operators
+        self.max_unary_ops = (
+            symbol_params.max_unary_ops
+        )  # Max number of unary operators
 
         # Maximum and minimum input dimensions TODO: 这部分参数看来还是需要的
         self.min_output_dimension = symbol_params.min_output_dimension
@@ -80,13 +87,17 @@ class Generator(object):
 
         if symbol_params.extra_binary_operators != "":
             # Additional binary operators
-            self.extra_binary_operators = self.symbol_params.extra_binary_operators.split(",")
+            self.extra_binary_operators = (
+                self.symbol_params.extra_binary_operators.split(",")
+            )
         else:
             self.extra_binary_operators = []
 
         if symbol_params.extra_unary_operators != "":
             # Additional unary operators
-            self.extra_unary_operators = self.symbol_params.extra_unary_operators.split(",")
+            self.extra_unary_operators = self.symbol_params.extra_unary_operators.split(
+                ","
+            )
         else:
             self.extra_unary_operators = []
 
@@ -151,7 +162,9 @@ class Generator(object):
             self.extra_constants = []
 
         # Obtain the numerical encoder and symbol encoder
-        self.general_encoder = GeneralEncoder(symbol_params, self.symbols, all_operators)
+        self.general_encoder = GeneralEncoder(
+            symbol_params, self.symbols, all_operators
+        )
         # Encoder for input and output sequences
         self.float_encoder = self.general_encoder.float_encoder
         self.float_words = special_words + sorted(list(set(self.float_encoder.symbols)))
@@ -180,9 +193,16 @@ class Generator(object):
         # 创建用于生成激励时间序列数据的接口
         self.excitation = self.create_excitation(series_params=series_params)
 
-    def create_excitation(self, series_params: Optional[SeriesParams] = None) -> Excitation:
+        # Handle overflow outside the domain of the generation attempt
+        self.max_trials = symbol_params.max_trials
+
+    def create_excitation(
+        self, series_params: Optional[SeriesParams] = None
+    ) -> Excitation:
         """"""
-        return Excitation(series_params=self.series_params if series_params is None else series_params)
+        return Excitation(
+            series_params=self.series_params if series_params is None else series_params
+        )
 
     def generate_dist(self, max_ops: int) -> List:
         """
@@ -936,3 +956,66 @@ class Generator(object):
             )
 
         return trees, inputs, outputs
+
+    def generate_excitation(
+        self,
+        rng: np.random.RandomState,
+        n_inputs_points: int,
+        input_dimension: int = 1,
+        normalize: Optional[bool] = False,
+    ) -> np.ndarray:
+        """
+        Generate excitation time series data with different sampling strategies.
+
+        :param rng: The random number generator in NumPy with fixed seed.
+        :param n_inputs_points: The number of points of time series to generate.
+        :param input_dimension: The number of dimensions of time series to generate.
+        :param normalize: If True, normalize the output time series.
+        :return: The generated excitation time series.
+        """
+        return self.excitation.generate(
+            rng=rng,
+            n_inputs_points=n_inputs_points,
+            input_dimension=input_dimension,
+            normalize=normalize,
+        )
+
+    def r(
+        self,
+        rng: np.random.RandomState,
+        n_inputs_points: int,
+        input_dimension: int = 1,
+        output_dimension: int = 1,
+        normalize: Optional[bool] = False,
+        max_trials: Optional[int] = None,
+    ):
+        """
+        Generate the symbolic expression (complex system) and the excitation time series.
+        """
+        # Obtain the generated symbolic expressions
+        trees, _, _ = self.generate_multi_dimensional_tree(
+            rng,
+            input_dimension=input_dimension,
+            output_dimension=output_dimension,
+            return_all=False,
+        )
+
+        # Store the generated sequence data
+        inputs, outputs = [], []
+
+        # Start generating data from the mixture distribution
+        trials = 0  # Current number of attempts
+
+        # 处理定义域外非法多次采样的重复次数
+        max_trials = self.max_trials if max_trials is None else max_trials
+
+        # Target length for sampling
+        remaining_points = n_inputs_points
+        while remaining_points > 0 and trials < max_trials:
+            # 1. create the excitation time series
+            x = self.generate_excitation(
+                rng=rng,
+                n_inputs_points=n_inputs_points,
+                input_dimension=input_dimension,
+                normalize=normalize,  # TODO: 这里需要注意
+            )
