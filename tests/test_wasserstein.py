@@ -12,7 +12,10 @@ for assessing similarity between multivariate time series datasets.
 import unittest
 import numpy as np
 
-from S2Generator.utils import wasserstein_distance
+from S2Generator.utils import (
+    wasserstein_distance,
+    wasserstein_distance_matrix,
+)
 from S2Generator.utils._wasserstein_distance import (
     dataset_max_min_normalization,
     time_series_to_distribution,
@@ -163,6 +166,28 @@ class TestWasserstein(unittest.TestCase):
         self.assertIsInstance(distance, float, msg="Distance return type error!")
         self.assertIsInstance(mean_value, float, msg="Mean value return type error!")
         self.assertIsInstance(covar_value, float, msg="Covariance return type error!")
+
+    def test_wasserstein_distance_matrix(self) -> None:
+        """测试多个时间序列数据集之间Wasserstein距离矩阵的计算"""
+        # Create the list of test datasets
+        datasets = [np.random.randn(self.n_samples, self.n_length) for _ in range(10)]
+
+        # Get the distance matrix
+        distance_matrix = wasserstein_distance_matrix(datasets)
+
+        # Test the data type of the matrix
+        self.assertIsInstance(
+            distance_matrix, np.ndarray, msg="Distance matrix type error!"
+        )
+
+        # Test the symmetric matrix
+        for i in range(10):
+            for j in range(10):
+                self.assertEqual(
+                    first=distance_matrix[i, j],
+                    second=distance_matrix[j, i],
+                    msg="Distance matrix mismatch!",
+                )
 
 
 if __name__ == "__main__":

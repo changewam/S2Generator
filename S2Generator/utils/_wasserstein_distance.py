@@ -11,8 +11,9 @@ Created on 2025/08/22 11:20:58
 """
 import numpy as np
 from numpy import signedinteger
+import matplotlib.pyplot as plt
 
-from typing import Tuple, Optional, Any
+from typing import Tuple, List, Optional, Any
 
 
 def check_inputs(data: np.ndarray) -> bool:
@@ -145,9 +146,122 @@ def wasserstein_distance(
     return None
 
 
+def wasserstein_distance_matrix(
+    data_list: List[np.ndarray],
+    mean_weight: Optional[float] = 0.5,
+    covar_weight: Optional[float] = 0.5,
+) -> np.ndarray:
+    """
+    Calculate the distances between multiple datasets in a list and form a distance matrix.
+
+    :param data_list: The ndarray dataset list in NumPy with [n_samples, n_vars, n_length].
+    :param mean_weight: The weight of the second norm of mean vector.
+    :param covar_weight: The weight of the second norm of covariance matrix.
+    :return: The Wasserstein distance matrix in for the input ndarray list.
+
+    See Also
+    --------
+    wasserstein_distance
+    """
+    # Get the length of the input list
+    num_datasets = len(data_list)
+
+    # Create the zero matrix
+    distance_matrix = np.zeros((num_datasets, num_datasets))
+
+    for i in range(num_datasets):
+        # Traverse each data set to calculate the distance
+        for j in range(i + 1, num_datasets):
+            # Handling different situations
+            distance_matrix[i, j] = wasserstein_distance(
+                x=data_list[i],
+                y=data_list[j],
+                mean_weight=mean_weight,
+                covar_weight=covar_weight,
+            )
+            # Symmetrical processing based on diagonal lines
+            distance_matrix[j, i] = distance_matrix[i, j]
+
+    return distance_matrix
+
+
+def plot_wasserstein_heatmap(
+    distance_matrix: np.ndarray,
+    dataset_list: Optional[List[str]] = None,
+    figsize: Optional[Tuple[float, float]] = (6, 4),
+    dpi: Optional[int] = 300,
+    fontsize: Optional[int] = 8,
+    cmap: Optional[str] = "coolwarm",
+) -> Tuple[plt.Figure, plt.Axes]:
+    """
+    The distance matrix formed by the Wasserstein distance between data sets is obtained through heat maps.
+
+    :param distance_matrix: The wasserstein distance matrix between time series datasets.
+    :param dataset_list: The list of dataset names.
+    :param figsize: The figure size, defaults to (6, 4).
+    :param dpi: The resolution of the figure, defaults to 300.
+    :param fontsize: The font size, defaults to 8.
+    :param cmap: The color mapping for the heatmap, defaults to "coolwarm".
+
+    :return: The figure and axes objects, defaults to (plt.Figure, plt.Axes).
+    """
+
+    # 1. Make sure the matrix is symmetric (distance matrices are usually symmetric)
+    distance_matrix = (distance_matrix + distance_matrix.T) / 2
+
+    # Set the diagonal to 0 (the distance from the point to itself is 0)
+    np.fill_diagonal(distance_matrix, 0)
+    fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+
+    # 2. Use imshow to draw heatmap
+    im = ax.imshow(distance_matrix, cmap=cmap, interpolation="nearest")
+
+    # 3. Add a color bar
+    cbar = plt.colorbar(im)
+    cbar.set_label(label="Wasserstein Distance", rotation=90, labelpad=10)
+
+    # 4. Add tags and titles
+    num_datasets = distance_matrix.shape[0]
+
+    if dataset_list is None:
+        # Use sequence when no dataset name is specified
+        ax.set_xticks(range(num_datasets))
+        ax.set_yticks(range(num_datasets))
+
+    else:
+        # Add the specified dataset name
+        ax.set_xticks(range(num_datasets), dataset_list, rotation=75)
+        ax.set_yticks(range(num_datasets), dataset_list)
+
+    # 5. Add a numerical annotation (optional)
+    for i in range(distance_matrix.shape[0]):
+        for j in range(distance_matrix.shape[1]):
+            text = ax.text(
+                j,
+                i,
+                f"{distance_matrix[i, j]:.2f}",
+                ha="center",
+                va="center",
+                color="black",
+                fontsize=fontsize,
+            )
+
+    plt.tight_layout()
+
+    return fig, ax
+
+
 if __name__ == "__main__":
     X = np.ones((100, 5))
     Y = np.random.rand(100, 5)
 
     result = wasserstein_distance(x=X, y=Y)
     print(result)
+
+    matrix = np.random.randn(10, 10)
+
+    data_list = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+    for i in range(len(data_list)):
+        data_list[i] = data_list[i] * 3
+    plot_wasserstein_heatmap(matrix, data_list)
+    plt.show()
