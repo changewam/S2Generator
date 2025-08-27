@@ -10,16 +10,42 @@ Created on 2025/08/22 11:20:58
 @url: https://github.com/wwhenxuan/S2Generator
 """
 import numpy as np
+from numpy import signedinteger
 
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Any
+
+
+def check_inputs(data: np.ndarray) -> bool:
+    """
+    Check if input data is valid, for the data type and the shape of ndarray.
+
+    :param data: The input time series data in Numpy ndarray.
+    :return: True if the input data is valid.
+    """
+    # check the data type
+    if not isinstance(data, np.ndarray):
+        raise TypeError("Input data must be a numpy ndarray!")
+
+    # check the shape of the input dataset
+    if len(data.shape) != 2:
+        raise ValueError(
+            "The input data must be two-dimensional with shape [n_samples, n_length]!"
+        )
+
+    return True
 
 
 def dataset_max_min_normalization(
     data: np.ndarray, epsilon: Optional[float] = 1e-5
-) -> np.ndarray:
+) -> np.ndarray | None:
     """
     Apply the max-min normalization operation to multivariate time series datasets
     with the shape of [n_samples, n_length] in NumPy ndarray.
+
+    :param data: The time series dataset with shape [n_samples, n_length].
+    :param epsilon: The maximum absolute value to avoid division by zero.
+
+    :return: The max-min normalized dataset with shape [n_samples, n_length].
     """
     # Assume data has the shape [n_samples, n_length]
     n_samples, n_length = data.shape
@@ -60,7 +86,7 @@ def wasserstein_distance(
     mean_weight: Optional[float] = 0.5,
     covar_weight: Optional[float] = 0.5,
     return_all: Optional[bool] = False,
-) -> float | Tuple[float | np.ndarray, float, float] | np.ndarray:
+) -> Tuple[Any, signedinteger[Any], Any] | None | float:
     """
     The Wasserstein distance is used to measure the similarity between two datasets.
     "Measuring Time-Series Dataset Similarity using Wasserstein Distance."
@@ -92,24 +118,31 @@ def wasserstein_distance(
 
     :return: The Wasserstein distance between x and y.
     """
-    # 1. Perform maximum and minimum normalization operations on two time series data sets
-    x, y = dataset_max_min_normalization(data=x), dataset_max_min_normalization(data=y)
+    # 1. Check the data type and shape for the inputs
+    if check_inputs(data=x) and check_inputs(data=y):
 
-    # 2. Compute the mean vector and covariance matrix between two time series datasets
-    mean_vector_x, cov_matrix_x = time_series_to_distribution(data=x)
-    mean_vector_y, cov_matrix_y = time_series_to_distribution(data=y)
+        # 2. Perform maximum and minimum normalization operations on two time series data sets
+        x, y = dataset_max_min_normalization(data=x), dataset_max_min_normalization(
+            data=y
+        )
 
-    # 3. Calculate the trace of the mean vector and the sum of squares of the covariance matrix
-    mean_value = np.sum((mean_vector_x - mean_vector_y) ** 2)
-    covar_value = np.trace(
-        cov_matrix_x + cov_matrix_y - 2 * np.sqrt(cov_matrix_x * cov_matrix_y)
-    )
-    distance = np.sqrt(mean_weight * mean_value + covar_weight * covar_value)
+        # 3. Compute the mean vector and covariance matrix between two time series datasets
+        mean_vector_x, cov_matrix_x = time_series_to_distribution(data=x)
+        mean_vector_y, cov_matrix_y = time_series_to_distribution(data=y)
 
-    if return_all:
-        return distance, mean_value, covar_value
+        # 4. Calculate the trace of the mean vector and the sum of squares of the covariance matrix
+        mean_value = np.sum((mean_vector_x - mean_vector_y) ** 2)
+        covar_value = np.trace(
+            cov_matrix_x + cov_matrix_y - 2 * np.sqrt(cov_matrix_x * cov_matrix_y)
+        )
+        distance = np.sqrt(mean_weight * mean_value + covar_weight * covar_value)
 
-    return distance
+        if return_all:
+            return distance, mean_value, covar_value
+
+        return distance
+
+    return None
 
 
 if __name__ == "__main__":
