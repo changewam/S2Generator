@@ -49,13 +49,15 @@ class Excitation(object):
         n_inputs_points: int,
         input_dimension: Optional[int] = 1,
         normalization: Optional[str] = None,
-    ) -> np.ndarray:
+        return_choice_list: Optional[bool] = None,
+    ) -> np.ndarray | List[str]:
         """Call the `generate` method to stimulate time series generation"""
         return self.generate(
             rng=rng,
             n_inputs_points=n_inputs_points,
             input_dimension=input_dimension,
             normalization=normalization,
+            return_choice_list=return_choice_list,
         )
 
     def __str__(self) -> str:
@@ -276,7 +278,8 @@ class Excitation(object):
         n_inputs_points: int,
         input_dimension: Optional[int] = 1,
         normalization: Optional[str] = None,
-    ) -> np.ndarray:
+        return_choice_list: Optional[bool] = False,
+    ) -> np.ndarray | List[str]:
         """
         A unified interface for generating stimulus time series data.
 
@@ -292,6 +295,9 @@ class Excitation(object):
         :param n_inputs_points: The length of time series data to be generated.
         :param input_dimension: The dimension of time series data to be generated.
         :param normalization: The normalization method to use, None for no normalization, choice in ["z-score", "max-min"].
+        :param return_choice_list: If True, return a list of the selected methods.
+
+        :return: The generated time series data and the selected methods (Optional).
         """
         # 1. Randomly select different sampling methods according to the specified probability
         choice_list = self.choice(rng=rng, input_dimension=input_dimension)
@@ -322,6 +328,8 @@ class Excitation(object):
                 "The normalization option must be 'z-score' or 'max-min' or None!"
             )
 
+        if return_choice_list:
+            return time_series, choice_list
         return time_series
 
 

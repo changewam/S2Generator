@@ -792,7 +792,7 @@ class Generator(object):
         remaining_points = n_inputs_points
         while remaining_points > 0 and trials < max_trials:
             # 1. create the excitation time series
-            x = self.generate_excitation(
+            x, choice_list = self.generate_excitation(
                 rng=rng,
                 n_inputs_points=n_inputs_points,
                 input_dimension=input_dimension,
