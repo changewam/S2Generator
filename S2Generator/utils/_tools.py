@@ -10,7 +10,7 @@ import numpy as np
 
 
 def get_time_now():
-    """"""
+    """Get current time to string"""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 

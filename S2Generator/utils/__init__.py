@@ -8,6 +8,7 @@ __all__ = [
     "symbol_to_markdown",
     "z_score_normalization",
     "max_min_normalization",
+    "get_time_now",
     "wasserstein_distance",
     "wasserstein_distance_matrix",
     "plot_wasserstein_heatmap",
@@ -27,6 +28,9 @@ from ._tools import z_score_normalization
 
 # The min-max normalization
 from ._tools import max_min_normalization
+
+# Get the datetime now
+from ._tools import get_time_now
 
 # The Wasserstein distance used to measure the similarity between two datasets
 from ._wasserstein_distance import wasserstein_distance
