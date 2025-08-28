@@ -43,7 +43,7 @@ class TestARMA(unittest.TestCase):
             )
 
             # Check the length of the parameter
-            self.assertEquals(
+            self.assertEqual(
                 len(p_params),
                 p_order,
                 msg="Wrong parameter length for autoregressive process!",
@@ -73,7 +73,7 @@ class TestARMA(unittest.TestCase):
             )
 
             # Check the length of the parameter
-            self.assertEquals(
+            self.assertEqual(
                 len(q_params),
                 q_order,
                 msg="Wrong parameter length for sliding average process!",
@@ -94,12 +94,12 @@ class TestARMA(unittest.TestCase):
         p_order = self.arma.p_order
         q_order = self.arma.q_order
 
-        self.assertEquals(
+        self.assertEqual(
             first=p_order,
             second=len(self.arma.p_params),
             msg="The order of the autoregressive process does not match the generated parameters!",
         )
-        self.assertEquals(
+        self.assertEqual(
             first=q_order,
             second=len(self.arma.q_params),
             msg="The order of the moving average process does not match the generated parameters!",
