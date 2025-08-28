@@ -32,6 +32,9 @@ from ._tools import max_min_normalization
 # Get the datetime now
 from ._tools import get_time_now
 
+# Print the Generation Status
+from ._print_state import PrintState
+
 # The Wasserstein distance used to measure the similarity between two datasets
 from ._wasserstein_distance import wasserstein_distance
 

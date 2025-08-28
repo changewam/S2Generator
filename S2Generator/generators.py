@@ -26,7 +26,7 @@ from S2Generator.base import (
 )
 from S2Generator.encoders import GeneralEncoder
 from S2Generator.excitation import Excitation
-from S2Generator.utils import z_score_normalization, max_min_normalization
+from S2Generator.utils import z_score_normalization, max_min_normalization, PrintState
 
 
 class Generator(object):
@@ -37,6 +37,7 @@ class Generator(object):
         series_params: Optional[SeriesParams] = None,
         symbol_params: Optional[SymbolParams] = None,
         print_state: Optional[bool] = False,
+        logging_path: Optional[str] = None,
         special_words: Optional[dict] = None,
     ) -> None:
         """
@@ -51,6 +52,14 @@ class Generator(object):
         self.symbol_params = symbol_params = (
             SymbolParams() if symbol_params is None else symbol_params
         )
+
+        self.print_state = print_state
+        if print_state:
+            self.state = PrintState(
+                series_params=series_params,
+                symbol_params=symbol_params,
+                logging_path=logging_path,
+            )
 
         special_words = SPECIAL_WORDS if special_words is None else special_words
 
@@ -744,115 +753,6 @@ class Generator(object):
             normalization=normalize,
         )
 
-    def run(
-        self,
-        rng: np.random.RandomState,
-        n_inputs_points: int,
-        input_dimension: int = 1,
-        output_dimension: int = 1,
-        max_trials: Optional[int] = None,
-        input_normalize: Optional[str] = "z-score",
-        output_normalize: Optional[bool] = "z-score",
-        input_max_scale: Optional[float] = 16.0,
-        output_max_scale: Optional[float] = 16.0,
-        offset: Optional[Tuple[float, float]] = None,
-    ) -> Tuple[None, None, None] | Tuple[NodeList, ndarray, ndarray]:
-        """
-        Generate the symbolic expression (complex system) and the excitation time series.
-
-        :param rng: The random number generator in NumPy with fixed seed.
-        :param n_inputs_points: The number of points of time series to generate.
-        :param input_dimension: The number of the input dimensions of time series to generate.
-        :param output_dimension: The number of the output dimensions of time series or symbol expression to generate.
-        :param max_trials: The maximum number of trials to generate and try.
-        :param input_normalize: Normalize the input time series, choice of 'z-score' or 'max-min' or None, defaults to 'z-score'.
-        :param output_normalize: Normalize the output time series, choice of 'z-score' or 'max-min' or None, defaults to 'z-score'.
-        :param input_max_scale: The scaling factor of the input time series to generate.
-        :param output_max_scale: The scaling factor of the output time series to generate.
-        :param offset: The offset mean and std for the input time series.
-        """
-        # Obtain the generated symbolic expressions
-        trees, _, _ = self.generate_symbolic_expression(
-            rng,
-            input_dimension=input_dimension,
-            output_dimension=output_dimension,
-            return_all=False,
-        )
-
-        # Store the generated sequence data
-        inputs, outputs = [], []
-
-        # Start generating data from the mixture distribution
-        trials = 0  # Current number of attempts
-
-        # Handle illegal multiple sampling repetitions outside the domain
-        max_trials = self.max_trials if max_trials is None else max_trials
-
-        # Target length for sampling
-        remaining_points = n_inputs_points
-        while remaining_points > 0 and trials < max_trials:
-            # 1. create the excitation time series
-            x, choice_list = self.generate_excitation(
-                rng=rng,
-                n_inputs_points=n_inputs_points,
-                input_dimension=input_dimension,
-                normalize=input_normalize,
-            )
-
-            # 2. The generated sample sequence is scaled within the specified range
-            x *= rng.uniform(low=0, high=input_max_scale)
-
-            # 3. Add the specified distribution bias to the sampling sequence
-            if offset is not None:
-                mean, std = offset
-                x *= std
-                x += mean
-
-            # 4. Sample using the generated symbolic expressions
-            y = trees.val_router(x)
-
-            # 5. Remove illegal values from the generated time series from the complex system
-            x, y = self.get_rid(x, y)
-
-            # Number of valid values successfully retained in this sampling
-            valid_points = y.shape[0]
-            # Number of attempts this time
-            trials += 1
-
-            # Number of values still needed to be sampled
-            remaining_points -= valid_points
-            if valid_points == 0:
-                continue
-            inputs.append(x)
-            outputs.append(y)
-
-        if remaining_points > 0:
-            # Sampling failed
-            return None, None, None
-
-        # Combine the results of all sampling attempts
-        inputs = np.concatenate(inputs, axis=0)[:n_inputs_points]
-        outputs = np.concatenate(outputs, axis=0)[:n_inputs_points]
-
-        # whether to normalize the output time series
-        if output_normalize is None:
-            pass
-        if output_normalize == "z-score":
-            for dim in range(input_dimension):
-                outputs[:, dim] = z_score_normalization(x=outputs[:, dim])
-        elif output_normalize == "max-min":
-            for dim in range(input_dimension):
-                outputs[:, dim] = max_min_normalization(x=outputs[:, dim])
-        else:
-            raise ValueError(
-                "The normalization option must be 'z-score' or 'max-min' or None!"
-            )
-
-        # The generated sample sequence is scaled within the specified range
-        outputs *= rng.uniform(low=0, high=output_max_scale)
-
-        return trees, inputs, outputs
-
     def run_with_state(
         self,
         rng: np.random.RandomState,
@@ -880,6 +780,17 @@ class Generator(object):
         :param output_max_scale: The scaling factor of the output time series to generate.
         :param offset: The offset mean and std for the input time series.
         """
+        self.state.show_basic_config()
+        self.state.show_generation_config(n_inputs_points=str(n_inputs_points),
+                                          input_dimension=input_dimension,
+                                          output_dimension=output_dimension,
+                                          max_trials=max_trials,
+                                          input_normalize=input_normalize,
+                                          output_normalize=output_normalize,
+                                          input_max_scale=input_max_scale,
+                                          output_max_scale=output_max_scale,
+                                          offset=offset)
+
         # Obtain the generated symbolic expressions
         trees, _, _ = self.generate_symbolic_expression(
             rng,
@@ -887,6 +798,9 @@ class Generator(object):
             output_dimension=output_dimension,
             return_all=False,
         )
+
+        # Update the success for the generation of the Symbolic Expression
+        self.state.update_symbol(status="success")
 
         # Store the generated sequence data
         inputs, outputs = [], []
@@ -901,7 +815,7 @@ class Generator(object):
         remaining_points = n_inputs_points
         while remaining_points > 0 and trials < max_trials:
             # 1. create the excitation time series
-            x, choice_list = self.generate_excitation(
+            x = self.generate_excitation(
                 rng=rng,
                 n_inputs_points=n_inputs_points,
                 input_dimension=input_dimension,
@@ -916,6 +830,9 @@ class Generator(object):
                 mean, std = offset
                 x *= std
                 x += mean
+
+            # Update the status for the generation of the Excitation Time Series
+            self.state.update_excitation(status="success")
 
             # 4. Sample using the generated symbolic expressions
             y = trees.val_router(x)
@@ -935,6 +852,15 @@ class Generator(object):
             inputs.append(x)
             outputs.append(y)
 
+            # Update the
+            if remaining_points > 0:
+                self.state.update_response(status="failure")
+            else:
+                self.state.update_response(status="success")
+                break
+
+        self.state.show_end(symbol=trees)
+
         if remaining_points > 0:
             # Sampling failed
             return None, None, None
@@ -947,10 +873,10 @@ class Generator(object):
         if output_normalize is None:
             pass
         if output_normalize == "z-score":
-            for dim in range(input_dimension):
+            for dim in range(output_dimension):
                 outputs[:, dim] = z_score_normalization(x=outputs[:, dim])
         elif output_normalize == "max-min":
-            for dim in range(input_dimension):
+            for dim in range(output_dimension):
                 outputs[:, dim] = max_min_normalization(x=outputs[:, dim])
         else:
             raise ValueError(
@@ -961,3 +887,144 @@ class Generator(object):
         outputs *= rng.uniform(low=0, high=output_max_scale)
 
         return trees, inputs, outputs
+
+    def run(
+        self,
+        rng: np.random.RandomState,
+        n_inputs_points: int,
+        input_dimension: int = 1,
+        output_dimension: int = 1,
+        max_trials: Optional[int] = None,
+        input_normalize: Optional[str] = "z-score",
+        output_normalize: Optional[bool] = "z-score",
+        input_max_scale: Optional[float] = 16.0,
+        output_max_scale: Optional[float] = 16.0,
+        offset: Optional[Tuple[float, float]] = None,
+    ) -> Tuple[None, None, None] | Tuple[NodeList, ndarray, ndarray]:
+        """
+        Generate the symbolic expression (complex system) and the excitation time series.
+
+        :param rng: The random number generator in NumPy with fixed seed.
+        :param n_inputs_points: The number of points of time series to generate.
+        :param input_dimension: The number of the input dimensions of time series to generate.
+        :param output_dimension: The number of the output dimensions of time series or symbol expression to generate.
+        :param max_trials: The maximum number of trials to generate and try.
+        :param input_normalize: Normalize the input time series, choice of 'z-score' or 'max-min' or None, defaults to 'z-score'.
+        :param output_normalize: Normalize the output time series, choice of 'z-score' or 'max-min' or None, defaults to 'z-score'.
+        :param input_max_scale: The scaling factor of the input time series to generate.
+        :param output_max_scale: The scaling factor of the output time series to generate.
+        :param offset: The offset mean and std for the input time series.
+        """
+        # Whether to print the status for the S2Generator
+        if self.print_state:
+            return self.run_with_state(
+                rng=rng,
+                n_inputs_points=n_inputs_points,
+                input_dimension=input_dimension,
+                output_dimension=output_dimension,
+                input_normalize=input_normalize,
+                output_normalize=output_normalize,
+                input_max_scale=input_max_scale,
+                output_max_scale=output_max_scale,
+                offset=offset,
+                max_trials=max_trials,
+            )
+
+        else:
+            # Obtain the generated symbolic expressions
+            trees, _, _ = self.generate_symbolic_expression(
+                rng,
+                input_dimension=input_dimension,
+                output_dimension=output_dimension,
+                return_all=False,
+            )
+
+            # Store the generated sequence data
+            inputs, outputs = [], []
+
+            # Start generating data from the mixture distribution
+            trials = 0  # Current number of attempts
+
+            # Handle illegal multiple sampling repetitions outside the domain
+            max_trials = self.max_trials if max_trials is None else max_trials
+
+            # Target length for sampling
+            remaining_points = n_inputs_points
+            while remaining_points > 0 and trials < max_trials:
+                # 1. create the excitation time series
+                x = self.generate_excitation(
+                    rng=rng,
+                    n_inputs_points=n_inputs_points,
+                    input_dimension=input_dimension,
+                    normalize=input_normalize,
+
+                )
+
+                # 2. The generated sample sequence is scaled within the specified range
+                x *= rng.uniform(low=0, high=input_max_scale)
+
+                # 3. Add the specified distribution bias to the sampling sequence
+                if offset is not None:
+                    mean, std = offset
+                    x *= std
+                    x += mean
+
+                # 4. Sample using the generated symbolic expressions
+                y = trees.val_router(x)
+
+                # 5. Remove illegal values from the generated time series from the complex system
+                x, y = self.get_rid(x, y)
+
+                # Number of valid values successfully retained in this sampling
+                valid_points = y.shape[0]
+                # Number of attempts this time
+                trials += 1
+
+                # Number of values still needed to be sampled
+                remaining_points -= valid_points
+                if valid_points == 0:
+                    continue
+                inputs.append(x)
+                outputs.append(y)
+
+            if remaining_points > 0:
+                # Sampling failed
+                return None, None, None
+
+            # Combine the results of all sampling attempts
+            inputs = np.concatenate(inputs, axis=0)[:n_inputs_points]
+            outputs = np.concatenate(outputs, axis=0)[:n_inputs_points]
+
+            # whether to normalize the output time series
+            if output_normalize is None:
+                pass
+            if output_normalize == "z-score":
+                for dim in range(input_dimension):
+                    outputs[:, dim] = z_score_normalization(x=outputs[:, dim])
+            elif output_normalize == "max-min":
+                for dim in range(input_dimension):
+                    outputs[:, dim] = max_min_normalization(x=outputs[:, dim])
+            else:
+                raise ValueError(
+                    "The normalization option must be 'z-score' or 'max-min' or None!"
+                )
+
+            # The generated sample sequence is scaled within the specified range
+            outputs *= rng.uniform(low=0, high=output_max_scale)
+
+            return trees, inputs, outputs
+
+
+if __name__ == '__main__':
+    # 测试logging的代码
+    generator = Generator(print_state=True,
+                          logging_path="../data")
+
+    rng = np.random.RandomState(0)  # Creating a random number object
+    # Start generating symbolic expressions, sampling and generating series
+
+    trees, x, y = generator.run(
+        rng, input_dimension=6, output_dimension=4, n_inputs_points=1024
+    )
+    # Print the expressions
+    # print(trees)
