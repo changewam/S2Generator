@@ -35,7 +35,7 @@ class PrintState:
         self.prob_array = series_params.prob_array
 
         # 记录数据生成中的最基本信息
-        self.basic_header = "Basic Config for The S2Generator:"
+        self.basic_header = "Basic Config of The S2Generator:"
         self.basic_config = (
             f'  {f"{self.sampling_methods[0]}:":<20} {self.prob_array[0]:<20}'
             f'{f"{self.sampling_methods[1]}:":<20} {self.prob_array[1]:<20}\n  '
@@ -62,10 +62,11 @@ class PrintState:
             self.logging_basis_config()
 
         # 记录数据生成中的状态实时更新参数
-        self.generation_header = "Generation Config for The S2Generator:"
+        self.generation_header = "Generation Config of The S2Generator:"
         self.generation_config = None
 
         # 记录每次更新中的状态信息列表
+        self.process_header = "The Specific Execution Process of S2Generator:"
         self.status_list = []
 
         self.header = ["Index", "Target", "Time", "Results"]
@@ -154,6 +155,8 @@ class PrintState:
 
     def update_symbol(self, status: str) -> None:
         """更新生成符号表达式的状态信息"""
+        print(Style.BRIGHT + Fore.GREEN + self.process_header + Style.RESET_ALL)
+        self.status_list.append(self.process_header)
         print("-" * len(self.sep))
         print(self.header_pr)
         print(self.sep)
@@ -207,16 +210,21 @@ class PrintState:
 
         return status
 
-    def show_end(self, symbol: Node | NodeList | str) -> None:
+    def show_end(self, symbol: Node | NodeList | str, running_time: float) -> None:
         """打印算法执行过程中表格的结尾信息"""
-        print("-" * len(self.sep))
+        print("-" * len(self.sep) + "\n")
 
         # 将结尾信息添加到状态列表中
         self.status_list.append("-" * len(self.sep))
 
         # 打印并上传的符号表达式
         trees = str(symbol).split(" | ")
-        print("The Generated Symbolic Expression: ")
+        print(
+            Style.BRIGHT
+            + Fore.GREEN
+            + "The Generated Symbolic Expression: "
+            + Style.RESET_ALL
+        )
 
         # 上传数据生成过程中的所有报告
         with open(self.file_path, "a", encoding="utf-8") as f:
@@ -232,6 +240,17 @@ class PrintState:
             for tree in trees:
                 f.write(tree + "\n")
                 print(tree)
+
+            # 打印并上传程序执行的具体时间
+            print(
+                Style.BRIGHT
+                + Fore.GREEN
+                + "\nRunning Time: \n"
+                + Style.RESET_ALL
+                + str(running_time)
+                + "\n"
+            )
+            f.write(f"\nRunning Time: \n{running_time}\n")
 
 
 def check_status(status: str) -> str:

@@ -7,6 +7,7 @@ Created on 2025/01/23 17:37:24
 @email: wwhenxuan@gmail.com, wy3370868155@outlook.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+import time
 import copy
 import numpy as np
 from numpy import ndarray
@@ -780,16 +781,21 @@ class Generator(object):
         :param output_max_scale: The scaling factor of the output time series to generate.
         :param offset: The offset mean and std for the input time series.
         """
+        # 记录程序执行开始的时间
+        start_time = time.time()
+
         self.state.show_basic_config()
-        self.state.show_generation_config(n_inputs_points=str(n_inputs_points),
-                                          input_dimension=input_dimension,
-                                          output_dimension=output_dimension,
-                                          max_trials=max_trials,
-                                          input_normalize=input_normalize,
-                                          output_normalize=output_normalize,
-                                          input_max_scale=input_max_scale,
-                                          output_max_scale=output_max_scale,
-                                          offset=offset)
+        self.state.show_generation_config(
+            n_inputs_points=n_inputs_points,
+            input_dimension=input_dimension,
+            output_dimension=output_dimension,
+            max_trials=max_trials,
+            input_normalize=input_normalize,
+            output_normalize=output_normalize,
+            input_max_scale=input_max_scale,
+            output_max_scale=output_max_scale,
+            offset=offset,
+        )
 
         # Obtain the generated symbolic expressions
         trees, _, _ = self.generate_symbolic_expression(
@@ -859,8 +865,6 @@ class Generator(object):
                 self.state.update_response(status="success")
                 break
 
-        self.state.show_end(symbol=trees)
-
         if remaining_points > 0:
             # Sampling failed
             return None, None, None
@@ -885,6 +889,12 @@ class Generator(object):
 
         # The generated sample sequence is scaled within the specified range
         outputs *= rng.uniform(low=0, high=output_max_scale)
+
+        # 记录程序结束的时间
+        end_time = time.time()
+
+        # 登记并打印有关程序执行的具体状态信息
+        self.state.show_end(symbol=trees, running_time=end_time - start_time)
 
         return trees, inputs, outputs
 
@@ -957,7 +967,6 @@ class Generator(object):
                     n_inputs_points=n_inputs_points,
                     input_dimension=input_dimension,
                     normalize=input_normalize,
-
                 )
 
                 # 2. The generated sample sequence is scaled within the specified range
@@ -1015,10 +1024,9 @@ class Generator(object):
             return trees, inputs, outputs
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # 测试logging的代码
-    generator = Generator(print_state=True,
-                          logging_path="../data")
+    generator = Generator(print_state=True, logging_path="../data")
 
     rng = np.random.RandomState(0)  # Creating a random number object
     # Start generating symbolic expressions, sampling and generating series
