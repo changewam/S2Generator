@@ -12,6 +12,7 @@ __all__ = [
     "wasserstein_distance",
     "wasserstein_distance_matrix",
     "plot_wasserstein_heatmap",
+    "PrintStatus",
 ]
 
 # # Visualization the time series data in S2
@@ -33,7 +34,7 @@ from ._tools import max_min_normalization
 from ._tools import get_time_now
 
 # Print the Generation Status
-from ._print_state import PrintState
+from ._print_status import PrintStatus
 
 # The Wasserstein distance used to measure the similarity between two datasets
 from ._wasserstein_distance import wasserstein_distance

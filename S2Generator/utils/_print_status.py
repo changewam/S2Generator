@@ -11,7 +11,6 @@ import os
 from os import path
 
 import numpy as np
-from tabulate import tabulate
 from colorama import Fore, Style
 from typing import Optional, List, Tuple
 
@@ -19,7 +18,7 @@ from S2Generator import SeriesParams, SymbolParams, Node, NodeList
 from S2Generator.utils import get_time_now
 
 
-class PrintState:
+class PrintStatus(object):
     """用于实时打印数据生成的状态信息"""
 
     def __init__(
@@ -58,7 +57,13 @@ class PrintState:
             self.logging = False
         else:
             self.logging = True
-            self.file_path = path.join(self.logging_path, "config.txt")
+
+            # 判断用户是否指定了文件名称
+            if self.logging_path.endswith(".txt") or self.logging_path.endswith(".log"):
+                self.file_path = self.logging_path
+            else:
+                # 手动添加登记文件的名称
+                self.file_path = path.join(self.logging_path, "status.txt")
             self.logging_basis_config()
 
         # 记录数据生成中的状态实时更新参数
@@ -80,6 +85,13 @@ class PrintState:
         self._index = 0
 
         self._count = 0
+
+    def reset(self):
+        """重置打印状态的相关内容和信息"""
+        self._index = 0
+        self._count = 0
+
+        self.status_list = []
 
     @property
     def index(self):
@@ -104,9 +116,10 @@ class PrintState:
 
     def logging_basis_config(self) -> None:
         """实时登记"""
-        with open(self.file_path, "w", encoding="utf-8") as f:
-            f.write(self.basic_header + "\n")
-            f.write(self.basic_config + "\n")
+        if self.logging:
+            with open(self.file_path, "w", encoding="utf-8") as f:
+                f.write(self.basic_header + "\n")
+                f.write(self.basic_config + "\n")
 
     def show_generation_config(
         self,
@@ -226,22 +239,37 @@ class PrintState:
             + Style.RESET_ALL
         )
 
-        # 上传数据生成过程中的所有报告
-        with open(self.file_path, "a", encoding="utf-8") as f:
-            for status in self.status_list:
-                f.write(
-                    status.replace("[1m[32m", "")
-                    .replace("[31m", "")
-                    .replace("[0m", "")
+        if self.logging:
+            # 上传数据生成过程中的所有报告
+            with open(self.file_path, "a", encoding="utf-8") as f:
+                for status in self.status_list:
+                    f.write(
+                        status.replace("[1m[32m", "")
+                        .replace("[31m", "")
+                        .replace("[0m", "")
+                        + "\n"
+                    )
+
+                f.write("\n" + "The Generated Symbolic Expression: \n")
+                for tree in trees:
+                    f.write(tree + "\n")
+                    print(tree)
+
+                # 打印并上传程序执行的具体时间
+                print(
+                    Style.BRIGHT
+                    + Fore.GREEN
+                    + "\nRunning Time: \n"
+                    + Style.RESET_ALL
+                    + str(running_time)
                     + "\n"
                 )
-
-            f.write("\n" + "The Generated Symbolic Expression: \n")
+                f.write(f"\nRunning Time: \n{running_time}\n")
+        else:
             for tree in trees:
-                f.write(tree + "\n")
                 print(tree)
 
-            # 打印并上传程序执行的具体时间
+            # 打印程序执行的具体时间
             print(
                 Style.BRIGHT
                 + Fore.GREEN
@@ -250,7 +278,6 @@ class PrintState:
                 + str(running_time)
                 + "\n"
             )
-            f.write(f"\nRunning Time: \n{running_time}\n")
 
 
 def check_status(status: str) -> str:
@@ -263,7 +290,7 @@ def check_status(status: str) -> str:
 
 
 if __name__ == "__main__":
-    print_state = PrintState(
+    print_state = PrintStatus(
         logging_path="../../data",
         series_params=SeriesParams(),
         symbol_params=SymbolParams(),

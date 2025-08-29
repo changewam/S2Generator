@@ -27,7 +27,7 @@ from S2Generator.base import (
 )
 from S2Generator.encoders import GeneralEncoder
 from S2Generator.excitation import Excitation
-from S2Generator.utils import z_score_normalization, max_min_normalization, PrintState
+from S2Generator.utils import z_score_normalization, max_min_normalization, PrintStatus
 
 
 class Generator(object):
@@ -37,15 +37,16 @@ class Generator(object):
         self,
         series_params: Optional[SeriesParams] = None,
         symbol_params: Optional[SymbolParams] = None,
-        print_state: Optional[bool] = False,
+        print_status: Optional[bool] = False,
         logging_path: Optional[str] = None,
         special_words: Optional[dict] = None,
     ) -> None:
         """
         :param series_params: The parameters controlling the generation of the stimulus time series.
         :param symbol_params: The parameters controlling the generation of the symbolic expressions.
-        :param print_state: Whether to print the state of data generation.
+        :param print_status: Whether to print the status of data generation.
         :param special_words: The special words controlling the generation of the symbolic expressions.
+        :param logging_path: The path of the logging folder or file, if is file please end with `.txt`.
         """
         self.series_params = series_params = (
             SeriesParams() if series_params is None else series_params
@@ -54,9 +55,9 @@ class Generator(object):
             SymbolParams() if symbol_params is None else symbol_params
         )
 
-        self.print_state = print_state
-        if print_state:
-            self.state = PrintState(
+        self.print_status = print_status
+        if print_status:
+            self.status = PrintStatus(
                 series_params=series_params,
                 symbol_params=symbol_params,
                 logging_path=logging_path,
@@ -209,9 +210,6 @@ class Generator(object):
 
         # Handle overflow outside the domain of the generation attempt
         self.max_trials = symbol_params.max_trials
-
-        # TODO: 这个参数对应到utils中的_print_state.py文件在后续进行功能补全
-        self.print_state = print_state
 
     def create_excitation(
         self, series_params: Optional[SeriesParams] = None
@@ -781,11 +779,14 @@ class Generator(object):
         :param output_max_scale: The scaling factor of the output time series to generate.
         :param offset: The offset mean and std for the input time series.
         """
-        # 记录程序执行开始的时间
+        # Record the time when program execution starts
         start_time = time.time()
 
-        self.state.show_basic_config()
-        self.state.show_generation_config(
+        # Handle illegal multiple sampling repetitions outside the domain
+        max_trials = self.max_trials if max_trials is None else max_trials
+
+        self.status.show_basic_config()
+        self.status.show_generation_config(
             n_inputs_points=n_inputs_points,
             input_dimension=input_dimension,
             output_dimension=output_dimension,
@@ -806,16 +807,13 @@ class Generator(object):
         )
 
         # Update the success for the generation of the Symbolic Expression
-        self.state.update_symbol(status="success")
+        self.status.update_symbol(status="success")
 
         # Store the generated sequence data
         inputs, outputs = [], []
 
         # Start generating data from the mixture distribution
         trials = 0  # Current number of attempts
-
-        # Handle illegal multiple sampling repetitions outside the domain
-        max_trials = self.max_trials if max_trials is None else max_trials
 
         # Target length for sampling
         remaining_points = n_inputs_points
@@ -838,7 +836,7 @@ class Generator(object):
                 x += mean
 
             # Update the status for the generation of the Excitation Time Series
-            self.state.update_excitation(status="success")
+            self.status.update_excitation(status="success")
 
             # 4. Sample using the generated symbolic expressions
             y = trees.val_router(x)
@@ -854,15 +852,16 @@ class Generator(object):
             # Number of values still needed to be sampled
             remaining_points -= valid_points
             if valid_points == 0:
+                self.status.update_response(status="failure")
                 continue
             inputs.append(x)
             outputs.append(y)
 
             # Update the
             if remaining_points > 0:
-                self.state.update_response(status="failure")
+                self.status.update_response(status="failure")
             else:
-                self.state.update_response(status="success")
+                self.status.update_response(status="success")
                 break
 
         if remaining_points > 0:
@@ -890,11 +889,14 @@ class Generator(object):
         # The generated sample sequence is scaled within the specified range
         outputs *= rng.uniform(low=0, high=output_max_scale)
 
-        # 记录程序结束的时间
+        # Record the time the program ends
         end_time = time.time()
 
-        # 登记并打印有关程序执行的具体状态信息
-        self.state.show_end(symbol=trees, running_time=end_time - start_time)
+        # Register and print detailed status information about program execution
+        self.status.show_end(symbol=trees, running_time=end_time - start_time)
+
+        # Reset the status params for the PrintStatus
+        self.status.reset()
 
         return trees, inputs, outputs
 
@@ -926,7 +928,7 @@ class Generator(object):
         :param offset: The offset mean and std for the input time series.
         """
         # Whether to print the status for the S2Generator
-        if self.print_state:
+        if self.print_status:
             return self.run_with_state(
                 rng=rng,
                 n_inputs_points=n_inputs_points,
@@ -1026,7 +1028,7 @@ class Generator(object):
 
 if __name__ == "__main__":
     # 测试logging的代码
-    generator = Generator(print_state=True, logging_path="../data")
+    generator = Generator(print_status=True, logging_path="../data")
 
     rng = np.random.RandomState(0)  # Creating a random number object
     # Start generating symbolic expressions, sampling and generating series
@@ -1036,3 +1038,6 @@ if __name__ == "__main__":
     )
     # Print the expressions
     # print(trees)
+    trees, x, y = generator.run(
+        rng, input_dimension=6, output_dimension=4, n_inputs_points=1024
+    )
