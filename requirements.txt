@@ -1,8 +1,7 @@
 numpy>=1.24.4
-# 确定一下版本
-pandas
+pandas>=2.3.1
 scipy>=1.14.1
 matplotlib>=3.9.2
 scikit-learn>=1.2.2
 pysdkit>=0.4.21
-colorama
+colorama>=0.4.6

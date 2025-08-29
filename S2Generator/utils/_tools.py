@@ -5,7 +5,13 @@ Created on 2025/08/23 17:09:18
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+from datetime import datetime
 import numpy as np
+
+
+def get_time_now():
+    """Get current time to string"""
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def z_score_normalization(x: np.ndarray) -> np.ndarray:

@@ -293,7 +293,7 @@ class MixedDistribution(BaseExcitation):
         """
         Generate stimulus time series data for a single channel through a mixture distribution.
 
-        :param rng: The random state generator in NumPy.
+        :param rng: The random status generator in NumPy.
         :param n_inputs_points: The number of input points in this sampling.
         :return: The generated time series samples with mixture distribution.
         """
