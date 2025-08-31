@@ -779,14 +779,11 @@ class Generator(object):
         :param output_max_scale: The scaling factor of the output time series to generate.
         :param offset: The offset mean and std for the input time series.
         """
-        # Record the time when program execution starts
-        start_time = time.time()
 
         # Handle illegal multiple sampling repetitions outside the domain
         max_trials = self.max_trials if max_trials is None else max_trials
 
-        self.status.show_basic_config()
-        self.status.show_generation_config(
+        self.status.show_start(
             n_inputs_points=n_inputs_points,
             input_dimension=input_dimension,
             output_dimension=output_dimension,
@@ -889,11 +886,8 @@ class Generator(object):
         # The generated sample sequence is scaled within the specified range
         outputs *= rng.uniform(low=0, high=output_max_scale)
 
-        # Record the time the program ends
-        end_time = time.time()
-
         # Register and print detailed status information about program execution
-        self.status.show_end(symbol=trees, running_time=end_time - start_time)
+        self.status.show_end(symbol=trees)
 
         # Reset the status params for the PrintStatus
         self.status.reset()
@@ -912,6 +906,7 @@ class Generator(object):
         input_max_scale: Optional[float] = 16.0,
         output_max_scale: Optional[float] = 16.0,
         offset: Optional[Tuple[float, float]] = None,
+        save_path: Optional[str] = None,
     ) -> Tuple[None, None, None] | Tuple[NodeList, ndarray, ndarray]:
         """
         Generate the symbolic expression (complex system) and the excitation time series.
@@ -926,6 +921,7 @@ class Generator(object):
         :param input_max_scale: The scaling factor of the input time series to generate.
         :param output_max_scale: The scaling factor of the output time series to generate.
         :param offset: The offset mean and std for the input time series.
+        :param save_path: The path to save the generated time series, defaults to None means not to save the data.
         """
         # Whether to print the status for the S2Generator
         if self.print_status:
