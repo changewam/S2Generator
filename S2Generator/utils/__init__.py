@@ -9,6 +9,8 @@ __all__ = [
     "z_score_normalization",
     "max_min_normalization",
     "get_time_now",
+    "save_s2data",
+    "load_s2data",
     "wasserstein_distance",
     "wasserstein_distance_matrix",
     "plot_wasserstein_heatmap",
@@ -32,6 +34,9 @@ from ._tools import max_min_normalization
 
 # Get the datetime now
 from ._tools import get_time_now
+
+# The function to save and load the S2 data
+from ._tools import save_s2data, load_s2data
 
 # Print the Generation Status
 from ._print_status import PrintStatus

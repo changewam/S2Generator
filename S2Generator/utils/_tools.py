@@ -89,7 +89,7 @@ def save_s2data(
     :param save_path: Save location with two input options:
                      - Directory path: data will be saved as 's2data.npz' in this directory
                      - Full file path: must end with .npy or .npz extension
-    :return: Boolean indicating success status of the save operation
+    :return: Boolean indicating success status of the save operation.
     """
     # Ensure directory exists and get final save path
     save_path = ensure_directory_exists(file_path=save_path)
