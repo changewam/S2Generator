@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-用于实时打印输出数据生成状态的模块
+This module is used to register and print the status of data generation in real time.
+Our time series sampling process requires inputting the stimulus time series into a complex system.
+Complex systems have a domain of definition.
+When our stimulus time series falls outside the domain of the symbolic expression,
+we need to regenerate the data.
 
 Created on 2025/08/23 12:20:15
 @author: Whenxuan Wang
@@ -8,10 +12,8 @@ Created on 2025/08/23 12:20:15
 @url: https://github.com/wwhenxuan
 """
 import time
-import os
 from os import path
 
-import numpy as np
 from colorama import Fore, Style
 from typing import Optional, List, Tuple
 
@@ -20,7 +22,7 @@ from S2Generator.utils import get_time_now
 
 
 class PrintStatus(object):
-    """"""
+    """The module for printing out data generation status in real time"""
 
     def __init__(
         self,
@@ -84,7 +86,7 @@ class PrintStatus(object):
         self.process_header = "The Specific Execution Process of S2Generator:"
         self.status_list = []
 
-        # 用于打印实时更新的表格
+        # Printing a live updated table
         self.header = ["Index", "Target", "Time", "Results"]
         self.max_length = [5, 36, 19, 7]
         self.header_pr = f" {self.header[0]} | {self.header[1]}{' ' * 30} | {self.header[2]}{' ' * 14}  | {self.header[3]}"
@@ -93,40 +95,52 @@ class PrintStatus(object):
             self.sep += f"{'-' * (length + 2)}+"
         self.sep = self.sep[:-1] + "-"
 
+        # Record the total number of steps executed and the number of times the stimulus time series is generated
         self._index = 0
         self._count = 0
 
-        # 与算法执行时间相关的参数
+        # Parameters related to algorithm execution time
         self.start_time, self.end_time = None, None
 
     def reset(self):
-        """重置打印状态的相关内容和信息"""
+        """Reset printing status and related information"""
+
+        # Reset information about step count recording
         self._index = 0
         self._count = 0
 
+        # Reset the list for recording the status for every step
         self.status_list = []
 
+        # Reset the execution time
         self.start_time, self.end_time = None, None
 
     @property
     def index(self):
+        """Get the current index of the printing status."""
         return self._index
 
     def get_next_index(self):
+        """Get the next index of the printing status."""
+        # Update the remove the index pointer
         self._index += 1
         return self.index
 
     @property
     def count(self) -> int:
+        """Get the current count of the printing status for generate the excitation."""
         return self._count
 
     def get_next_count(self):
+        """Get the next count of the printing status for generate the excitation."""
+        # Update the remove the count pointer
         self._count += 1
         return self.count
 
     def logging_basis_config(self) -> None:
-        """实时登记"""
+        """Create a specific logging file and register the most basic configuration information"""
         if self.logging:
+            # Determine whether to register and create the corresponding file
             with open(self.file_path, "w", encoding="utf-8") as f:
                 f.write(self.basic_header + "\n")
                 f.write(self.basic_config + "\n")
@@ -143,13 +157,27 @@ class PrintStatus(object):
         output_max_scale: Optional[float] = 16.0,
         offset: Optional[Tuple[float, float]] = None,
     ) -> None:
-        """打印有关数据生成过程中实时参数的基本信息"""
+        """
+        Prints basic information about real-time parameters during data generation.
+
+        :param n_inputs_points: The number of points of time series to generate.
+        :param input_dimension: The number of the input dimensions of time series to generate.
+        :param output_dimension: The number of the output dimensions of time series or symbol expression to generate.
+        :param max_trials: The maximum number of trials to generate and try.
+        :param input_normalize: Normalize the input time series, choice of 'z-score' or 'max-min' or None, defaults to 'z-score'.
+        :param output_normalize: Normalize the output time series, choice of 'z-score' or 'max-min' or None, defaults to 'z-score'.
+        :param input_max_scale: The scaling factor of the input time series to generate.
+        :param output_max_scale: The scaling factor of the output time series to generate.
+        :param offset: The offset mean and std for the input time series.
+        """
         # Record the time when program execution starts
         self.start_time = time.time()
 
+        # Print basic configuration information
         print(Style.BRIGHT + Fore.GREEN + self.basic_header + Style.RESET_ALL)
         print(self.basic_config)
 
+        # Print and organize configuration parameters related to data generation
         print(Style.BRIGHT + Fore.GREEN + self.generation_header + Style.RESET_ALL)
         self.generation_config = (
             f'  {"Time Series Length:":<20} {n_inputs_points:<20}'
@@ -167,13 +195,19 @@ class PrintStatus(object):
         self.logging_generation_config()
 
     def logging_generation_config(self) -> None:
+        """Register the most basic configuration information and the header for the status tables."""
         if self.logging:
             with open(self.file_path, "a", encoding="utf-8") as f:
                 f.write(self.generation_header + "\n")
                 f.write(self.generation_config + "\n")
 
     def print_new_status(self, status: List[str]) -> None:
-        """打印最新上传的状态信息"""
+        """
+        Print the latest uploaded status information.
+
+        :param status: The new status information to print.
+        """
+        # Assemble the status parameters from the list into a string
         message = ""
         for s in status:
             message += f" {s} |"
@@ -183,7 +217,11 @@ class PrintStatus(object):
         self.status_list.append(message)
 
     def update_symbol(self, status: str) -> None:
-        """更新生成符号表达式的状态信息"""
+        """
+        Updates the status information for generating symbolic expressions.
+
+        :param status: The new status information for `success` or `failure`.
+        """
         print(Style.BRIGHT + Fore.GREEN + self.process_header + Style.RESET_ALL)
         self.status_list.append(self.process_header)
         print("-" * len(self.sep))
@@ -207,7 +245,11 @@ class PrintStatus(object):
         )
 
     def update_excitation(self, status: str) -> None:
-        """更新生成激励时间序列数据的状态信息"""
+        """
+        Update the status information of the generated incentive time series data.
+
+        :param status: The new status information for `success` or `failure`.
+        """
         self.print_new_status(
             status=self.strip(
                 status=[
@@ -220,7 +262,11 @@ class PrintStatus(object):
         )
 
     def update_response(self, status: str) -> None:
-        """更新生成响应时间序列数据的状态信息"""
+        """
+        Updates the status information generated in response to time series data.
+
+        :param status: The new status information for `success` or `failure`.
+        """
         self.print_new_status(
             status=self.strip(
                 status=[
@@ -233,20 +279,28 @@ class PrintStatus(object):
         )
 
     def strip(self, status: List[str]) -> List[str]:
-        """根据输入的字符串对齐内容进行调整"""
+        """
+        Adjust the content according to the input string alignment.
+
+        :param status: The new status information for `success` or `failure`.
+        """
         status[0] = status[0] + (self.max_length[0] - len(status[0])) * " "
         status[1] = status[1] + (self.max_length[1] - len(status[1])) * " "
 
         return status
 
     def show_end(self, symbol: Node | NodeList | str) -> None:
-        """打印算法执行过程中表格的结尾信息"""
+        """
+        Print the end information of the table during the execution of the algorithm.
+
+        :param symbol: The symbol expression to generate (save the final results).
+        """
         print("-" * len(self.sep) + "\n")
 
-        # 将结尾信息添加到状态列表中
+        # Add the end information to the status list
         self.status_list.append("-" * len(self.sep))
 
-        # 打印并上传的符号表达式
+        # Print and upload symbolic expressions
         trees = str(symbol).split(" | ")
         print(
             Style.BRIGHT
@@ -258,11 +312,11 @@ class PrintStatus(object):
         # Record the time the program ends
         self.end_time = time.time()
 
-        # 计算程序执行的总时间
+        # Calculate the total execution time of the program
         running_time = round(self.end_time - self.start_time, 5)
 
         if self.logging:
-            # 上传数据生成过程中的所有报告
+            # All reports during the upload data generation process
             with open(self.file_path, "a", encoding="utf-8") as f:
                 for status in self.status_list:
                     f.write(
@@ -277,7 +331,7 @@ class PrintStatus(object):
                     f.write(tree + "\n")
                     print(tree)
 
-                # 打印并上传程序执行的具体时间
+                # Print and upload the specific time of program execution
                 print(
                     Style.BRIGHT
                     + Fore.GREEN
@@ -291,7 +345,7 @@ class PrintStatus(object):
             for tree in trees:
                 print(tree)
 
-            # 打印程序执行的具体时间
+            # Print the specific time when the program is executed
             print(
                 Style.BRIGHT
                 + Fore.GREEN
