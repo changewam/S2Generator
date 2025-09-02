@@ -490,6 +490,12 @@ class Generator(object):
             # Insert unary operators into the binary tree
             tree = self.add_unaries(rng, tree, nb_unary_ops_to_use[i])
 
+            if tree is None:
+                if return_all:
+                    return None, None, None, None, None
+                else:
+                    return None, None, None
+
             # Adding constants
             if self.symbol_params.reduce_num_constants:
                 tree = self.add_prefactors(rng, tree)
@@ -529,7 +535,7 @@ class Generator(object):
         else:
             return tree, input_dimension, output_dimension
 
-    def add_unaries(self, rng: RandomState, tree: Node, nb_unaries: int) -> Node:
+    def add_unaries(self, rng: RandomState, tree: Node, nb_unaries: int) -> Node | None:
         """Insert unary operators into a binary tree composed of binary operators and leaf nodes to increase diversity"""
         prefix = self._add_unaries(
             rng, tree
@@ -544,9 +550,12 @@ class Generator(object):
             to_remove = indices[: len(indices) - nb_unaries]
             for index in sorted(to_remove, reverse=True):
                 del prefix[index]
-        tree = self.equation_encoder.decode(prefix).nodes[
-            0
-        ]  # Decode using the symbol encoder
+
+        # Decode using the symbol encoder
+        symbol = self.equation_encoder.decode(prefix)
+        if symbol is None:
+            return None
+        tree = symbol.nodes[0]
         return tree
 
     def _add_unaries(self, rng: RandomState, tree: Node) -> str:
@@ -838,6 +847,8 @@ class Generator(object):
             output_dimension=output_dimension,
             return_all=False,
         )
+        if trees is None:
+            return None, None, None
 
         # Update the success for the generation of the Symbolic Expression
         self.status.update_symbol(status="success")
@@ -990,6 +1001,9 @@ class Generator(object):
                 return_all=False,
             )
 
+            if trees is None:
+                return None, None, None
+
             # Store the generated sequence data
             inputs, outputs = [], []
 
@@ -1049,10 +1063,10 @@ class Generator(object):
             if output_normalize is None:
                 pass
             if output_normalize == "z-score":
-                for dim in range(input_dimension):
+                for dim in range(output_dimension):
                     outputs[:, dim] = z_score_normalization(x=outputs[:, dim])
             elif output_normalize == "max-min":
-                for dim in range(input_dimension):
+                for dim in range(output_dimension):
                     outputs[:, dim] = max_min_normalization(x=outputs[:, dim])
             else:
                 raise ValueError(
