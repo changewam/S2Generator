@@ -38,7 +38,6 @@ symbol_params = SymbolParams(max_trials=64)
 generator = Generator(series_params, symbol_params)
 
 
-# 示例处理函数 - 您可以根据需要修改这个函数
 def process_item(item: int) -> str:
     """
     Process a single item (random seed) to generate and save S2 data.
