@@ -10,7 +10,7 @@ Created on 2025/08/18 23:31:37
 """
 import numpy as np
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, Union, List, Dict, Any, Tuple
 
 from S2Generator.params import SeriesParams
 from S2Generator.excitation import (
@@ -49,7 +49,7 @@ class Excitation(object):
         n_inputs_points: int,
         input_dimension: Optional[int] = 1,
         normalization: Optional[str] = None,
-        return_choice_list: Optional[bool] = None,
+        return_choice: Optional[bool] = None,
     ) -> np.ndarray | List[str]:
         """Call the `generate` method to stimulate time series generation"""
         return self.generate(
@@ -57,7 +57,7 @@ class Excitation(object):
             n_inputs_points=n_inputs_points,
             input_dimension=input_dimension,
             normalization=normalization,
-            return_choice_list=return_choice_list,
+            return_choice=return_choice,
         )
 
     def __str__(self) -> str:
@@ -278,8 +278,8 @@ class Excitation(object):
         n_inputs_points: int,
         input_dimension: Optional[int] = 1,
         normalization: Optional[str] = None,
-        return_choice_list: Optional[bool] = False,
-    ) -> np.ndarray | List[str]:
+        return_choice: Optional[bool] = False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, Union[List[Any], np.ndarray]]]:
         """
         A unified interface for generating stimulus time series data.
 
@@ -295,7 +295,7 @@ class Excitation(object):
         :param n_inputs_points: The length of time series data to be generated.
         :param input_dimension: The dimension of time series data to be generated.
         :param normalization: The normalization method to use, None for no normalization, choice in ["z-score", "max-min"].
-        :param return_choice_list: If True, return a list of the selected methods.
+        :param return_choice: If True, return a list of the selected methods.
 
         :return: The generated time series data and the selected methods (Optional).
         """
@@ -316,8 +316,8 @@ class Excitation(object):
 
         # 3. Whether to normalize the stimulus time series data
         if normalization is None:
-            return time_series
-        if normalization == "z-score":
+            pass
+        elif normalization == "z-score":
             for dim in range(input_dimension):
                 time_series[:, dim] = z_score_normalization(x=time_series[:, dim])
         elif normalization == "max-min":
@@ -328,20 +328,7 @@ class Excitation(object):
                 "The normalization option must be 'z-score' or 'max-min' or None!"
             )
 
-        if return_choice_list:
+        if return_choice:
+            # 是否要返回每个通道采样方式的字典
             return time_series, choice_list
         return time_series
-
-
-if __name__ == "__main__":
-    from matplotlib import pyplot as plt
-
-    excitation = Excitation()
-
-    for i in range(20, 60):
-        time_series = excitation.generate(
-            np.random.RandomState(i), n_inputs_points=100, input_dimension=3
-        )
-        print(time_series.shape)
-        # plt.plot(time_series)
-        # plt.show()

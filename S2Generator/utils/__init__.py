@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+This module primarily houses tools and auxiliary functions or classes,
+including functions for converting string notation into Markdown syntax,
+normalizing time series data,
+obtaining the current time,
+saving and loading S2 data,
+and calculating and measuring the similarity between two time series datasets.
+
 Created on 2025/08/3 00:01:56
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com

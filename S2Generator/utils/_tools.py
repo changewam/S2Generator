@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+This file primarily contains utility functions,
+such as those for obtaining the current time,
+ensuring the existence of a specified directory,
+saving and loading S2 data,
+and performing two different normalization operations.
+
 Created on 2025/08/23 17:09:18
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
@@ -14,6 +20,7 @@ __all__ = [
     "load_s2data",
     "load_npz",
     "load_npy",
+    "is_all_zeros",
     "z_score_normalization",
     "max_min_normalization",
 ]
@@ -22,6 +29,7 @@ import os
 from os import path
 from datetime import datetime
 import numpy as np
+from numpy import bool_
 
 from typing import Optional, Dict, Union, Tuple
 
@@ -31,12 +39,6 @@ from S2Generator import Node, NodeList
 def get_time_now():
     """Get current time to string"""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-
-import os
-from os import path
-import numpy as np
-from typing import Dict, Union, Tuple, Optional
 
 
 def ensure_directory_exists(file_path: str) -> str:
@@ -73,8 +75,8 @@ def ensure_directory_exists(file_path: str) -> str:
 
 def save_s2data(
     symbol: Union[str, "Node", "NodeList"],
-    excitation: np.ndarray,
-    response: np.ndarray,
+    excitation: Union[int, bool, float, np.ndarray],
+    response: Union[int, bool, float, np.ndarray],
     save_path: str = None,
 ) -> bool:
     """
@@ -159,7 +161,14 @@ def save_npy(
 
 def load_s2data(
     data_path: str,
-) -> Union[Tuple[Union[str, "Node", "NodeList"], np.ndarray, np.ndarray], None]:
+) -> Union[
+    Tuple[
+        Union[str, "Node", "NodeList"],
+        Union[int, bool, float, np.ndarray],
+        Union[int, bool, float, np.ndarray],
+    ],
+    None,
+]:
     """
     Loads S2 data (symbolic expressions and time series) previously saved with save_s2data.
 
@@ -206,7 +215,7 @@ def load_npy(
     """
     try:
         data = np.load(data_path, allow_pickle=True)
-        return data
+        return data.tolist()
     except Exception as e:
         print(f"Error loading NPY file: {e}")
         return None
@@ -229,46 +238,57 @@ def load_npz(
         return None
 
 
-def z_score_normalization(x: np.ndarray) -> np.ndarray:
+def is_all_zeros(arr: np.ndarray) -> Union[bool, bool_, None, np.ndarray]:
+    """
+    Determine whether the input array is all 0.
+
+    :param arr: Array to be checked.
+    :return: Boolean indicating success status of the check.
+    """
+    return np.all(arr == 0)
+
+
+def z_score_normalization(x: np.ndarray) -> np.ndarray | None:
     """
     Perform Z-score normalization on the input time series.
 
     :param x: Input two-dimensional time series with [n_points, n_dims] in NumPy.
     :return: Normalized time series with origin shape.
     """
-    return (x - np.mean(x, axis=0, keepdims=True)) / np.std(x, axis=0, keepdims=True)
+    if is_all_zeros(x):
+        # Make sure the input array is not all 0
+        return None
+    elif np.isinf(x).any():
+        # Make sure the input array does not contain infinity
+        return None
+    elif np.isnan(x).any():
+        # Ensure that the input array does not contain NaN values
+        return None
+    else:
+        # Normalize array alignment for normal value range
+        return (x - np.mean(x, axis=0, keepdims=True)) / np.std(
+            x, axis=0, keepdims=True
+        )
 
 
-def max_min_normalization(x: np.ndarray) -> np.ndarray:
+def max_min_normalization(x: np.ndarray) -> np.ndarray | None:
     """
     Perform min-max normalization on the input time series.
 
     :param x: Input two-dimensional time series with [n_points, n_dims] in NumPy.
     :return: Normalized time series with origin shape.
     """
-    return (x - np.min(x, axis=0, keepdims=True)) / (
-        np.max(x, axis=0, keepdims=True) - np.min(x, axis=0, keepdims=True)
-    )
-
-
-if __name__ == "__main__":
-    symbol = "AAPL"
-    excitation = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
-    response = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
-
-    status = save_s2data(
-        symbol=symbol,
-        excitation=excitation,
-        response=response,
-        save_path="../../data/s2data.npz",
-    )
-    status = save_s2data(
-        symbol=symbol,
-        excitation=excitation,
-        response=response,
-        save_path="../../data/s2data.npy",
-    )
-    print(status)
-
-    symbol, excitation, response = load_s2data("../../data/s2data.npz")
-    print(symbol, excitation, response)
+    if is_all_zeros(x):
+        # Make sure the input array is not all 0
+        return None
+    elif np.isinf(x).any():
+        # Make sure the input array does not contain infinity
+        return None
+    elif np.isnan(x).any():
+        # Ensure that the input array does not contain NaN values
+        return None
+    else:
+        # Normalize array alignment for normal value range
+        return (x - np.min(x, axis=0, keepdims=True)) / (
+            np.max(x, axis=0, keepdims=True) - np.min(x, axis=0, keepdims=True)
+        )

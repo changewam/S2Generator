@@ -15,6 +15,7 @@ import numpy as np
 from S2Generator.utils import (
     wasserstein_distance,
     wasserstein_distance_matrix,
+    plot_wasserstein_heatmap,
 )
 from S2Generator.utils._wasserstein_distance import (
     dataset_max_min_normalization,
@@ -168,7 +169,7 @@ class TestWasserstein(unittest.TestCase):
         self.assertIsInstance(covar_value, float, msg="Covariance return type error!")
 
     def test_wasserstein_distance_matrix(self) -> None:
-        """测试多个时间序列数据集之间Wasserstein距离矩阵的计算"""
+        """Test the calculation of Wasserstein distance matrix between multiple time series data sets"""
         # Create the list of test datasets
         datasets = [np.random.randn(self.n_samples, self.n_length) for _ in range(10)]
 
@@ -188,6 +189,22 @@ class TestWasserstein(unittest.TestCase):
                     second=distance_matrix[j, i],
                     msg="Distance matrix mismatch!",
                 )
+
+    def test_plot_wasserstein_heatmap(self) -> None:
+        """Functions for testing matrices for visualization"""
+        # Creating a matrix for visualization
+        matrix = np.random.randn(10, 10)
+
+        # Create a list of dataset indices
+        data_list = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+
+        for i in range(len(data_list)):
+            data_list[i] = data_list[i] * 3
+
+        # Execute visualization algorithm
+        plot_wasserstein_heatmap(
+            matrix, data_list, figsize=(8, 6), dpi=200, fontsize=10, cmap="Blues"
+        )
 
 
 if __name__ == "__main__":
