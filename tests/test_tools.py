@@ -232,9 +232,20 @@ class TestTools(unittest.TestCase):
 
     def test_save_npz(self) -> None:
         """测试用于将数据保存为npz格式的函数"""
+        # 测试正常的保存地址
+        status = save_npz(data=self.data, save_path=self.npz_path)
+        self.assertTrue(expr=status, msg="加载正确的保存地址")
 
     def test_load_npz(self) -> None:
         """测试用于加载npz格式的数据的函数"""
+        # 测试正确的加载地址
+        data = load_npz(data_path=self.npz_path)
+
+        for key in self.data.keys():
+            # 判断数据的内容是否一致
+            self.assertEqual(
+                first=data[key], second=self.data[key], msg="保存字典中的数据不一致"
+            )
 
     def test_save_s2data(self) -> None:
         """测试用于保存S2数据的函数"""
