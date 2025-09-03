@@ -8,6 +8,9 @@ __all__ = [
     "SeriesParams",
     "SymbolParams",
     "Generator",
+    "GeneralEncoder",
+    "FloatSequences",
+    "Equation",
     "plot_series",
     "plot_symbol",
     "print_ascii",
@@ -25,6 +28,9 @@ from .params import SeriesParams, SymbolParams
 
 # S2 Data Generator
 from .generators import Generator
+
+# The encoder for symbol and number
+from .encoders import GeneralEncoder, FloatSequences, Equation
 
 # Generic interface for generating stimulus time series data
 from .excitation import Excitation
