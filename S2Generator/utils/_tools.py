@@ -208,7 +208,7 @@ def load_npy(
     """
     try:
         data = np.load(data_path, allow_pickle=True)
-        return data
+        return data.tolist()
     except Exception as e:
         print(f"Error loading NPY file: {e}")
         return None

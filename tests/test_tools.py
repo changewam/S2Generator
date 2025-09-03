@@ -45,14 +45,17 @@ class TestTools(unittest.TestCase):
     nan_series[-1, -1] = np.nan
 
     # 测试npy数据的地址
-    npy_path = './data/data.npy'
+    npy_path = "./data/data.npy"
 
     # 测试npz的地址
-    npz_path = './data/data.npz'
+    npz_path = "./data/data.npz"
 
     # 测试S2数据的地址
-    s2_npy_path = './data/s2data.npy'
-    s2_npz_path = './data/s2data.npz'
+    s2_npy_path = "./data/s2data.npy"
+    s2_npz_path = "./data/s2data.npz"
+
+    # 创建用于保存的样例数据
+    data = {"symbol": "hello", "excitation": 256, "response": 256}
 
     def test_z_score_normalization(self) -> None:
         """测试z-score标准化的函数"""
@@ -165,10 +168,14 @@ class TestTools(unittest.TestCase):
     def test_is_all_zeros(self) -> None:
         """测试判断一段时间序列是否为全0的函数"""
         # 先测试一段全0序列
-        self.assertTrue(expr=is_all_zeros(self.zero_series), msg="测试全零时间序列输入错误!")
+        self.assertTrue(
+            expr=is_all_zeros(self.zero_series), msg="测试全零时间序列输入错误!"
+        )
 
         # 测试非0序列
-        self.assertTrue(expr=not is_all_zeros(self.time_series), msg="测试非全零时间序列输入错误!")
+        self.assertTrue(
+            expr=not is_all_zeros(self.time_series), msg="测试非全零时间序列输入错误!"
+        )
 
     def test_get_time_now(self) -> None:
         """测试获取当前时间信息的函数"""
@@ -190,20 +197,38 @@ class TestTools(unittest.TestCase):
             # 如果这个目录不存在则开始验证
             ensure_directory_exists(dir_path)
             # 判断新创建的目录是存在的
-            self.assertTrue(expr=path.exists(path=dir_path))
+            self.assertTrue(
+                expr=path.exists(path=dir_path), msg="如果这个目录不存在则开始验证"
+            )
 
         else:
             # 当这个目录已存在在创建时返回文件名称
             return_path = ensure_directory_exists(dir_path)
             self.assertEqual(
-                first=return_path, second=path.join(dir_path, "s2data.npz")
+                first=return_path,
+                second=path.join(
+                    dir_path,
+                    "s2data.npz",
+                ),
+                msg="在创建时返回文件名称",
             )
 
     def test_save_npy(self) -> None:
         """测试用于将数据保存为npy格式的函数"""
+        # 测试正常的保存地址
+        status = save_npy(data=self.data, save_path=self.npy_path)
+        self.assertTrue(expr=status, msg="加载正确的保存地址")
 
     def test_load_npy(self) -> None:
         """测试用于加载npy格式的数据的函数"""
+        # 测试正确的加载地址
+        data = load_npy(data_path=self.npy_path)
+
+        for key in self.data.keys():
+            # 判断数据的内容是否一致
+            self.assertEqual(
+                first=data[key], second=self.data[key], msg="保存字典中的数据不一致"
+            )
 
     def test_save_npz(self) -> None:
         """测试用于将数据保存为npz格式的函数"""
@@ -219,4 +244,7 @@ class TestTools(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    data = load_npy(data_path="./data/data.npy")
+    print(data)
+
     unittest.main()
