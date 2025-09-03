@@ -20,6 +20,7 @@ __all__ = [
     "load_s2data",
     "load_npz",
     "load_npy",
+    "is_all_zeros",
     "z_score_normalization",
     "max_min_normalization",
 ]
@@ -28,6 +29,7 @@ import os
 from os import path
 from datetime import datetime
 import numpy as np
+from numpy import bool_
 
 from typing import Optional, Dict, Union, Tuple
 
@@ -229,23 +231,57 @@ def load_npz(
         return None
 
 
-def z_score_normalization(x: np.ndarray) -> np.ndarray:
+def is_all_zeros(arr: np.ndarray) -> Union[bool, bool_, None, np.ndarray]:
+    """
+    Determine whether the input array is all 0.
+
+    :param arr: Array to be checked.
+    :return: Boolean indicating success status of the check.
+    """
+    return np.all(arr == 0)
+
+
+def z_score_normalization(x: np.ndarray) -> np.ndarray | None:
     """
     Perform Z-score normalization on the input time series.
 
     :param x: Input two-dimensional time series with [n_points, n_dims] in NumPy.
     :return: Normalized time series with origin shape.
     """
-    return (x - np.mean(x, axis=0, keepdims=True)) / np.std(x, axis=0, keepdims=True)
+    if is_all_zeros(x):
+        # Make sure the input array is not all 0
+        return None
+    elif np.isinf(x).any():
+        # Make sure the input array does not contain infinity
+        return None
+    elif np.isnan(x).any():
+        # Ensure that the input array does not contain NaN values
+        return None
+    else:
+        # Normalize array alignment for normal value range
+        return (x - np.mean(x, axis=0, keepdims=True)) / np.std(
+            x, axis=0, keepdims=True
+        )
 
 
-def max_min_normalization(x: np.ndarray) -> np.ndarray:
+def max_min_normalization(x: np.ndarray) -> np.ndarray | None:
     """
     Perform min-max normalization on the input time series.
 
     :param x: Input two-dimensional time series with [n_points, n_dims] in NumPy.
     :return: Normalized time series with origin shape.
     """
-    return (x - np.min(x, axis=0, keepdims=True)) / (
-        np.max(x, axis=0, keepdims=True) - np.min(x, axis=0, keepdims=True)
-    )
+    if is_all_zeros(x):
+        # Make sure the input array is not all 0
+        return None
+    elif np.isinf(x).any():
+        # Make sure the input array does not contain infinity
+        return None
+    elif np.isnan(x).any():
+        # Ensure that the input array does not contain NaN values
+        return None
+    else:
+        # Normalize array alignment for normal value range
+        return (x - np.min(x, axis=0, keepdims=True)) / (
+            np.max(x, axis=0, keepdims=True) - np.min(x, axis=0, keepdims=True)
+        )
