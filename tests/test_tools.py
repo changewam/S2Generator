@@ -249,9 +249,43 @@ class TestTools(unittest.TestCase):
 
     def test_save_s2data(self) -> None:
         """测试用于保存S2数据的函数"""
+        # 测试将数据保存为npy格式
+        status = save_s2data(
+            save_path=self.s2_npy_path,
+            symbol=self.data["symbol"],
+            excitation=self.data["excitation"],
+            response=self.data["response"],
+        )
+        self.assertTrue(expr=status, msg="加载正确的保存地址")
+
+        # 测试将数据保存为npz格式
+        status = save_s2data(
+            save_path=self.s2_npz_path,
+            symbol=self.data["symbol"],
+            excitation=self.data["excitation"],
+            response=self.data["response"],
+        )
+        self.assertTrue(expr=status, msg="加载正确的保存地址")
 
     def test_load_s2data(self) -> None:
         """测试用于加载S2数据的函数"""
+        # 测试加载npy格式的数据
+        symbol, excitation, response = load_s2data(data_path=self.s2_npy_path)
+
+        # 验证内部数据是否一致
+        self.assertEqual(
+            first=symbol, second=self.data["symbol"], msg="读取的符号表达式数据不相等!"
+        )
+        self.assertEqual(
+            first=excitation,
+            second=self.data["excitation"],
+            msg="读取的激励时间序列数据不相等!",
+        )
+        self.assertEqual(
+            first=response,
+            second=self.data["response"],
+            msg="读取的响应时间序列数据不相等!",
+        )
 
 
 if __name__ == "__main__":

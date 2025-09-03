@@ -75,8 +75,8 @@ def ensure_directory_exists(file_path: str) -> str:
 
 def save_s2data(
     symbol: Union[str, "Node", "NodeList"],
-    excitation: np.ndarray,
-    response: np.ndarray,
+    excitation: Union[int, bool, float, np.ndarray],
+    response: Union[int, bool, float, np.ndarray],
     save_path: str = None,
 ) -> bool:
     """
@@ -161,7 +161,14 @@ def save_npy(
 
 def load_s2data(
     data_path: str,
-) -> Union[Tuple[Union[str, "Node", "NodeList"], np.ndarray, np.ndarray], None]:
+) -> Union[
+    Tuple[
+        Union[str, "Node", "NodeList"],
+        Union[int, bool, float, np.ndarray],
+        Union[int, bool, float, np.ndarray],
+    ],
+    None,
+]:
     """
     Loads S2 data (symbolic expressions and time series) previously saved with save_s2data.
 
