@@ -168,7 +168,7 @@ class TestWasserstein(unittest.TestCase):
         self.assertIsInstance(covar_value, float, msg="Covariance return type error!")
 
     def test_wasserstein_distance_matrix(self) -> None:
-        """测试多个时间序列数据集之间Wasserstein距离矩阵的计算"""
+        """Test the calculation of Wasserstein distance matrix between multiple time series data sets"""
         # Create the list of test datasets
         datasets = [np.random.randn(self.n_samples, self.n_length) for _ in range(10)]
 

@@ -24,7 +24,6 @@ from .base import Node, NodeList
 from .params import SeriesParams, SymbolParams
 
 # S2 Data Generator
-# TODO: 在这里的Generator中可以给出一个参数来控制是否显示生成的信息
 from .generators import Generator
 
 # Generic interface for generating stimulus time series data

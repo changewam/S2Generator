@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+This file primarily contains utility functions,
+such as those for obtaining the current time,
+ensuring the existence of a specified directory,
+saving and loading S2 data,
+and performing two different normalization operations.
+
 Created on 2025/08/23 17:09:18
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
@@ -31,12 +37,6 @@ from S2Generator import Node, NodeList
 def get_time_now():
     """Get current time to string"""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-
-import os
-from os import path
-import numpy as np
-from typing import Dict, Union, Tuple, Optional
 
 
 def ensure_directory_exists(file_path: str) -> str:
@@ -249,26 +249,3 @@ def max_min_normalization(x: np.ndarray) -> np.ndarray:
     return (x - np.min(x, axis=0, keepdims=True)) / (
         np.max(x, axis=0, keepdims=True) - np.min(x, axis=0, keepdims=True)
     )
-
-
-if __name__ == "__main__":
-    symbol = "AAPL"
-    excitation = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
-    response = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
-
-    status = save_s2data(
-        symbol=symbol,
-        excitation=excitation,
-        response=response,
-        save_path="../../data/s2data.npz",
-    )
-    status = save_s2data(
-        symbol=symbol,
-        excitation=excitation,
-        response=response,
-        save_path="../../data/s2data.npy",
-    )
-    print(status)
-
-    symbol, excitation, response = load_s2data("../../data/s2data.npz")
-    print(symbol, excitation, response)
