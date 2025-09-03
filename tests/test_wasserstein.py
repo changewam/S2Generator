@@ -191,7 +191,20 @@ class TestWasserstein(unittest.TestCase):
                 )
 
     def test_plot_wasserstein_heatmap(self) -> None:
-        """"""
+        """Functions for testing matrices for visualization"""
+        # Creating a matrix for visualization
+        matrix = np.random.randn(10, 10)
+
+        # Create a list of dataset indices
+        data_list = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+
+        for i in range(len(data_list)):
+            data_list[i] = data_list[i] * 3
+
+        # Execute visualization algorithm
+        plot_wasserstein_heatmap(
+            matrix, data_list, figsize=(8, 6), dpi=200, fontsize=10, cmap="Blues"
+        )
 
 
 if __name__ == "__main__":
