@@ -15,6 +15,7 @@ import numpy as np
 from S2Generator.utils import (
     wasserstein_distance,
     wasserstein_distance_matrix,
+    plot_wasserstein_heatmap,
 )
 from S2Generator.utils._wasserstein_distance import (
     dataset_max_min_normalization,
@@ -188,6 +189,9 @@ class TestWasserstein(unittest.TestCase):
                     second=distance_matrix[j, i],
                     msg="Distance matrix mismatch!",
                 )
+
+    def test_plot_wasserstein_heatmap(self) -> None:
+        """"""
 
 
 if __name__ == "__main__":

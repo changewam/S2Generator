@@ -26,270 +26,341 @@ from S2Generator.utils._tools import (
 
 
 class TestTools(unittest.TestCase):
-    """对工具模块的函数进行单元测试"""
+    """
+    Unit tests for utility functions in the tools module.
 
-    # 构建输入序列
+    This test suite validates the functionality of various utility functions
+    including normalization methods, file operations, and data validation.
+    """
+
+    # Create test time series data
     time_series = np.random.uniform(low=-10, high=10, size=(256, 10))
 
-    # 构建全0时间序列
+    # Create all-zero time series for edge case testing
     zero_series = np.zeros((256, 10))
 
-    # 构建含有无穷大数值的时间序列
+    # Create time series with infinite values for edge case testing
     inf_series = np.random.uniform(low=-10, high=10, size=(256, 10))
     inf_series[0, 0] = np.inf
     inf_series[-1, -1] = -np.inf
 
-    # 构建含有NaN值的时间序列
+    # Create time series with NaN values for edge case testing
     nan_series = np.random.uniform(low=-10, high=10, size=(256, 10))
     nan_series[0, 0] = np.nan
     nan_series[-1, -1] = np.nan
 
-    # 测试npy数据的地址
+    # Define file paths for testing
     npy_path = "./data/data.npy"
-
-    # 测试npz的地址
     npz_path = "./data/data.npz"
-
-    # 测试S2数据的地址
     s2_npy_path = "./data/s2data.npy"
     s2_npz_path = "./data/s2data.npz"
 
-    # 创建用于保存的样例数据
+    # Create sample data for file operation tests
     data = {"symbol": "hello", "excitation": 256, "response": 256}
 
     def test_z_score_normalization(self) -> None:
-        """测试z-score标准化的函数"""
-        # 执行标准化算法
+        """
+        Tests the z-score normalization function with valid input data.
+
+        Validates that normalized data has:
+        - Mean close to 0
+        - Standard deviation close to 1
+        """
+        # Apply z-score normalization
         normalized = z_score_normalization(self.time_series)
 
-        # 检验均值和方差
+        # Validate mean and standard deviation
         self.assertAlmostEqual(
             first=np.mean(normalized),
             second=0,
             delta=0.01,
-            msg="z-score normalization failed in mean test!",
+            msg="Z-score normalization failed mean validation!",
         )
         self.assertAlmostEqual(
             first=np.mean(np.std(normalized, axis=0, keepdims=True)),
             second=1,
             delta=0.01,
-            msg="z-score normalization failed in std test!",
+            msg="Z-score normalization failed standard deviation validation!",
         )
 
     def test_z_score_normalization_zero(self) -> None:
-        """测试z-score标准化函数对全0时间序列的NaN值结果"""
-        # 测试全0时间序列的错误结果
-        normalized = z_score_normalization(self.zero_series)
+        """
+        Tests z-score normalization with all-zero input series.
 
+        Validates that the function returns None for all-zero input.
+        """
+        normalized = z_score_normalization(self.zero_series)
         self.assertEqual(
             first=normalized,
             second=None,
-            msg="输入为全零时间序列！",
+            msg="Function should return None for all-zero input series!",
         )
 
     def test_z_score_normalization_inf(self) -> None:
-        """测试z-score标准化算法对含有无穷大数值的返回结果"""
-        # 测试含无穷大数值的时间序列的错误结果
-        normalized = z_score_normalization(self.zero_series)
+        """
+        Tests z-score normalization with input containing infinite values.
 
+        Validates that the function returns None for input with infinite values.
+        """
+        normalized = z_score_normalization(self.inf_series)
         self.assertEqual(
             first=normalized,
             second=None,
-            msg="输入为含有无穷大时间序列！",
+            msg="Function should return None for input with infinite values!",
         )
 
     def test_z_score_normalization_nan(self) -> None:
-        """测试z-score标准化算法对含有NaN数值的返回结果"""
-        # 测试含NaN数值的时间序列的错误结果
-        normalized = z_score_normalization(self.zero_series)
+        """
+        Tests z-score normalization with input containing NaN values.
 
+        Validates that the function returns None for input with NaN values.
+        """
+        normalized = z_score_normalization(self.nan_series)
         self.assertEqual(
             first=normalized,
             second=None,
-            msg="输入为含有NaN时间序列！",
+            msg="Function should return None for input with NaN values!",
         )
 
     def test_max_min_normalization(self) -> None:
-        """测试max-min标准化算法的函数"""
-        # 执行标准化算法
+        """
+        Tests max-min normalization function with valid input data.
+
+        Validates that normalized data has:
+        - Maximum values close to 1
+        - Minimum values close to 0
+        """
+        # Apply max-min normalization
         normalized = max_min_normalization(self.time_series)
 
+        # Validate maximum and minimum values for each dimension
         for i in range(normalized.shape[1]):
-            # 获取其中的一段时间序列
-            time = normalized[:, i]
-
-            # 验证其中的最大值和最小值
+            time_dim = normalized[:, i]
             self.assertAlmostEqual(
-                first=np.max(time),
+                first=np.max(time_dim),
                 second=1,
                 delta=1e-3,
-                msg="max-min normalization failed in max-value test!",
+                msg="Max-min normalization failed maximum value validation!",
             )
             self.assertAlmostEqual(
-                first=np.min(time),
+                first=np.min(time_dim),
                 second=0,
                 delta=1e-3,
-                msg="max-min normalization failed in max-value test!",
+                msg="Max-min normalization failed minimum value validation!",
             )
 
     def test_max_min_normalization_zero(self) -> None:
-        """测试max_min标准化函数对全0时间序列的NaN值结果"""
-        # 测试全0时间序列的错误结果
-        normalized = max_min_normalization(self.zero_series)
+        """
+        Tests max-min normalization with all-zero input series.
 
+        Validates that the function returns None for all-zero input.
+        """
+        normalized = max_min_normalization(self.zero_series)
         self.assertEqual(
             first=normalized,
             second=None,
-            msg="输入为全零时间序列！",
+            msg="Function should return None for all-zero input series!",
         )
 
     def test_max_min_normalization_inf(self) -> None:
-        """测试z-score标准化算法对含有无穷大数值的返回结果"""
-        # 测试含无穷大数值的时间序列的错误结果
-        normalized = max_min_normalization(self.zero_series)
+        """
+        Tests max-min normalization with input containing infinite values.
 
+        Validates that the function returns None for input with infinite values.
+        """
+        normalized = max_min_normalization(self.inf_series)
         self.assertEqual(
             first=normalized,
             second=None,
-            msg="输入为含有无穷大时间序列！",
+            msg="Function should return None for input with infinite values!",
         )
 
     def test_max_min_normalization_nan(self) -> None:
-        """测试z-score标准化算法对含有NaN数值的返回结果"""
-        # 测试含NaN数值的时间序列的错误结果
-        normalized = max_min_normalization(self.zero_series)
+        """
+        Tests max-min normalization with input containing NaN values.
 
+        Validates that the function returns None for input with NaN values.
+        """
+        normalized = max_min_normalization(self.nan_series)
         self.assertEqual(
             first=normalized,
             second=None,
-            msg="输入为含有NaN时间序列！",
+            msg="Function should return None for input with NaN values!",
         )
 
     def test_is_all_zeros(self) -> None:
-        """测试判断一段时间序列是否为全0的函数"""
-        # 先测试一段全0序列
+        """
+        Tests the function that detects all-zero time series.
+
+        Validates that:
+        - All-zero series are correctly identified
+        - Non-zero series are correctly identified as not all-zero
+        """
+        # Test all-zero series
         self.assertTrue(
-            expr=is_all_zeros(self.zero_series), msg="测试全零时间序列输入错误!"
+            expr=is_all_zeros(self.zero_series),
+            msg="All-zero series should return True!",
         )
 
-        # 测试非0序列
-        self.assertTrue(
-            expr=not is_all_zeros(self.time_series), msg="测试非全零时间序列输入错误!"
+        # Test non-zero series
+        self.assertFalse(
+            expr=is_all_zeros(self.time_series),
+            msg="Non-zero series should return False!",
         )
 
     def test_get_time_now(self) -> None:
-        """测试获取当前时间信息的函数"""
-        # 获取当前的时间
-        now = get_time_now()
-        # 检验数据类型
-        self.assertIsInstance(obj=now, cls=str)
+        """
+        Tests the function that returns current timestamp.
 
-        # 检验数据的格式
-        ymd = now.split(" ")[0]
-        self.assertEqual(first=len(ymd), second=4 + 2 + 2 + 2)
+        Validates that:
+        - Return value is a string
+        - Format follows expected pattern (YYYYMMDDHHMMSS)
+        """
+        current_time = get_time_now()
+
+        # Validate return type
+        self.assertIsInstance(obj=current_time, cls=str)
+
+        # Validate format (extract date part and check length)
+        date_part = current_time.split(" ")[0]
+        self.assertEqual(
+            first=len(date_part), second=8, msg="Date format should be YYYYMMDD!"
+        )
 
     def test_ensure_directory_exists(self) -> None:
-        """测试确保当前目录存在的函数"""
-        # 尝试生成一个目录
-        dir_path = "./data"
+        """
+        Tests the directory creation utility function.
 
-        if not path.exists(dir_path):
-            # 如果这个目录不存在则开始验证
-            ensure_directory_exists(dir_path)
-            # 判断新创建的目录是存在的
+        Validates that:
+        - Directories are created when they don't exist
+        - Correct file paths are returned for both directory and file inputs
+        """
+        test_dir = "./data"
+
+        if not path.exists(test_dir):
+            # Test directory creation
+            ensure_directory_exists(test_dir)
             self.assertTrue(
-                expr=path.exists(path=dir_path), msg="如果这个目录不存在则开始验证"
+                expr=path.exists(path=test_dir),
+                msg="Directory should be created when it doesn't exist!",
             )
-
         else:
-            # 当这个目录已存在在创建时返回文件名称
-            return_path = ensure_directory_exists(dir_path)
+            # Test path return for existing directory
+            return_path = ensure_directory_exists(test_dir)
+            expected_path = path.join(test_dir, "s2data.npz")
             self.assertEqual(
                 first=return_path,
-                second=path.join(
-                    dir_path,
-                    "s2data.npz",
-                ),
-                msg="在创建时返回文件名称",
+                second=expected_path,
+                msg="Should return path with default filename for directory input!",
             )
 
     def test_save_npy(self) -> None:
-        """测试用于将数据保存为npy格式的函数"""
-        # 测试正常的保存地址
+        """
+        Tests the function that saves data to NPY format.
+
+        Validates that the save operation returns success status.
+        """
         status = save_npy(data=self.data, save_path=self.npy_path)
-        self.assertTrue(expr=status, msg="加载正确的保存地址")
+        self.assertTrue(
+            expr=status, msg="NPY save operation should return True on success!"
+        )
 
     def test_load_npy(self) -> None:
-        """测试用于加载npy格式的数据的函数"""
-        # 测试正确的加载地址
-        data = load_npy(data_path=self.npy_path)
+        """
+        Tests the function that loads data from NPY format.
 
+        Validates that loaded data matches the original saved data.
+        """
+        loaded_data = load_npy(data_path=self.npy_path)
+
+        # Validate all key-value pairs match
         for key in self.data.keys():
-            # 判断数据的内容是否一致
             self.assertEqual(
-                first=data[key], second=self.data[key], msg="保存字典中的数据不一致"
+                first=loaded_data[key],
+                second=self.data[key],
+                msg="Loaded data should match original data!",
             )
 
     def test_save_npz(self) -> None:
-        """测试用于将数据保存为npz格式的函数"""
-        # 测试正常的保存地址
+        """
+        Tests the function that saves data to NPZ format.
+
+        Validates that the save operation returns success status.
+        """
         status = save_npz(data=self.data, save_path=self.npz_path)
-        self.assertTrue(expr=status, msg="加载正确的保存地址")
+        self.assertTrue(
+            expr=status, msg="NPZ save operation should return True on success!"
+        )
 
     def test_load_npz(self) -> None:
-        """测试用于加载npz格式的数据的函数"""
-        # 测试正确的加载地址
-        data = load_npz(data_path=self.npz_path)
+        """
+        Tests the function that loads data from NPZ format.
 
+        Validates that loaded data matches the original saved data.
+        """
+        loaded_data = load_npz(data_path=self.npz_path)
+
+        # Validate all key-value pairs match
         for key in self.data.keys():
-            # 判断数据的内容是否一致
             self.assertEqual(
-                first=data[key], second=self.data[key], msg="保存字典中的数据不一致"
+                first=loaded_data[key],
+                second=self.data[key],
+                msg="Loaded data should match original data!",
             )
 
     def test_save_s2data(self) -> None:
-        """测试用于保存S2数据的函数"""
-        # 测试将数据保存为npy格式
+        """
+        Tests the function that saves S2 data in multiple formats.
+
+        Validates that save operations return success status for both NPY and NPZ formats.
+        """
+        # Test NPY format
         status = save_s2data(
             save_path=self.s2_npy_path,
             symbol=self.data["symbol"],
             excitation=self.data["excitation"],
             response=self.data["response"],
         )
-        self.assertTrue(expr=status, msg="加载正确的保存地址")
+        self.assertTrue(
+            expr=status, msg="S2 data NPY save should return True on success!"
+        )
 
-        # 测试将数据保存为npz格式
+        # Test NPZ format
         status = save_s2data(
             save_path=self.s2_npz_path,
             symbol=self.data["symbol"],
             excitation=self.data["excitation"],
             response=self.data["response"],
         )
-        self.assertTrue(expr=status, msg="加载正确的保存地址")
+        self.assertTrue(
+            expr=status, msg="S2 data NPZ save should return True on success!"
+        )
 
     def test_load_s2data(self) -> None:
-        """测试用于加载S2数据的函数"""
-        # 测试加载npy格式的数据
+        """
+        Tests the function that loads S2 data from file.
+
+        Validates that loaded S2 data matches the original saved data.
+        """
         symbol, excitation, response = load_s2data(data_path=self.s2_npy_path)
 
-        # 验证内部数据是否一致
+        # Validate all components match
         self.assertEqual(
-            first=symbol, second=self.data["symbol"], msg="读取的符号表达式数据不相等!"
+            first=symbol,
+            second=self.data["symbol"],
+            msg="Loaded symbol should match original!",
         )
         self.assertEqual(
             first=excitation,
             second=self.data["excitation"],
-            msg="读取的激励时间序列数据不相等!",
+            msg="Loaded excitation should match original!",
         )
         self.assertEqual(
             first=response,
             second=self.data["response"],
-            msg="读取的响应时间序列数据不相等!",
+            msg="Loaded response should match original!",
         )
 
 
 if __name__ == "__main__":
-    data = load_npy(data_path="./data/data.npy")
-    print(data)
-
     unittest.main()
