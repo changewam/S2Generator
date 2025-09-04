@@ -22,6 +22,8 @@ __all__ = [
     "wasserstein_distance_matrix",
     "plot_wasserstein_heatmap",
     "PrintStatus",
+    "STL",
+    "STLResult",
 ]
 
 # # Visualization the time series data in S2
@@ -56,3 +58,6 @@ from ._wasserstein_distance import wasserstein_distance_matrix
 
 # Visualization the Wasserstein distance though the heatmap
 from ._wasserstein_distance import plot_wasserstein_heatmap
+
+# The Seasonal-Trend decomposition using LOESS (STL)
+from ._stl import STL, STLResult

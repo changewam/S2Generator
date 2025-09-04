@@ -3,7 +3,7 @@
 Created on 2025/09/03 20:52:53
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
-@url: https://github.com/wwhenxuan
+@url: https://github.com/wwhenxuan/S2Generator
 """
 import unittest
 import numpy as np
