@@ -68,11 +68,13 @@ class Excitation(object):
         self, series_params: Optional[SeriesParams] = None
     ) -> Dict[
         str,
-        MixedDistribution
-        | AutoregressiveMovingAverage
-        | ForecastPFN
-        | KernelSynth
-        | IntrinsicModeFunction,
+        Union[
+            MixedDistribution,
+            AutoregressiveMovingAverage,
+            ForecastPFN,
+            KernelSynth,
+            IntrinsicModeFunction,
+        ],
     ]:
         """
         Create the sampling dictionary for different time series generation mechanisms.
@@ -329,6 +331,6 @@ class Excitation(object):
             )
 
         if return_choice:
-            # 是否要返回每个通道采样方式的字典
+            # Whether to return a dictionary of sampling modes for each channel
             return time_series, choice_list
         return time_series
