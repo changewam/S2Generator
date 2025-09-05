@@ -27,10 +27,17 @@ class STLResult(object):
         self.resid = resid
         self.weights = weights if weights is not None else np.ones_like(observed)
 
+    def __str__(self) -> str:
+        return r"STLResult: attribute={observed, seasonal, trend, resid, weights}"
+
 
 class STL(object):
     """
     Seasonal-Trend decomposition using LOESS (STL)
+
+    This code comes from [`PySDKit`](https://github.com/wwhenxuan/PySDKit) by [`changewam`](https://github.com/changewam).
+
+    RB C. STL: A seasonal-trend decomposition procedure based on loess[J]. J Off Stat, 1990, 6: 3-73.
 
     STL uses LOESS (locally estimated scatterplot smoothing) to extract smooths estimates of the three components.
     The key inputs into STL are:

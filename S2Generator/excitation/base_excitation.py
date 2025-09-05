@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """
+This file is mainly used to build a unified stimulus time series generation interface module.
+We specify the general parameters of data generation through the abstract class.
+Then, we specify the `generate` method to generate specific data through the abstract method.
+
 Created on 2025/08/11 09:34:54
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
+@url: https://github.com/wwhenxuan/S2Generator
 """
 import numpy as np
 from abc import ABC, abstractmethod

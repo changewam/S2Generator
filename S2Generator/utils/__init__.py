@@ -22,6 +22,15 @@ __all__ = [
     "wasserstein_distance_matrix",
     "plot_wasserstein_heatmap",
     "PrintStatus",
+    "STL",
+    "STLResult",
+    "simple_moving_average",
+    "weighted_moving_average",
+    "gaussian_smoothing",
+    "savgol_smoothing",
+    "exponential_smoothing",
+    "smooth_show_info",
+    "MovingDecomp",
 ]
 
 # # Visualization the time series data in S2
@@ -56,3 +65,19 @@ from ._wasserstein_distance import wasserstein_distance_matrix
 
 # Visualization the Wasserstein distance though the heatmap
 from ._wasserstein_distance import plot_wasserstein_heatmap
+
+# The smooth method for 1D time series data of signal
+from ._smooth import (
+    simple_moving_average,
+    weighted_moving_average,
+    gaussian_smoothing,
+    savgol_smoothing,
+    exponential_smoothing,
+    smooth_show_info,
+)
+
+# The moving decomposition method for time series
+from ._moving_decomp import MovingDecomp
+
+# The Seasonal-Trend decomposition using LOESS (STL)
+from ._stl import STL, STLResult
