@@ -1,9 +1,23 @@
 # -*- coding: utf-8 -*-
 """
+This code is used to generate bimodal data for the SymTime network,
+including time series and symbolic expressions, for model pretraining.
+We further encapsulate the S2Generator interface to enable multithreaded data processing for data generation.
+To ensure diversity in the data generation mechanism, we iterate over different random seeds for each generation.
+
+Externally passed variables:
+- root_path: The file path to save the generated S2 data;
+- start_seed: The start seed to generate the S2 data;
+- end seed: The end seed for stopping;
+- max_input_dim: The maximum input dimension;
+- max_output_dim: The maximum output dimension;
+- length: The length of the generated S2 data;
+- num_threads: The number of threads to use;
+
 Created on 2025/09/02 20:14:50
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
-@url: https://github.com/wwhenxuan
+@url: https://github.com/wwhenxuan/S2Generator
 """
 import argparse
 import os
@@ -23,7 +37,7 @@ from typing import List, Optional, Any, Union
 parser = argparse.ArgumentParser()
 parser.add_argument("--root_path", type=str, default="../data")
 parser.add_argument("--start_seed", type=int, default=0)
-parser.add_argument("--end_seed", type=int, default=10)  # 需要遍历不同的随机种子
+parser.add_argument("--end_seed", type=int, default=10)
 parser.add_argument("--max_input_dim", type=int, default=6)
 parser.add_argument("--max_output_dim", type=int, default=6)
 parser.add_argument("--length", type=int, default=768)
