@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Edited on 2025/08/26
+Created on 2025/08/26
 @author:Yifan Wu
 @email: wy3370868155@outlook.com
 """
@@ -287,23 +287,20 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertIn("noise", result)
         self.assertEqual(len(result["values"]), 100)
 
-        # Test random walk mode - this has a bug in the original code
-        # The function tries to access values_seasonal which is not defined in random_walk mode
-        # We'll test this separately or skip it until the bug is fixed
-        try:
-            result_rw = make_series(
-                rng=self.rng,
-                series=series_config,
-                freq=pd.offsets.Day(),
-                periods=50,
-                start=pd.Timestamp("2021-01-01"),
-                options={},
-                random_walk=True,
-            )
-            self.assertEqual(len(result_rw["values"]), 50)
-        except UnboundLocalError:
-            # This is expected due to bug in original code
-            self.skipTest("Random walk mode has bug in original implementation")
+        # Test random walk mode - bug has been fixed
+        result_rw = make_series(
+            rng=self.rng,
+            series=series_config,
+            freq=pd.offsets.Day(),
+            periods=50,
+            start=pd.Timestamp("2021-01-01"),
+            options={},
+            random_walk=True,
+        )
+        self.assertEqual(len(result_rw["values"]), 50)
+        self.assertIn("values", result_rw)
+        self.assertIn("dates", result_rw)
+        self.assertIn("noise", result_rw)
 
 
 class TestForecastPFN(unittest.TestCase):
