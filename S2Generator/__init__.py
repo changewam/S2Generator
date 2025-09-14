@@ -8,6 +8,9 @@ __all__ = [
     "SeriesParams",
     "SymbolParams",
     "Generator",
+    "GeneralEncoder",
+    "FloatSequences",
+    "Equation",
     "plot_series",
     "plot_symbol",
     "print_ascii",
@@ -24,8 +27,10 @@ from .base import Node, NodeList
 from .params import SeriesParams, SymbolParams
 
 # S2 Data Generator
-# TODO: 在这里的Generator中可以给出一个参数来控制是否显示生成的信息
 from .generators import Generator
+
+# The encoder for symbol and number
+from .encoders import GeneralEncoder, FloatSequences, Equation
 
 # Generic interface for generating stimulus time series data
 from .excitation import Excitation
