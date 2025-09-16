@@ -77,7 +77,7 @@ from ._smooth import (
 )
 
 # The moving decomposition method for time series
-from ._moving_decomp import MovingDecomp
+from ._decomposition import MovingDecomp
 
 # The Seasonal-Trend decomposition using LOESS (STL)
-from ._stl import STL, STLResult
+from ._decomposition import STL, STLResult
