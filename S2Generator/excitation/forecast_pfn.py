@@ -362,6 +362,7 @@ def make_series(
     start = freq.rollback(start)
     dates = pd.date_range(start=start, periods=periods, freq=freq)
     scaled_noise_term = 0
+    values_seasonal = {}
 
     if random_walk:
         values = get_random_walk_series(rng=rng, length=len(dates))
