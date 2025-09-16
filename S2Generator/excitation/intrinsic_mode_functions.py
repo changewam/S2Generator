@@ -131,7 +131,7 @@ class IntrinsicModeFunction(BaseExcitation):
 
     def __init__(
         self,
-        min_base_imfs: int = 1,
+        min_base_imfs: int = 2,
         max_base_imfs: int = 3,
         min_choice_imfs: int = 2,
         max_choice_imfs: int = 5,
