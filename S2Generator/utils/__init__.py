@@ -18,6 +18,10 @@ __all__ = [
     "get_time_now",
     "save_s2data",
     "load_s2data",
+    "fft",
+    "fftshift",
+    "ifft",
+    "ifftshift",
     "wasserstein_distance",
     "wasserstein_distance_matrix",
     "plot_wasserstein_heatmap",
@@ -53,6 +57,9 @@ from ._tools import get_time_now
 
 # The function to save and load the S2 data
 from ._tools import save_s2data, load_s2data
+
+# The Fast Fourier Transform
+from ._tools import fft, fftshift, ifft, ifftshift
 
 # Print the Generation Status
 from ._print_status import PrintStatus

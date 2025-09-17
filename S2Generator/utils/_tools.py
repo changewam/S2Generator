@@ -23,6 +23,10 @@ __all__ = [
     "is_all_zeros",
     "z_score_normalization",
     "max_min_normalization",
+    "fft",
+    "ifft",
+    "fftshift",
+    "ifftshift",
 ]
 
 import os
@@ -30,6 +34,7 @@ from os import path
 from datetime import datetime
 import numpy as np
 from numpy import bool_
+from numpy import fft as np_fft
 
 from typing import Optional, Dict, Union, Tuple
 
@@ -292,3 +297,89 @@ def max_min_normalization(x: np.ndarray) -> np.ndarray | None:
         return (x - np.min(x, axis=0, keepdims=True)) / (
             np.max(x, axis=0, keepdims=True) - np.min(x, axis=0, keepdims=True)
         )
+
+
+def fft(
+    array: np.ndarray, axis: Optional[int] = None, norm: Optional[str] = "backward"
+) -> np.ndarray:
+    """
+    Performs a Fast Fourier Transform on the input time series data.
+
+    :param array: Input two-dimensional time series with [n_points, n_dims].
+    :param axis: Axis over which to compute the FFT.  If not given, the last axis is.
+    :param norm: Normalization method to use.  Can be "backward", "forward" or "ortho".
+
+    :return: The transformed results for the input time series in freq domain.
+    """
+    # Handling data types
+    array = np.asarray(array)
+
+    # If the user specifies the dimensions of the operation
+    if axis is not None:
+        return np_fft.fft(array, axis=axis, norm=norm)
+
+    else:
+        # Determine the dimension of the data
+        shape = array.shape
+        if len(shape) == 2:
+            # Input data is a multi-channel time series
+            return np_fft.fft(array, axis=0, norm=norm)
+        elif len(shape) == 1:
+            # The input data is a single-channel time series
+            return np_fft.fft(array, norm=norm)
+        else:
+            raise NotImplementedError
+
+
+def ifft(
+    array: np.ndarray, axis: Optional[int] = None, norm: Optional[str] = "backward"
+) -> np.ndarray:
+    """
+    Perform inverse fast Fourier transform on the input frequency domain signal.
+
+    :param array: Input two-dimensional time series with [n_points, n_dims] in freq domain.
+    :param axis: Axis over which to compute the FFT.  If not given, the last axis is.
+    :param norm: Normalization method to use.  Can be "backward", "forward" or "ortho".
+
+    :return: The transformed results for the input time series in time domain.
+    """
+    # Handling data types
+    array = np.asarray(array)
+
+    # If the user specifies the dimensions of the operation
+    if axis is not None:
+        return np_fft.ifft(array, axis=axis, norm=norm)
+
+    else:
+        # Determine the dimension of the data
+        shape = array.shape
+        if len(shape) == 2:
+            # Input data is a multi-channel time series
+            return np_fft.ifft(array, axis=0, norm=norm)
+        elif len(shape) == 1:
+            # The input data is a single-channel time series
+            return np_fft.ifft(array, norm=norm)
+        else:
+            raise NotImplementedError
+
+
+def fftshift(array: np.ndarray) -> np.ndarray:
+    """
+    Decenter the result in the frequency domain before inverse fast Fourier transform.
+
+    :param array: The results of the FFT.
+
+    :return: Frequency domain result after fast Fourier transform centering.
+    """
+    return np_fft.fftshift(array)
+
+
+def ifftshift(array: np.ndarray) -> np.ndarray:
+    """
+    Decenter the result in the frequency domain before inverse fast Fourier transform.
+
+    :param array: The inputs before the iFFT.
+
+    :return: Frequency domain representation after decentralized restoration.
+    """
+    return np_fft.ifftshift(array)
