@@ -3,7 +3,7 @@
 Created on 2025/08/14 20:47:25
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
-@url: https://github.com/wwhenxuan
+@url: https://github.com/wwhenxuan/S2Generator
 """
 import functools
 
@@ -18,7 +18,7 @@ from sklearn.gaussian_process.kernels import (
     RationalQuadratic,
     WhiteKernel,
 )
-from typing import Tuple, List, Optional, Any, Callable
+from typing import List, Optional, Any, Callable
 
 from S2Generator.excitation.base_excitation import BaseExcitation
 
@@ -402,13 +402,3 @@ class KernelSynth(BaseExcitation):
                 for _ in range(input_dimension)
             ]
         ).T
-
-
-if __name__ == "__main__":
-    from matplotlib import pyplot as plt
-
-    rng = np.random.RandomState(10)
-    imfs_generator = KernelSynth()
-
-    plt.plot(imfs_generator.generate(rng, n_inputs_points=512, input_dimension=1))
-    plt.show()
