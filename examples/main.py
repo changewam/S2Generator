@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-This code is used to generate bimodal data for the SymTime network,
+This code is used to generate bimodal data for the SymTime,
 including time series and symbolic expressions, for model pretraining.
 We further encapsulate the S2Generator interface to enable multithreaded data processing for data generation.
 To ensure diversity in the data generation mechanism, we iterate over different random seeds for each generation.
+
+The PyTorch code for SymTime can be found here:
+The Paper for SymTime can be found here:
 
 Externally passed variables:
 - root_path: The file path to save the generated S2 data;
@@ -13,6 +16,8 @@ Externally passed variables:
 - max_output_dim: The maximum output dimension;
 - length: The length of the generated S2 data;
 - num_threads: The number of threads to use;
+
+
 
 Created on 2025/09/02 20:14:50
 @author: Whenxuan Wang

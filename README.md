@@ -1,4 +1,4 @@
-#  S2Generator <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/main/images/logo-small.png?raw=true">
+#  S2Generator <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/master/images/S2Generator_logo.png?raw=true">
 
 [![PyPI version](https://badge.fury.io/py/PySDKit.svg)](https://pypi.org/project/PySDKit/) ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Downloads](https://pepy.tech/badge/pysdkit)](https://pepy.tech/project/pysdkit)
 
