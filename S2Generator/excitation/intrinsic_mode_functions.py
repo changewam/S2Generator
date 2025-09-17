@@ -565,6 +565,6 @@ class IntrinsicModeFunction(BaseExcitation):
             )
 
             # 4. Scaling the energy of the imfs
-            imfs[:, i] = self.adjust_upper_energy(imfs[:, i])
+            imfs[:, i] = self.adjust_upper_energy(imfs[:, i], rng=rng)
 
         return imfs
