@@ -6,15 +6,13 @@
 
 [![PyPI version](https://badge.fury.io/py/PySDKit.svg)](https://pypi.org/project/PySDKit/)  ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Python](https://img.shields.io/badge/python-3.8+-blue?logo=python)](https://www.python.org/) [![Downloads](https://pepy.tech/badge/pysdkit)](https://pepy.tech/project/pysdkit) [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-[Installation](#Installation) | [Examples](https://github.com/wwhenxuan/S2Generator/tree/main/examples) | [Docs]() | [Acknowledge]() | [Cite]()
+[Installation](#Installation) | [Examples](https://github.com/wwhenxuan/S2Generator/tree/main/examples) | [Docs]() | [Acknowledge]() | [Cite](#Citation)
 
 </div>
 
 In recent years, the fondation models of Time Series Analysis `(TSA)` have developed rapidly. However, due to data privacy and collection difficulties, large-scale datasets in TSA currently have data shortages and imbalanced representation distribution. This will cause the foundation models pre-trained on them to have certain performance prediction biases, reducing the generalization ability and scalability of the model. At the same time, the semantic information of time series has never been fully explored, which seriously hinders the development of deep learning models for TSA in the direction of multimodality.
 
 In order to solve the above two problems, we believe that time series is a representation of complex dynamic systems, so time series can form a pairing relationship with the symbolic description of the corresponding complex system. The symbolic expression of modeling complex systems can be regarded as the semantic information of the time series. Based on the this view, our S2Generator provides a series-symbol bimodal data generation algorithm. The algorithm can generate high-quality time series data and its paired symbolic expression without restriction to overcome the problems of data shortage and semantic information loss in the field of time series analysis. The specific data generation method is shown in Figure (a) below. Through this method, we generated a large-scale synthetic dataset and trained a bimodal pre-trained basic model on it as shown in Figure (b) below.
-
-<img src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/SymTime.png" alt="SymTime" style="zoom:33%;" />
 
 ## Installation 🚀 <a id="Installation"></a>
 
