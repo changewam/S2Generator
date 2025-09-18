@@ -1,6 +1,14 @@
-#  S2Generator <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/master/images/S2Generator_logo.png?raw=true">
+<img width="100%" align="middle" src=".\images\background.png?raw=true">
 
-[![PyPI version](https://badge.fury.io/py/PySDKit.svg)](https://pypi.org/project/PySDKit/) ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Downloads](https://pepy.tech/badge/pysdkit)](https://pepy.tech/project/pysdkit)
+<div align="center">
+
+---
+
+[![PyPI version](https://badge.fury.io/py/PySDKit.svg)](https://pypi.org/project/PySDKit/)  ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Python](https://img.shields.io/badge/python-3.8+-blue?logo=python)](https://www.python.org/) [![Downloads](https://pepy.tech/badge/pysdkit)](https://pepy.tech/project/pysdkit) [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+[Installation](#Installation) | [Examples](https://github.com/wwhenxuan/S2Generator/tree/main/examples) | [Docs]() | [Acknowledge]() | [Cite]()
+
+</div>
 
 In recent years, the fondation models of Time Series Analysis `(TSA)` have developed rapidly. However, due to data privacy and collection difficulties, large-scale datasets in TSA currently have data shortages and imbalanced representation distribution. This will cause the foundation models pre-trained on them to have certain performance prediction biases, reducing the generalization ability and scalability of the model. At the same time, the semantic information of time series has never been fully explored, which seriously hinders the development of deep learning models for TSA in the direction of multimodality.
 
@@ -8,7 +16,7 @@ In order to solve the above two problems, we believe that time series is a repre
 
 <img src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/SymTime.png" alt="SymTime" style="zoom:33%;" />
 
-## Installation 🚀
+## Installation 🚀 <a id="Installation"></a>
 
 We have highly encapsulated the algorithm and uploaded the code to PyPI. Users can download the code through `pip`.
 
@@ -24,25 +32,21 @@ We provide two interfaces [`Params`](https://github.com/wwhenxuan/S2Generator/bl
 
 ~~~python
 import numpy as np
-# Importing data generators, parameter controllers and visualization functions
-from S2Generator import Generator, Params, plot_series
+import sys
+import os
 
-params = Params()  # Adjust the parameters here
-generator = Generator(params)  # Create an instance
+# Importing data generators object
+from S2Generator import Generator
 
-rng = np.random.RandomState(0)  # Creating a random number object
-# Start generating symbolic expressions, sampling and generating series
-trees, x, y = generator.run(rng, input_dimension=1, output_dimension=1, n_points=256)
-# Print the expressions
-print(trees)
+# Creating a random number object
+rng = np.random.RandomState(0)
 
-# Visualize the time series
-fig = plot_series(x, y)
+print_hello()
 ~~~
 
 > (73.5 add (sin((-7.57 add (3.89 mul x_0))) mul (((-0.092 mul exp((-63.4 add (-0.204 mul x_0)))) add (-6.12 mul log((-0.847 add (9.55 mul x_0))))) sub ((4.49 mul inv((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul sqrt((51.3 add (-55.6 mul x_0))))))))
 
-![ID1_OD1](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg)
+<img width="100%" align="middle" src="![https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg?raw=true]()">
 
 The input and output dimensions of the multivariate time series and the length of the sampling sequence can be adjusted in the `run` method.
 
@@ -67,7 +71,7 @@ The key to this algorithm is to construct complex and diverse symbolic expressio
 
 ![trees](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/trees.jpg)
 
-## Citation 🎖️
+## Citation 🎖️ <a id="Citation"></a>
 
 ~~~latex
 @inproceedings{
@@ -77,28 +81,5 @@ author={Kazem Meidani and Parshin Shojaee and Chandan Reddy and Amir Barati Fari
 booktitle={NeurIPS 2023 AI for Science Workshop},
 year={2023},
 url={https://openreview.net/forum?id=Nn43zREWvX}
-}
-~~~
-
-~~~latex
-@inproceedings{
-Symbolic,
-title={End-to-end Symbolic Regression with Transformers},
-author={Pierre-Alexandre Kamienny and St{\'e}phane d'Ascoli and Guillaume Lample and Francois Charton},
-booktitle={Advances in Neural Information Processing Systems},
-editor={Alice H. Oh and Alekh Agarwal and Danielle Belgrave and Kyunghyun Cho},
-year={2022},
-url={https://openreview.net/forum?id=GoOuIrDHG_Y}
-}
-~~~
-
-~~~latex
-@inproceedings{
-DL4Symbolic,
-title={Deep Learning For Symbolic Mathematics},
-author={Guillaume Lample and François Charton},
-booktitle={International Conference on Learning Representations},
-year={2020},
-url={https://openreview.net/forum?id=S1eZYeHFDS}
 }
 ~~~
