@@ -30,9 +30,7 @@ class SymbolParams(object):
     def __init__(
         self,
         max_trials: Optional[int] = 64,
-        prob_rand: Optional[
-            float
-        ] = 0.25,  # TODO: 需要给符号表达式增添一个措施使其不管怎么与都起码有一个叶子节点
+        prob_rand: Optional[float] = 0.25,  # TODO: 需要给符号表达式增添一个措施使其不管怎么与都起码有一个叶子节点
         prob_const: Optional[float] = 0.25,
         min_binary_ops_per_dim: Optional[int] = 0,
         max_binary_ops_per_dim: Optional[int] = 1,

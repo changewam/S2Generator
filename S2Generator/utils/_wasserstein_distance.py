@@ -121,7 +121,6 @@ def wasserstein_distance(
     """
     # 1. Check the data type and shape for the inputs
     if check_inputs(data=x) and check_inputs(data=y):
-
         # 2. Perform maximum and minimum normalization operations on two time series data sets
         x, y = dataset_max_min_normalization(data=x), dataset_max_min_normalization(
             data=y

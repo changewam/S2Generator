@@ -1,8 +1,8 @@
 <img width="100%" align="middle" src=".\images\background.png?raw=true">
 
-<div align="center">
-
 ---
+
+<div align="center">
 
 [![PyPI version](https://badge.fury.io/py/PySDKit.svg)](https://pypi.org/project/PySDKit/)  ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Python](https://img.shields.io/badge/python-3.8+-blue?logo=python)](https://www.python.org/) [![Downloads](https://pepy.tech/badge/pysdkit)](https://pepy.tech/project/pysdkit) [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
@@ -34,17 +34,22 @@ import sys
 import os
 
 # Importing data generators object
-from S2Generator import Generator
+from S2Generator import Generator, SeriesParams, SymbolParams
 
 # Creating a random number object
 rng = np.random.RandomState(0)
 
-print_hello()
+# Create the parameter control modules
+series_params = SeriesParams()
+symbol_params = SymbolParams()
+
+# Create an instance
+generator = Generator(series_params=series_params, symbol_params=symbol_params)
 ~~~
 
 > (73.5 add (sin((-7.57 add (3.89 mul x_0))) mul (((-0.092 mul exp((-63.4 add (-0.204 mul x_0)))) add (-6.12 mul log((-0.847 add (9.55 mul x_0))))) sub ((4.49 mul inv((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul sqrt((51.3 add (-55.6 mul x_0))))))))
 
-<img width="100%" align="middle" src="![https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg?raw=true]()">
+![ID2_OD2](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg)
 
 The input and output dimensions of the multivariate time series and the length of the sampling sequence can be adjusted in the `run` method.
 

@@ -197,10 +197,12 @@ class IntrinsicModeFunction(BaseExcitation):
         self.max_choice_imfs = max_choice_imfs
 
         # Process probability distributions for IMF selection
-        self.available_dict, self.available_list, self.available_probability = (
-            self._processing_probability(
-                probability_dict=probability_dict, probability_list=probability_list
-            )
+        (
+            self.available_dict,
+            self.available_list,
+            self.available_probability,
+        ) = self._processing_probability(
+            probability_dict=probability_dict, probability_list=probability_list
         )
 
         # Configure temporal parameters
