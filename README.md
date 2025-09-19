@@ -1,5 +1,7 @@
 <img width="100%" align="middle" src=".\images\background.png?raw=true">
 
+---
+
 <div align="center">
 
 [![PyPI version](https://badge.fury.io/py/PySDKit.svg)](https://pypi.org/project/PySDKit/)  ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Python](https://img.shields.io/badge/python-3.8+-blue?logo=python)](https://www.python.org/) [![Downloads](https://pepy.tech/badge/pysdkit)](https://pepy.tech/project/pysdkit) [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -8,8 +10,7 @@
 
 </div>
 
-
-基于时间序列是复杂动力系统的外在表征这一重要观点，我们提出了一个符号和序列双模态的时间序列数据生成机制。该机制能够无限制构造大量的复杂系统（符号表达式）$f(\cdot)$与激励时间序列$X$，并将激励输入到复杂系统中获得响应时间序列$Y=f(X)$。通过该过程我们能够无限制生成高质量的时间序列数据用于时间序列基础模型的预训练。、
+Based on the important perspective that time series are external manifestations of complex dynamical systems, we propose a bimodal generative mechanism for time series data that integrates both symbolic and series modalities. This mechanism enables the unrestricted generation of a vast number of complex systems represented as symbolic expressions $f(\cdot)$ and excitation time series $X$. By inputting the excitation into these complex systems, we obtain the corresponding response time series $Y=f(X)$. This method allows for the unrestricted creation of high-quality time series data for pre-training the time series foundation models.
 
 
 ### 🔥 News
@@ -67,9 +68,7 @@ The input and output dimensions of the multivariate time series and the length o
 rng = np.random.RandomState(512)  # Change the random seed
 
 # Try to generate the multi-channels time series
-symbols, inputs, outputs = generator.run(rng, input_dimension=2,
-                                         output_dimension=2,
-                                         n_inputs_points=336)
+symbols, inputs, outputs = generator.run(rng, input_dimension=2, output_dimension=2, n_inputs_points=336)
 
 print(symbols)
 fig = plot_series(inputs, outputs)
