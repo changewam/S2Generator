@@ -1,18 +1,17 @@
 <img width="100%" align="middle" src=".\images\background.png?raw=true">
 
----
-
 <div align="center">
 
 [![PyPI version](https://badge.fury.io/py/PySDKit.svg)](https://pypi.org/project/PySDKit/)  ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Python](https://img.shields.io/badge/python-3.8+-blue?logo=python)](https://www.python.org/) [![Downloads](https://pepy.tech/badge/pysdkit)](https://pepy.tech/project/pysdkit) [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-[Installation](#Installation) | [Examples](https://github.com/wwhenxuan/S2Generator/tree/main/examples) | [Docs]() | [Acknowledge]() | [Cite](#Citation)
+[Installation](#Installation) | [Examples](https://github.com/wwhenxuan/S2Generator/tree/main/examples) | [Docs]() | [Acknowledge]() | [Citation](#Citation)
 
 </div>
 
-In recent years, the fondation models of Time Series Analysis `(TSA)` have developed rapidly. However, due to data privacy and collection difficulties, large-scale datasets in TSA currently have data shortages and imbalanced representation distribution. This will cause the foundation models pre-trained on them to have certain performance prediction biases, reducing the generalization ability and scalability of the model. At the same time, the semantic information of time series has never been fully explored, which seriously hinders the development of deep learning models for TSA in the direction of multimodality.
 
-In order to solve the above two problems, we believe that time series is a representation of complex dynamic systems, so time series can form a pairing relationship with the symbolic description of the corresponding complex system. The symbolic expression of modeling complex systems can be regarded as the semantic information of the time series. Based on the this view, our S2Generator provides a series-symbol bimodal data generation algorithm. The algorithm can generate high-quality time series data and its paired symbolic expression without restriction to overcome the problems of data shortage and semantic information loss in the field of time series analysis. The specific data generation method is shown in Figure (a) below. Through this method, we generated a large-scale synthetic dataset and trained a bimodal pre-trained basic model on it as shown in Figure (b) below.
+基于时间序列是复杂动力系统的外在表征这一重要观点，我们提出了一个符号和序列双模态的时间序列数据生成机制。该机制能够无限制构造大量的复杂系统（符号表达式）$f(\cdot)$与激励时间序列$X$，并将激励输入到复杂系统中获得响应时间序列$Y=f(X)$。
+
+
 
 ## Installation 🚀 <a id="Installation"></a>
 
@@ -30,59 +29,71 @@ We provide two interfaces [`Params`](https://github.com/wwhenxuan/S2Generator/bl
 
 ~~~python
 import numpy as np
-import sys
-import os
 
 # Importing data generators object
-from S2Generator import Generator, SeriesParams, SymbolParams
+from S2Generator import Generator, SeriesParams, SymbolParams, plot_series
 
 # Creating a random number object
 rng = np.random.RandomState(0)
 
 # Create the parameter control modules
 series_params = SeriesParams()
-symbol_params = SymbolParams()
+symbol_params = SymbolParams()  # specify specific parameters here or use the default parameters
 
 # Create an instance
 generator = Generator(series_params=series_params, symbol_params=symbol_params)
+
+# Start generating symbolic expressions, sampling and generating series
+symbols, inputs, outputs = generator.run(
+    rng, input_dimension=1, output_dimension=1, n_inputs_points=256
+)
+
+# Print the expressions
+print(symbols)
+# Visualize the time series
+fig = plot_series(inputs, outputs)
 ~~~
 
-> (73.5 add (sin((-7.57 add (3.89 mul x_0))) mul (((-0.092 mul exp((-63.4 add (-0.204 mul x_0)))) add (-6.12 mul log((-0.847 add (9.55 mul x_0))))) sub ((4.49 mul inv((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul sqrt((51.3 add (-55.6 mul x_0))))))))
+> (73.5 add (x_0 mul (((9.38 mul cos((-0.092 add (-6.12 mul x_0)))) add (87.1 mul arctan((-0.965 add (0.973 mul rand))))) sub (8.89 mul exp(((4.49 mul log((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul ((51.3 add (-55.6 mul x_0)))**2)))))))
 
 ![ID2_OD2](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg)
 
 The input and output dimensions of the multivariate time series and the length of the sampling sequence can be adjusted in the `run` method.
 
 ~~~python
-rng = np.random.RandomState(42)  # Change the random seed
+rng = np.random.RandomState(512)  # Change the random seed
 
 # Try to generate the multi-channels time series
-trees, x, y = generator.run(rng, input_dimension=2, output_dimension=2, n_points=256)
-print(trees)
-fig = s2plot(x, y)
+symbols, inputs, outputs = generator.run(rng, input_dimension=2,
+                                         output_dimension=2,
+                                         n_inputs_points=336)
+
+print(symbols)
+fig = plot_series(inputs, outputs)
 ~~~
 
-> (7.49 add ((((7.77 mul x_0) add (-89.8 mul sqrt((0.81 add (3.88 mul x_0))))) sub (0.14 mul x_1)) sub (-84.1 mul exp((9.58 add (-81.6 mul x_0)))))) | (-38.6 add ((87.1 mul sin((0.554 add (-57.5 mul x_1)))) sub ((-40.7 mul sin(((-0.86 mul exp((-6.46 add (3.31 mul x_0)))) add (5.57 mul x_0)))) sub (-65.5 mul log(((-0.318 mul x_1) add (-8.19 mul x_0)))))))
+> (-9.45 add ((((0.026 mul rand) sub (-62.7 mul cos((4.79 add (-6.69 mul x_1))))) add (-0.982 mul sqrt((4.2 add (-0.14 mul x_0))))) sub (0.683 mul x_1))) | (67.6 add ((-9.0 mul x_1) add (2.15 mul sqrt((0.867 add (-92.1 mul x_1))))))
 >
-> Two symbolic expressions are connected by `|`.
+> Two symbolic expressions are connected by " | ".
 
 ![ID2_OD2](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID2_OD2.jpg)
 
-## Algorithm 🎯
+## Algorithm 🎯 <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/master/images/trees.png?raw=true">
 
 The key to this algorithm is to construct complex and diverse symbolic expressions $f(\cdot)$ through a tree structure, so as to generate a series $y$ by forward propagating through a sampling series $x$. Since the symbolic expressions of mathematical operations can be represented by a tree structure, we first construct a binary tree with random binary operators to form the basic framework of the expression, as shown in Figure (a). Then we insert random constants or variables as leaf nodes into the constructed structure to form a full binary tree, as shown in Figure (b). Then we increase the diversity of symbolic expressions by randomly inserting unary operators and radioactive transformations, as shown in Figure (c).
 
-![trees](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/trees.jpg)
+![trees](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/trees.png)
 
 ## Citation 🎖️ <a id="Citation"></a>
 
 ~~~latex
-@inproceedings{
-SNIP,
-title={{SNIP}: Bridging Mathematical Symbolic and Numeric Realms with Unified Pre-training},
-author={Kazem Meidani and Parshin Shojaee and Chandan Reddy and Amir Barati Farimani},
-booktitle={NeurIPS 2023 AI for Science Workshop},
-year={2023},
-url={https://openreview.net/forum?id=Nn43zREWvX}
+@misc{wang2025mitigatingdatascarcitytime,
+      title={Mitigating Data Scarcity in Time Series Analysis: A Foundation Model with Series-Symbol Data Generation}, 
+      author={Wenxuan Wang and Kai Wu and Yujian Betterest Li and Dan Wang and Xiaoyu Zhang and Jing Liu},
+      year={2025},
+      eprint={2502.15466},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2502.15466}, 
 }
 ~~~
