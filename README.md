@@ -1,4 +1,4 @@
-<img width="100%" align="middle" src=".\images\background.png?raw=true">
+<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/background.png?raw=true">
 
 ---
 
@@ -63,7 +63,7 @@ fig = plot_series(inputs, outputs)
 
 > (73.5 add (x_0 mul (((9.38 mul cos((-0.092 add (-6.12 mul x_0)))) add (87.1 mul arctan((-0.965 add (0.973 mul rand))))) sub (8.89 mul exp(((4.49 mul log((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul ((51.3 add (-55.6 mul x_0)))**2)))))))
 
-![ID2_OD2](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg)
+<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg?raw=true">
 
 The input and output dimensions of the multivariate time series and the length of the sampling sequence can be adjusted in the `run` method.
 
@@ -81,14 +81,13 @@ fig = plot_series(inputs, outputs)
 >
 > Two symbolic expressions are connected by " | ".
 
-![ID2_OD2](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID2_OD2.jpg)
+<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID2_OD2.jpg?raw=true">
 
-## 🧮 Algorithm <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/master/images/trees.png?raw=true">
+## 🧮 Algorithm <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/main/images/trees.png?raw=true">
 
 The advantage of $S^2$ data lies in its diversity and unrestricted generation capacity. 
 On the one hand, we can build a complex system with diversity based on binary trees (right); 
 on the other hand, we combine 5 different methods to generate excitation series, as follows:
-
 
 - [`MixedDistribution`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/mixed_distribution.py): Sampling from a mixture of distributions can show the random of time series;
 - [`ARMA`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/autoregressive_moving_average.py): The sliding average and autoregressive processes can show obvious temporal dependencies;
@@ -100,6 +99,8 @@ we can obtain high-quality, diverse time series data without any constraints.
 For detailed on the data generation process, please refer to our [paper](https://arxiv.org/abs/2502.15466) or [documentation]().
 
 ## 🎖️ Citation <a id="Citation"></a>
+
+If you find this $S^2$ data generation method helpful, please cite the following paper:
 
 ~~~latex
 @misc{wang2025mitigatingdatascarcitytime,
