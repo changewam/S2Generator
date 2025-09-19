@@ -12,7 +12,6 @@
 
 Based on the important perspective that time series are external manifestations of complex dynamical systems, we propose a bimodal generative mechanism for time series data that integrates both symbolic and series modalities. This mechanism enables the unrestricted generation of a vast number of complex systems represented as symbolic expressions $f(\cdot)$ and excitation time series $X$. By inputting the excitation into these complex systems, we obtain the corresponding response time series $Y=f(X)$. This method allows for the unrestricted creation of high-quality time series data for pre-training the time series foundation models.
 
-
 ### 🔥 News
 
 **[Sep. 2025]** Our paper "Synthetic Series-Symbol Data Generation for Time Series Foundation Models" has been accepted by **NeurIPS 2025**, where **[*SymTime*](https://arxiv.org/abs/2502.15466)** pre-trained on the $S^2$ synthetic dataset achieved SOTA results in fine-tuning of forecasting, classification, imputation and anomaly detection tasks.
@@ -30,6 +29,8 @@ We only used [`NumPy`](https://numpy.org/), [`Scipy`](https://scipy.org/) and [`
 ## ✨ Usage
 
 We provide two interfaces [`Params`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params.py) and [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/generators.py). [`Params`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params.py) is used to modify the configuration of data generation. [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/generators.py) creates a specific data generation object. We start data generation through the `run` method.
+
+We provide a unified data generation interface [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/generators.py) and two parameter modules [`SeriesParams`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params/series_params.py) and [`SymbolParams`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params/symbol_params.py), as well as auxiliary modules for the generation of excitation time series and complex system. We first specify the parameters or use the default parameters to create parameter objects, and then pass them into our `Generator` respectively. finally, we can start data generation through the `run` method after instantiation.
 
 ~~~python
 import numpy as np
