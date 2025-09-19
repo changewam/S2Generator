@@ -14,7 +14,7 @@ import numpy as np
 from scipy.stats import special_ortho_group
 from pysdkit.utils import max_min_normalization
 
-from typing import Optional, Dict, Tuple, List
+from typing import Optional, Union, Dict, Tuple, List
 from S2Generator.excitation.base_excitation import BaseExcitation
 
 
@@ -62,10 +62,12 @@ class MixedDistribution(BaseExcitation):
         self.probability_list = probability_list
 
         # Get available dictionaries and lists
-        self._available_dict, self._available_list, self._available_prob = (
-            self._get_available(
-                probability_dict=probability_dict, probability_list=probability_list
-            )
+        (
+            self._available_dict,
+            self._available_list,
+            self._available_prob,
+        ) = self._get_available(
+            probability_dict=probability_dict, probability_list=probability_list
         )
 
         # Sampling parameters of the record mixture distribution
@@ -112,7 +114,7 @@ class MixedDistribution(BaseExcitation):
         return self._available_list
 
     @property
-    def available_prob(self) -> List[float] | np.ndarray:
+    def available_prob(self) -> Union[List[float], np.ndarray]:
         """Get a list of the probability names used by available sampling, gaussian or uniform."""
         return self._available_prob
 
@@ -120,7 +122,7 @@ class MixedDistribution(BaseExcitation):
         self,
         probability_dict: Optional[Dict[str, float]] = None,
         probability_list: Optional[list[float]] = None,
-    ) -> Tuple[Dict[str, float], List[str], List[float] | np.ndarray]:
+    ) -> Tuple[Dict[str, float], List[str], Union[List[float], np.ndarray]]:
         """
         Handling user-supplied probability lists and probability dictionaries.
         The default configuration will be used when the user does not specify or specifies incorrectly.

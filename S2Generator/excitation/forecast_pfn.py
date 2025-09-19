@@ -982,7 +982,6 @@ class ForecastPFN(BaseExcitation):
 
 
 if __name__ == "__main__":
-
     from matplotlib import pyplot as plt
 
     forecast_pfn = ForecastPFN()

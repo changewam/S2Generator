@@ -1,14 +1,26 @@
-#  S2Generator <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/master/images/S2Generator_logo.png?raw=true">
+<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/background.png?raw=true">
 
-[![PyPI version](https://badge.fury.io/py/PySDKit.svg)](https://pypi.org/project/PySDKit/) ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Downloads](https://pepy.tech/badge/pysdkit)](https://pepy.tech/project/pysdkit)
+---
 
-In recent years, the fondation models of Time Series Analysis `(TSA)` have developed rapidly. However, due to data privacy and collection difficulties, large-scale datasets in TSA currently have data shortages and imbalanced representation distribution. This will cause the foundation models pre-trained on them to have certain performance prediction biases, reducing the generalization ability and scalability of the model. At the same time, the semantic information of time series has never been fully explored, which seriously hinders the development of deep learning models for TSA in the direction of multimodality.
+<div align="center">
 
-In order to solve the above two problems, we believe that time series is a representation of complex dynamic systems, so time series can form a pairing relationship with the symbolic description of the corresponding complex system. The symbolic expression of modeling complex systems can be regarded as the semantic information of the time series. Based on the this view, our S2Generator provides a series-symbol bimodal data generation algorithm. The algorithm can generate high-quality time series data and its paired symbolic expression without restriction to overcome the problems of data shortage and semantic information loss in the field of time series analysis. The specific data generation method is shown in Figure (a) below. Through this method, we generated a large-scale synthetic dataset and trained a bimodal pre-trained basic model on it as shown in Figure (b) below.
+[![PyPI version](https://badge.fury.io/py/PySDKit.svg)](https://pypi.org/project/PySDKit/)  ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Python](https://img.shields.io/badge/python-3.8+-blue?logo=python)](https://www.python.org/) [![Downloads](https://pepy.tech/badge/pysdkit)](https://pepy.tech/project/pysdkit) [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-<img src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/SymTime.png" alt="SymTime" style="zoom:33%;" />
+[Installation](#Installation) | [Examples](https://github.com/wwhenxuan/S2Generator/tree/main/examples) | [Docs]() | [Acknowledge]() | [Citation](#Citation)
 
-## Installation 🚀
+</div>
+
+Based on the important perspective that time series are external manifestations of complex dynamical systems, 
+we propose a bimodal generative mechanism for time series data that integrates both symbolic and series modalities. 
+This mechanism enables the unrestricted generation of a vast number of complex systems represented as symbolic expressions $f(\cdot)$ and excitation time series $X$. 
+By inputting the excitation into these complex systems, we obtain the corresponding response time series $Y=f(X)$. 
+This method allows for the unrestricted creation of high-quality time series data for pre-training the time series foundation models.
+
+### 🔥 News
+
+**[Sep. 2025]** Our paper "Synthetic Series-Symbol Data Generation for Time Series Foundation Models" has been accepted by **NeurIPS 2025**, where **[*SymTime*](https://arxiv.org/abs/2502.15466)** pre-trained on the $S^2$ synthetic dataset achieved SOTA results in fine-tuning of forecasting, classification, imputation and anomaly detection tasks.
+
+## 🚀 Installation <a id="Installation"></a>
 
 We have highly encapsulated the algorithm and uploaded the code to PyPI. Users can download the code through `pip`.
 
@@ -18,87 +30,86 @@ pip install s2generator
 
 We only used [`NumPy`](https://numpy.org/), [`Scipy`](https://scipy.org/) and [`matplotlib`](https://matplotlib.org/) when developing the project.
 
-## Usage ✨
+## ✨ Usage
 
-We provide two interfaces [`Params`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params.py) and [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/generators.py). [`Params`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params.py) is used to modify the configuration of data generation. [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/generators.py) creates a specific data generation object. We start data generation through the `run` method.
+We provide a unified data generation interface [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/generators.py), two parameter modules [`SeriesParams`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params/series_params.py) and [`SymbolParams`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params/symbol_params.py), as well as auxiliary modules for the generation of excitation time series and complex system. We first specify the parameters or use the default parameters to create parameter objects, and then pass them into our `Generator` respectively. finally, we can start data generation through the `run` method after instantiation.
 
 ~~~python
 import numpy as np
-# Importing data generators, parameter controllers and visualization functions
-from S2Generator import Generator, Params, plot_series
 
-params = Params()  # Adjust the parameters here
-generator = Generator(params)  # Create an instance
+# Importing data generators object
+from S2Generator import Generator, SeriesParams, SymbolParams, plot_series
 
-rng = np.random.RandomState(0)  # Creating a random number object
+# Creating a random number object
+rng = np.random.RandomState(0)
+
+# Create the parameter control modules
+series_params = SeriesParams()
+symbol_params = SymbolParams()  # specify specific parameters here or use the default parameters
+
+# Create an instance
+generator = Generator(series_params=series_params, symbol_params=symbol_params)
+
 # Start generating symbolic expressions, sampling and generating series
-trees, x, y = generator.run(rng, input_dimension=1, output_dimension=1, n_points=256)
-# Print the expressions
-print(trees)
+symbols, inputs, outputs = generator.run(
+    rng, input_dimension=1, output_dimension=1, n_inputs_points=256
+)
 
+# Print the expressions
+print(symbols)
 # Visualize the time series
-fig = plot_series(x, y)
+fig = plot_series(inputs, outputs)
 ~~~
 
-> (73.5 add (sin((-7.57 add (3.89 mul x_0))) mul (((-0.092 mul exp((-63.4 add (-0.204 mul x_0)))) add (-6.12 mul log((-0.847 add (9.55 mul x_0))))) sub ((4.49 mul inv((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul sqrt((51.3 add (-55.6 mul x_0))))))))
+> (73.5 add (x_0 mul (((9.38 mul cos((-0.092 add (-6.12 mul x_0)))) add (87.1 mul arctan((-0.965 add (0.973 mul rand))))) sub (8.89 mul exp(((4.49 mul log((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul ((51.3 add (-55.6 mul x_0)))**2)))))))
 
-![ID1_OD1](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg)
+<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg?raw=true">
 
 The input and output dimensions of the multivariate time series and the length of the sampling sequence can be adjusted in the `run` method.
 
 ~~~python
-rng = np.random.RandomState(42)  # Change the random seed
+rng = np.random.RandomState(512)  # Change the random seed
 
 # Try to generate the multi-channels time series
-trees, x, y = generator.run(rng, input_dimension=2, output_dimension=2, n_points=256)
-print(trees)
-fig = s2plot(x, y)
+symbols, inputs, outputs = generator.run(rng, input_dimension=2, output_dimension=2, n_inputs_points=336)
+
+print(symbols)
+fig = plot_series(inputs, outputs)
 ~~~
 
-> (7.49 add ((((7.77 mul x_0) add (-89.8 mul sqrt((0.81 add (3.88 mul x_0))))) sub (0.14 mul x_1)) sub (-84.1 mul exp((9.58 add (-81.6 mul x_0)))))) | (-38.6 add ((87.1 mul sin((0.554 add (-57.5 mul x_1)))) sub ((-40.7 mul sin(((-0.86 mul exp((-6.46 add (3.31 mul x_0)))) add (5.57 mul x_0)))) sub (-65.5 mul log(((-0.318 mul x_1) add (-8.19 mul x_0)))))))
+> (-9.45 add ((((0.026 mul rand) sub (-62.7 mul cos((4.79 add (-6.69 mul x_1))))) add (-0.982 mul sqrt((4.2 add (-0.14 mul x_0))))) sub (0.683 mul x_1))) | (67.6 add ((-9.0 mul x_1) add (2.15 mul sqrt((0.867 add (-92.1 mul x_1))))))
 >
-> Two symbolic expressions are connected by `|`.
+> Two symbolic expressions are connected by " | ".
 
-![ID2_OD2](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID2_OD2.jpg)
+<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID2_OD2.jpg?raw=true">
 
-## Algorithm 🎯
+## 🧮 Algorithm <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/main/images/trees.png?raw=true">
 
-The key to this algorithm is to construct complex and diverse symbolic expressions $f(\cdot)$ through a tree structure, so as to generate a series $y$ by forward propagating through a sampling series $x$. Since the symbolic expressions of mathematical operations can be represented by a tree structure, we first construct a binary tree with random binary operators to form the basic framework of the expression, as shown in Figure (a). Then we insert random constants or variables as leaf nodes into the constructed structure to form a full binary tree, as shown in Figure (b). Then we increase the diversity of symbolic expressions by randomly inserting unary operators and radioactive transformations, as shown in Figure (c).
+The advantage of $S^2$ data lies in its diversity and unrestricted generation capacity. 
+On the one hand, we can build a complex system with diversity based on binary trees (right); 
+on the other hand, we combine 5 different methods to generate excitation series, as follows:
 
-![trees](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/trees.jpg)
+- [`MixedDistribution`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/mixed_distribution.py): Sampling from a mixture of distributions can show the random of time series;
+- [`ARMA`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/autoregressive_moving_average.py): The sliding average and autoregressive processes can show obvious temporal dependencies;
+- [`ForecastPFN`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/forecast_pfn.py) and [`KernelSynth`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/kernel_synth.py): The decomposition and combination methods can reflect the dynamics of time series;
+- [`IntrinsicModeFunction`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/intrinsic_mode_functions.py): The excitation generated by the modal combination method has obvious periodicity.
 
-## Citation 🎖️
+By generating diverse complex systems and combining multiple excitation generation methods, 
+we can obtain high-quality, diverse time series data without any constraints. 
+For detailed on the data generation process, please refer to our [paper](https://arxiv.org/abs/2502.15466) or [documentation]().
 
-~~~latex
-@inproceedings{
-SNIP,
-title={{SNIP}: Bridging Mathematical Symbolic and Numeric Realms with Unified Pre-training},
-author={Kazem Meidani and Parshin Shojaee and Chandan Reddy and Amir Barati Farimani},
-booktitle={NeurIPS 2023 AI for Science Workshop},
-year={2023},
-url={https://openreview.net/forum?id=Nn43zREWvX}
-}
-~~~
+## 🎖️ Citation <a id="Citation"></a>
 
-~~~latex
-@inproceedings{
-Symbolic,
-title={End-to-end Symbolic Regression with Transformers},
-author={Pierre-Alexandre Kamienny and St{\'e}phane d'Ascoli and Guillaume Lample and Francois Charton},
-booktitle={Advances in Neural Information Processing Systems},
-editor={Alice H. Oh and Alekh Agarwal and Danielle Belgrave and Kyunghyun Cho},
-year={2022},
-url={https://openreview.net/forum?id=GoOuIrDHG_Y}
-}
-~~~
+If you find this $S^2$ data generation method helpful, please cite the following paper:
 
 ~~~latex
-@inproceedings{
-DL4Symbolic,
-title={Deep Learning For Symbolic Mathematics},
-author={Guillaume Lample and François Charton},
-booktitle={International Conference on Learning Representations},
-year={2020},
-url={https://openreview.net/forum?id=S1eZYeHFDS}
+@misc{wang2025mitigatingdatascarcitytime,
+      title={Mitigating Data Scarcity in Time Series Analysis: A Foundation Model with Series-Symbol Data Generation}, 
+      author={Wenxuan Wang and Kai Wu and Yujian Betterest Li and Dan Wang and Xiaoyu Zhang and Jing Liu},
+      year={2025},
+      eprint={2502.15466},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2502.15466}, 
 }
 ~~~

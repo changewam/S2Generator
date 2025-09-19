@@ -32,7 +32,7 @@ class SymbolParams(object):
         max_trials: Optional[int] = 64,
         prob_rand: Optional[
             float
-        ] = 0.25,  # TODO: 需要给符号表达式增添一个措施使其不管怎么与都起码有一个叶子节点
+        ] = 0.25,  # TODO: It is necessary to add a measure to the symbolic expression so that it always has at least one leaf node no matter how it is expressed.
         prob_const: Optional[float] = 0.25,
         min_binary_ops_per_dim: Optional[int] = 0,
         max_binary_ops_per_dim: Optional[int] = 1,
@@ -94,7 +94,7 @@ class SymbolParams(object):
         self.max_trials = max_trials
 
         # Parameters about leaf node generation constants and random number probabilities
-        # 这两个参数的控制在`generate_leaf`方法中有所体现
+        # The control of these two parameters is reflected in the `generate_leaf` method
         self.prob_const, self.prob_rand = (
             check_inputs_probability(probability=prob_const),
             check_inputs_probability(probability=prob_rand),

@@ -253,13 +253,17 @@ class Excitation(object):
         return list(self._sampling_dict.values())
 
     @property
-    def sampling_dict(self) -> Dict[
+    def sampling_dict(
+        self,
+    ) -> Dict[
         str,
-        MixedDistribution
-        | AutoregressiveMovingAverage
-        | ForecastPFN
-        | KernelSynth
-        | IntrinsicModeFunction,
+        Union[
+            MixedDistribution,
+            AutoregressiveMovingAverage,
+            ForecastPFN,
+            KernelSynth,
+            IntrinsicModeFunction,
+        ],
     ]:
         """Returns a dictionary of the various sampling methods."""
         return self._sampling_dict
