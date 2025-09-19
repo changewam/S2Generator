@@ -9,11 +9,14 @@
 </div>
 
 
-基于时间序列是复杂动力系统的外在表征这一重要观点，我们提出了一个符号和序列双模态的时间序列数据生成机制。该机制能够无限制构造大量的复杂系统（符号表达式）$f(\cdot)$与激励时间序列$X$，并将激励输入到复杂系统中获得响应时间序列$Y=f(X)$。
+基于时间序列是复杂动力系统的外在表征这一重要观点，我们提出了一个符号和序列双模态的时间序列数据生成机制。该机制能够无限制构造大量的复杂系统（符号表达式）$f(\cdot)$与激励时间序列$X$，并将激励输入到复杂系统中获得响应时间序列$Y=f(X)$。通过该过程我们能够无限制生成高质量的时间序列数据用于时间序列基础模型的预训练。、
 
 
+### 🔥 News
 
-## Installation 🚀 <a id="Installation"></a>
+**[Sep. 2025]** Our paper "Synthetic Series-Symbol Data Generation for Time Series Foundation Models" has been accepted by **NeurIPS 2025**, where **[*SymTime*](https://arxiv.org/abs/2502.15466)** pre-trained on the $S^2$ synthetic dataset achieved SOTA results in fine-tuning of forecasting, classification, imputation and anomaly detection tasks.
+
+## 🚀 Installation <a id="Installation"></a>
 
 We have highly encapsulated the algorithm and uploaded the code to PyPI. Users can download the code through `pip`.
 
@@ -23,7 +26,7 @@ pip install s2generator
 
 We only used [`NumPy`](https://numpy.org/), [`Scipy`](https://scipy.org/) and [`matplotlib`](https://matplotlib.org/) when developing the project.
 
-## Usage ✨
+## ✨ Usage
 
 We provide two interfaces [`Params`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params.py) and [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/generators.py). [`Params`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params.py) is used to modify the configuration of data generation. [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/generators.py) creates a specific data generation object. We start data generation through the `run` method.
 
@@ -78,11 +81,11 @@ fig = plot_series(inputs, outputs)
 
 ![ID2_OD2](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID2_OD2.jpg)
 
-## Algorithm 🎯 <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/master/images/trees.png?raw=true">
+## 🧮 Algorithm <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/master/images/trees.png?raw=true">
 
 The key to this algorithm is to construct complex and diverse symbolic expressions $f(\cdot)$ through a tree structure, so as to generate a series $y$ by forward propagating through a sampling series $x$. Since the symbolic expressions of mathematical operations can be represented by a tree structure, we first construct a binary tree with random binary operators to form the basic framework of the expression, as shown in Figure (a). Then we insert random constants or variables as leaf nodes into the constructed structure to form a full binary tree, as shown in Figure (b). Then we increase the diversity of symbolic expressions by randomly inserting unary operators and radioactive transformations, as shown in Figure (c).
 
-## Citation 🎖️ <a id="Citation"></a>
+## 🎖️ Citation <a id="Citation"></a>
 
 ~~~latex
 @misc{wang2025mitigatingdatascarcitytime,
