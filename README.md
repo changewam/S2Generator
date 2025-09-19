@@ -82,8 +82,6 @@ fig = plot_series(inputs, outputs)
 
 The key to this algorithm is to construct complex and diverse symbolic expressions $f(\cdot)$ through a tree structure, so as to generate a series $y$ by forward propagating through a sampling series $x$. Since the symbolic expressions of mathematical operations can be represented by a tree structure, we first construct a binary tree with random binary operators to form the basic framework of the expression, as shown in Figure (a). Then we insert random constants or variables as leaf nodes into the constructed structure to form a full binary tree, as shown in Figure (b). Then we increase the diversity of symbolic expressions by randomly inserting unary operators and radioactive transformations, as shown in Figure (c).
 
-![trees](https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/trees.png)
-
 ## Citation 🎖️ <a id="Citation"></a>
 
 ~~~latex
