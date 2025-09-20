@@ -386,7 +386,9 @@ class IntrinsicModeFunction(BaseExcitation):
         Generates fundamental IMF components (sine/cosine) and adds to the signal.
 
         The base IMFs form the core waveform structure:
+
         1. Randomly selects number of base components (between min_base_imfs and max_base_imfs)
+        
         2. For each component:
             - Randomly selects waveform type (sine/cosine with equal probability)
             - Generates random amplitude, frequency, and duration

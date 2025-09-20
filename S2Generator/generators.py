@@ -236,10 +236,13 @@ class Generator(object):
         Enumerate the number of possible unary-binary trees that can be generated from empty nodes.
         D[e][n] represents the number of different binary trees with n nodes that
         can be generated from e empty nodes, using the following recursion:
+
+        .. math:
             D(n, 0) = 0
             D(0, e) = 1
             D(n, e) = D(n, e - 1) + p_1 * D(n- 1, e) + D(n - 1, e + 1)
-        p1 =  if binary trees, 1 if unary binary
+
+        :math:`p_1` =  if binary trees, 1 if unary binary
         """
         p1 = 1 if self.unary else 0
         # enumerate possible trees

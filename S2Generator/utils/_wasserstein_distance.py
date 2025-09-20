@@ -101,18 +101,18 @@ def wasserstein_distance(
     This distance is widely used in optimal transmission problems, primarily to determine the minimum distance
     between two distributions by minimizing the coupling cost. The p-Wasserstein distance is defined as follows:
 
-    :math:`W_p (\mu, \nu) = \sideset{}{}{\mathrm{min}}_{\gamma \in \Gamma _{\mu, \nu}} \left ( \int \left \| x - y \right \| ^ p \gamma \left ( \mathrm d x, \mathrm d y \right ) \right ) ^ {1/p}`
+    :math:`W_p (\mu, \\nu) = \sideset{}{}{\mathrm{min}}_{\gamma \in \Gamma _{\mu, \\nu}} \left ( \int \left \| x - y \\right \| ^ p \gamma \left ( \mathrm d x, \mathrm d y \\right ) \\right ) ^ {1/p}`
 
-    where $\mu, \nu \in \mathbb R ^ d$ and $\Gamma$ denotes the coupled set of $\mu$ and $\nu$.
+    where :math:`\mu, \\nu \in \mathbb R ^ d` and math:`\Gamma` denotes the coupled set of :math:`\mu` and :math:`\\nu`.
 
-    This paper focuses on the Wasserstein distance $d_{\mathrm Ws}$ between two multivariate normal distributions $\mathcal D_X$ and $\mathcal D_Y$, which is defined as:
+    This paper focuses on the Wasserstein distance :math:`d_{\mathrm Ws}` between two multivariate normal distributions :math:`\mathcal D_X` and :math:`\mathcal D_Y`, which is defined as:
 
-    :math:`d^2_{\mathrm W _s} \left ( \mathcal D_X, \mathcal D_Y \right ) = \left \| \hat{\mathbf{\mu}}_X - \hat{\mathbf{\mu}}_Y \right \| ^ 2 + \mathrm{tr} \left ( \hat{\mathbf{\Sigma}}_X + \hat{\mathbf{\Sigma}}_Y - 2 \sqrt{\hat{\mathbf{\Sigma}}_X \hat{\mathbf{\Sigma}}_Y} \right )`
+    :math:`d^2_{\mathrm W _s} \left ( \mathcal D_X, \mathcal D_Y \\right ) = \left \| \hat{\mathbf{\mu}}_X - \hat{\mathbf{\mu}}_Y \\right \| ^ 2 + \mathrm{tr} \left ( \hat{\mathbf{\Sigma}}_X + \hat{\mathbf{\Sigma}}_Y - 2 \sqrt{\hat{\mathbf{\Sigma}}_X \hat{\mathbf{\Sigma}}_Y} \\right )`
 
     Where the first term measures the distance between the mean vectors, and the second term captures the difference between the covariance matrices. If two datasets are to be close to each other, they must not only have similar mean vectors, but also similar covariate matrices.
 
-    :param x: The first ndarray dataset in NumPy with [n_samples, n_vars, n_length].
-    :param y: The second ndarray dataset in NumPy with [n_samples, n_vars, n_length].
+    :param x: The first ndarray dataset in NumPy with [:math:`n_samples`, :math:`n_vars`, :math:`n_length`].
+    :param y: The second ndarray dataset in NumPy with [:math:`n_samples`, :math:`n_vars`, :math:`n_length`].
     :param mean_weight: The weight of the second norm of mean vector.
     :param covar_weight: The weight of the second norm of covariance matrix.
     :param return_all: If True, return all the tuple of (Wasserstein distances, mean_value, covar_value).
