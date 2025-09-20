@@ -103,8 +103,8 @@ class AutoregressiveMovingAverage(BaseExcitation):
         To ensure that the autoregressive process can stably generate a stationary time series,
         we impose certain constraints on the parameters of the autoregressive process.
 
-        1. The absolute value of the last parameter (i.e., φ_p) is less than 1: |φ_p| < 1
-        2. The sum of all parameters is less than 1: φ_1 + φ_2 + ... + φ_p < 1
+        1. The absolute value of the last parameter (i.e., :math:`\\varphi_p`) is less than 1: :math:`|\\varphi_p| < 1`
+        2. The sum of all parameters is less than 1: :math:`\\varphi_1 + \\varphi_2 + \dots + \\varphi_p < 1`
 
         :param rng: The random number generator of NumPy with fixed seed.
         :param p_order: The order of the autoregressive process.

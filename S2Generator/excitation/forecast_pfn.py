@@ -270,6 +270,7 @@ def get_freq_component(
                         For example, for monthly trend, we use 12/2 = 6 harmonics
     :param n_total: total cycle length
     :return: numpy array of shape dates_feature.shape containing
+
     sinusoidal value for a given point in time
     """
     harmonics = list(range(1, n_harmonics + 1))
@@ -683,18 +684,22 @@ class ForecastPFN(BaseExcitation):
         Creates noise configuration for time series generation.
 
         Parameters define multiplicative Weibull-distributed noise:
-        :param k: Shape parameter for Weibull distribution (k > 0)
-                   - k < 1: Decreasing failure rate
-                   - k = 1: Exponential distribution (constant failure rate)
-                   - k > 1: Increasing failure rate
+        :param k: Shape parameter for Weibull distribution (k > 0).
+
+            - k < 1: Decreasing failure rate
+            - k = 1: Exponential distribution (constant failure rate)
+            - k > 1: Increasing failure rate
+
         :type k: float
         :param median: Median value of Weibull distribution (location parameter)
         :type median: float
         :param scale: Noise scaling factor where:
-                      0 = no noise (deterministic series)
-                      0-0.1 = low noise
-                      0.1-0.5 = moderate noise
-                      >0.5 = high noise
+
+            - 0 = no noise (deterministic series)
+            - 0-0.1 = low noise
+            - 0.1-0.5 = moderate noise
+            - >0.5 = high noise
+
         :type scale: float
         :return: Noise configuration object
         :rtype: ComponentNoise

@@ -157,7 +157,7 @@ def get_constant_kernel(length: Optional[int] = 256) -> List[Kernel]:
 
 def random_binary_map(a: Kernel, b: Kernel) -> np.ndarray:
     """
-    Applies a random binary operator (+ or *) with equal probability
+    Applies a random binary operator (+ or \*) with equal probability
     on kernels ``a`` and ``b``.
 
     :param a: A GP kernel

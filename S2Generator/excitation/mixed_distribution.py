@@ -183,12 +183,11 @@ class MixedDistribution(BaseExcitation):
         :param input_dimension: The number of input dimension.
         :param n_centroids: The number of centroids in mixed distribution.
         :return:
-        - means: Mean array with np.ndarray;
-        - *covariances*: Covariance array (Note: This actually generates variances,
-           as each center generates a separate variance value in each dimension,
-           so the covariance matrix is a diagonal matrix);
-        - rotations: Rotation matrix list (each element is a np.ndarray,
-           representing the rotation matrix for each center);
+            - means: Mean array with np.ndarray;
+            - *covariances*: Covariance array (Note: This actually generates variances,
+               as each center generates a separate variance value in each dimension,
+               so the covariance matrix is a diagonal matrix);
+            - rotations: Rotation matrix list (each element is a np.ndarray, representing the rotation matrix for each center);
         """
         self.means = rng.randn(
             n_centroids, input_dimension
