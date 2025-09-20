@@ -98,14 +98,14 @@ duration_show_files = True
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["source/_static"]
 
-html_css_files = ["theme_overrides.css", "custom2.css"]
+html_css_files = ["theme_overrides.css", "custom.css"]
 
 html_theme_options = {
     "announcement": "",  # You can specify an arbitrary URL that will be used as the HTML source for your announcement.
     # Navigation bar
     "logo": {
         "text": "S2Generator",
-        "link": "https://S2Generator.readthedocs.io/",  # not done
+        "link": "https://S2Generator.readthedocs.io/",  
     },
     "header_links_before_dropdown": 5,
     "icon_links": [
@@ -129,7 +129,7 @@ html_theme_options = {
     # -----------------------------------------------------------------------------
     "switcher": {
         "json_url": (
-            "https://raw.githubusercontent.com/changewam/PySDKit/refs/heads/main/docs/source/_static/version_switcher.json"
+            "https://raw.githubusercontent.com/changewam/S2Generator/refs/heads/main/docs/source/_static/version_switcher.json"
         ),  # the persistent location of the JSON file
         "version_match": "dev" if "dev" in version else version,
     },
