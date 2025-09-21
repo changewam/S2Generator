@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-'''
+"""
 The Generation for Excitation Time Series
 ==================================================
 
@@ -15,7 +15,7 @@ We incorporate five different excitation time series generation mechanisms into 
 - `KernelSynth <https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/kernel_synth.py>`_ : This method comes from `Chronos <https://arxiv.org/abs/2403.07815>`_ and generates excitation signals by constructing different periods and trends in the form of a combination of multiple different linear and nonlinear kernels.
 - `IntrinsicModeFunction <https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/intrinsic_mode_functions.py>`_ : This method is based on the idea of signal decomposition in `PySDKit <https://github.com/wwhenxuan/PySDKit>`_ and constructs the excitation signal by combining the eigenmode function with different signal and noise sequences.
 
-'''
+"""
 
 # %%
 
@@ -106,9 +106,9 @@ for i in range(2):
 
 # %%
 # For each specific method for generating time series data, you can also pass in specific parameters for control and instantiation.
-# 
+#
 # Using the default parameters will meet most basic data generation requirements.
-# 
+#
 # Next we will further demonstrate and analyze this process:
 
 # %%
@@ -139,4 +139,3 @@ for idx, method in enumerate(
 
     # Set the y label for the name of excitation
     ax[idx].set_ylabel(str(generator))
-

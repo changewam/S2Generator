@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-'''
+"""
 The Seasonal-Trend decomposition using LOESS
 ==============================================
 
@@ -27,7 +27,7 @@ The three components of STL analysis relate to the raw time series as follows:
    y_i = s_i + t_i + r_i
 
 where, :math:`y_i` is the value of the observed time series. :math:`s_i`, :math:`t_i` and :math:`r_i` are the seasonal, trend and remainder component.
-'''
+"""
 
 
 # %%

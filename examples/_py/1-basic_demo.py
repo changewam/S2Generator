@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-'''
+"""
 The Demo of :math:`S^2` Generator for Series-Symbol Data Generation
 ===================================================================
- 
+
 Time series data serves as the external manifestation of complex dynamical systems. This method aims to generate diverse complex systems represented by symbolic expressions :math:`f(\cdot)` — through unconstrained construction. It simultaneously generates excitation time series :math:`X \in \mathbb{R} ^ {M \\times L}`, which are then fed into the complex systems to produce their responses :math:`Y=f(X) \in \mathbb{R} ^ {N \\times L}`. Here, :math:`M`, :math:`N` and :math:`L` denote the number of input channels, output channels, and series length, respectively.
 
 **Note: Because the values of the stimulus time series can inflate or fall outside the domain of complex systems, the following examples may not work if your Python version and library version are inconsistent with ours. In this case, please adjust the random seed value in the random number generator.**
-'''
+"""
 # %%
 
 import numpy as np
@@ -34,12 +34,12 @@ symbol_params = SymbolParams()
 
 # %%
 # The core of the :math:`S^2` data generation mechanism is to randomly construct a large number of symbolic expressions (complex systems) :math:`f(\cdot)` and stimulus time series :math:`X`, and obtain the response of the complex system by inputting the stimulus into the complex system:
-# 
+#
 # .. math::
 #    Y = f(X)
-# 
+#
 # where, the sampling multivariate time series :math:`X = \left [ x_1, x_2, \cdots, x_m \right ]  \in \mathbb{R}^{M \times L}` and the generated multivariate time series :math:`Y = \left [ y_1, y_2, \cdots, y_m \right ]  \in \mathbb{R}^{N \times L}`. :math:`M` and :math:`N` are the input and output dimension for the time series, :math:`L` is the length of points of the time series data.
-# 
+#
 # After constructing the input parameters, we can complete this process end-to-end by creating a data generation object and executing the `run` method.
 
 # Create an instance

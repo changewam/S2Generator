@@ -48,5 +48,3 @@ Papers
    auto_examples/index
    source/development/index
    source/release_notes/index
-
-   source/user_guide/index

@@ -1,16 +1,16 @@
 # User giude
 
-<div align="center">
-
-[Installation](#Installation) | {doc}`Examples <../../auto_examples/index>` | {doc}`Acknowledge <../development/index>` | [Citation](#Citation)
-
-</div>
-
 Based on the important perspective that time series are external manifestations of complex dynamical systems, 
 we propose a bimodal generative mechanism for time series data that integrates both symbolic and series modalities. 
 This mechanism enables the unrestricted generation of a vast number of complex systems represented as symbolic expressions $f(\cdot)$ and excitation time series $X$. 
 By inputting the excitation into these complex systems, we obtain the corresponding response time series $Y=f(X)$. 
 This method allows for the unrestricted creation of high-quality time series data for pre-training the time series foundation models.
+
+<div align="center">
+
+[Installation](#Installation) | {doc}`Examples <../../auto_examples/index>` | {doc}`Acknowledge <../development/index>` | [Citation](#Citation)
+
+</div>
 
 ### 🔥 News
 
