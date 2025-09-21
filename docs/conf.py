@@ -11,19 +11,19 @@ import os
 import sys
 from pathlib import Path
 
-project = 'S2Generator'
-copyright = f'2025-{date.today().year}, the S2Generator team'
-author = 'the S2Generator team'
+project = "S2Generator"
+copyright = f"2025-{date.today().year}, the S2Generator team"
+author = "the S2Generator team"
 
-release = '0.0.2'
+release = "0.0.2"
 version = "0.0.2"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-sys.path.append(str(Path('source').resolve()))
+sys.path.append(str(Path("source").resolve()))
 sys.path.insert(0, str(Path("..").resolve()))
-sys.path.insert(0, os.path.abspath('../../'))
+sys.path.insert(0, os.path.abspath("../../"))
 
 extensions = [
     "sphinx_copybutton",
@@ -54,16 +54,12 @@ apidoc_modules = [
     },
 ]
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
-    '.txt': 'markdown'
-}
+source_suffix = {".rst": "restructuredtext", ".md": "markdown", ".txt": "markdown"}
 
 html_logo = "source/_static/S2Generator_logo.png"
-html_favicon = 'source/_static/S2Generator_logo.png'
+html_favicon = "source/_static/S2Generator_logo.png"
 
 language = "en"
 
@@ -71,22 +67,22 @@ show_warning_types = False
 suppress_warnings = []
 
 sphinx_gallery_conf = {
-     'examples_dirs': '../examples/_py',
-     'gallery_dirs': 'auto_examples',
-     'doc_module':('S2Generator',),
-     'within_subsection_order': 'FileNameSortKey',
-     'plot_gallery': True,
-     'run_stale_examples': True,
-     'min_reported_time': 0.5,
-     'run_stale_examples': True,
-     'show_memory': False,
-     'filename_pattern': '.*',
+    "examples_dirs": "../examples/_py",
+    "gallery_dirs": "auto_examples",
+    "doc_module": ("S2Generator",),
+    "within_subsection_order": "FileNameSortKey",
+    "plot_gallery": True,
+    "run_stale_examples": True,
+    "min_reported_time": 0.5,
+    "run_stale_examples": True,
+    "show_memory": False,
+    "filename_pattern": ".*",
 }
 
 mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
 mathjax3_config = {
-    'tex': {
-        'processEscapes': True,
+    "tex": {
+        "processEscapes": True,
     }
 }
 
@@ -105,7 +101,7 @@ html_theme_options = {
     # Navigation bar
     "logo": {
         "text": "S2Generator",
-        "link": "https://S2Generator.readthedocs.io/",  
+        "link": "https://S2Generator.readthedocs.io/",
     },
     "header_links_before_dropdown": 5,
     "icon_links": [
@@ -137,7 +133,13 @@ html_theme_options = {
     # Secondary_sidebar
     "secondary_sidebar_items": {
         "**": ["page-toc", "sourcelink"],
-        "examples/*": ["page-toc", "sourcelink", "sg_execution_times", "sg_download_links", "sg_launcher_links"],
+        "examples/*": [
+            "page-toc",
+            "sourcelink",
+            "sg_execution_times",
+            "sg_download_links",
+            "sg_launcher_links",
+        ],
         "index": [],
     },
     "show_toc_level": 3,
@@ -160,5 +162,3 @@ remove_from_toctrees = []
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {"index": []}  # Hide sidebar in home page
 html_show_sourcelink = False
-
-

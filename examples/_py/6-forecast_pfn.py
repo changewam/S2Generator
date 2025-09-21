@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-'''
+"""
 Excitation Generation via ForecastPFN
 ========================================
 
@@ -48,16 +48,16 @@ We set each :math:`m_{\\nu} \in \left \{ \mathrm{week}, \mathrm{month}, \mathrm{
 
 where, the seasonal can be represented as:
 
-.. math::  
+.. math::
    \mathrm{seasonal}_{\\nu}(t) = 1 + m_{\\nu} \sum_{f = 1}^{\left \lfloor p_{\\nu / 2} \\right \\rfloor }\left [ c_{f, \\nu} \mathrm{sin} \left ( 2 \pi f \\frac{t}{p_{\\nu}} \\right ) + d_{f, \\nu} \mathrm{cos} \left ( 2 \pi f \\frac{t}{p_{\\nu}} \\right ) \\right ].
 
 We set each :math:`m_{\\nu} \in \left \{ \mathrm{week}, \mathrm{month}, \mathrm{year} \\right \}`, separately for daily, weekly, and monthly, as follows. :math:`\\nu = 0` unless specified:
- 
+
  - Daily: :math:`m_{\mathrm{week}} \sim \mathcal{U}([0, 1])`, :math:`m_{\mathrm{month}} \sim \mathcal{U}([0, 2])`, :math:`p_{\mathrm{week}} = 7`, :math:`p_{\mathrm{week}} = 30.5`.
  - Weekly: :math:`m_{\mathrm{week}} \sim \mathcal{U}([0, 3])`, :math:`m_{\mathrm{month}} \sim \mathcal{U}([0, 1])`, :math:`p_{\mathrm{week}} = 2`, :math:`p_{\mathrm{week}} = 52`.
  - Monthly: :math:`m_{\mathrm{year}} \sim \sim \mathcal{U}([0, 5])`, :math:`p_{\mathrm{year}} = 12`.
 
-'''
+"""
 
 # %%
 
@@ -146,4 +146,3 @@ print(
 fig, ax = plt.subplots(4, 1, figsize=(12, 6), dpi=120, sharex=True)
 for i in range(4):
     ax[i].plot(time_series[:, i], color="royalblue")
-

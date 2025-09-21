@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-'''
+"""
 Excitation Generation via Autoregressive Moving Average (ARMA)
 =====================================================================
 
@@ -24,7 +24,7 @@ Considering that the autoregressive process can easily lead to excessive accumul
    \end{matrix}\\right\}
 
 Below, we will further demonstrate how to use this model to generate excitation time series data.
-'''
+"""
 
 # %%
 import numpy as np
@@ -101,4 +101,3 @@ time_series = arma.arma_series(
 fig, ax = plt.subplots(figsize=(9, 2), dpi=120)
 
 ax.plot(time_series, color="royalblue")
-

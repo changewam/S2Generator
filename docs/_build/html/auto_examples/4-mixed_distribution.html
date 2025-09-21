@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=ceaed1b9" />
-    <link rel="stylesheet" type="text/css" href="../_static/custom2.css?v=99ec302a" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=99ec302a" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -57,7 +57,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'auto_examples/4-mixed_distribution';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
-        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/changewam/PySDKit/refs/heads/main/docs/source/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/changewam/S2Generator/refs/heads/main/docs/source/_static/version_switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.0.2';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
@@ -207,23 +207,6 @@
   </a>
 </li>
 
-            <li class="nav-item dropdown">
-                <button class="btn dropdown-toggle nav-item" type="button"
-                data-bs-toggle="dropdown" aria-expanded="false"
-                aria-controls="pst-nav-more-links">
-                    More
-                </button>
-                <ul id="pst-nav-more-links" class="dropdown-menu">
-                    
-<li class=" ">
-  <a class="nav-link dropdown-item nav-internal" href="../source/user_guide/index.html">
-    <no title>
-  </a>
-</li>
-
-                </ul>
-            </li>
-            
   </ul>
 </nav></div>
       
@@ -354,13 +337,6 @@
   </a>
 </li>
 
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../source/user_guide/index.html">
-    <no title>
-  </a>
-</li>
-
   </ul>
 </nav></div>
           
@@ -419,6 +395,7 @@
 <li class="toctree-l1"><a class="reference internal" href="1-basic_demo.html">The Demo of <span class="math notranslate nohighlight">\(S^2\)</span> Generator for Series-Symbol Data Generation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="12-logging.html">The logging for <span class="math notranslate nohighlight">\(S^2\)</span> Generator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="14-stl_decomposition.html">The Seasonal-Trend decomposition using LOESS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="17-time_complexity_analysis.html">Time Complexity Analysis for The <span class="math notranslate nohighlight">\(S^2\)</span> Data Generation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="3-excitation.html">The Generation for Excitation Time Series</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Excitation Generation via Mixed Distribution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="5-arma.html">Excitation Generation via Autoregressive Moving Average (ARMA)</a></li>
@@ -539,7 +516,7 @@ The Available Dict: {&#39;gaussian&#39;: 0.5, &#39;uniform&#39;: 0.5}
 <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;royalblue&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_4-mixed_distribution_001.png" srcset="../_images/sphx_glr_4-mixed_distribution_001.png" alt="4 mixed distribution" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&lt;matplotlib.lines.Line2D object at 0x0000026966687400&gt;]
+<img src="../_images/sphx_glr_4-mixed_distribution_001.png" srcset="../_images/sphx_glr_4-mixed_distribution_001.png" alt="4 mixed distribution" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&lt;matplotlib.lines.Line2D object at 0x00000293649A9810&gt;]
 </pre></div>
 </div>
 <p>We can print and observe the statistical parameters involved in this data generation:</p>
@@ -700,7 +677,7 @@ Covariances: [[0.6235637]]
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>

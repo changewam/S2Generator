@@ -24,3 +24,11 @@ venv/
 
 # save the test data
 /data/
+
+# ignore the doc examples files
+/docs/auto_examples/images
+/docs/auto_examples/*.ipynb
+/docs/auto_examples/*.py
+/docs/auto_examples/*.zip
+/docs/auto_examples/*.json
+/docs/auto_examples/*.md5
