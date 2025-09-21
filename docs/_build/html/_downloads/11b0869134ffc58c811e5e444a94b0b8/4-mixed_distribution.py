@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-'''
+"""
 Excitation Generation via Mixed Distribution
 ==================================================
 
@@ -23,7 +23,7 @@ After determining the type of each distribution :math:`\mathcal{D}`, we will ran
 Finally we randomly generate the weights of each distribution to mix them with weights. Specifically for the $k$ distributions we generate :math:`\{ w_1, w_2, \cdot, w_k \} \sim \mathcal{U}(0, 1)` and normalize it to :math:`\sum_{j}^{k}w_j = 1`.
  
 Below we will give a specific code example for excitation generation.
-'''
+"""
 # %%
 
 import numpy as np
@@ -88,7 +88,7 @@ fig, ax = plt.subplots(4, 1, figsize=(12, 6), dpi=120, sharex=True)
 for i in range(4):
     ax[i].plot(time_series[:, i], color="royalblue")
 
-#%%
+# %%
 # In addition to using random weighting to the mixed distribution, we can also generate **Rotation matrix** to further improve the diversity of the generated excitation time series.
 
 # %%
@@ -113,7 +113,7 @@ fig, ax = plt.subplots(4, 1, figsize=(12, 6), dpi=120, sharex=True)
 for i in range(4):
     ax[i].plot(time_series[:, i], color="royalblue")
 
-#%%
+# %%
 # We also provide an interface for generating Gaussian or uniform distribution samples separately, which can be called through `generate_gaussian` and `generate_uniform`. However, you should generate the random weight for each distribution.
 
 # %%
@@ -159,4 +159,3 @@ for i in range(3):
 # Set the title for each column
 ax[0, 0].set_title("Gaussian", fontsize=14)
 ax[0, 1].set_title("Uniform", fontsize=14)
-

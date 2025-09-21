@@ -537,10 +537,10 @@ We first determine the number of signals to use and then generate the correspond
 </div>
 <p>To prevent numerical explosion in the generated excitation time series data, we can randomly scale the intrinsic mode function (IMF) within a specified range by calculating its “energy” during the data generation process.
 For a time series of length <span class="math notranslate nohighlight">\(n`\)</span>, its energy <span class="math notranslate nohighlight">\(E\)</span> can be represented by its second norm:</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">.. math:</span>
 <span class="sd">   E = \\frac{1}{n} \left \| y(t) \\right \| ^ 2 = \\frac{1}{n} \sum_{i} ^ {n} y(i) ^ 2.</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&#39;\n.. math:\n   E = \\frac{1}{n} \\left \\| y(t) \\right \\| ^ 2 = \\frac{1}{n} \\sum_{i} ^ {n} y(i) ^ 2.\n&#39;
@@ -604,7 +604,7 @@ We can see that several major frequency components are sub-signals that make up 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_IMFs</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">time_series</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">IMFs</span><span class="o">=</span><span class="n">imfs_results</span><span class="p">)</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_8-intrinsic_mode_function_004.png" srcset="../_images/sphx_glr_8-intrinsic_mode_function_004.png" alt="8 intrinsic mode function" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.668 seconds)</p>
+<img src="../_images/sphx_glr_8-intrinsic_mode_function_004.png" srcset="../_images/sphx_glr_8-intrinsic_mode_function_004.png" alt="8 intrinsic mode function" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.432 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-8-intrinsic-mode-function-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/d6f5281e2d6c3cd906fa18c933d39f8a/8-intrinsic_mode_function.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">8-intrinsic_mode_function.ipynb</span></code></a></p>

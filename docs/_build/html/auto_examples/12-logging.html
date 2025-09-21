@@ -517,18 +517,18 @@ The Specific Execution Process of S2Generator:
 -------------------------------------------------------------------------------
  Index | Target                               | Time                | Results
 -------+--------------------------------------+---------------------+----------
- 1     | Create the Symbolic Expression       | 2025-09-21 11:55:01 | success
- 2     | Generate Excitation Time Series 1    | 2025-09-21 11:55:01 | success
- 3     | Generate Response Time Series 1      | 2025-09-21 11:55:01 | failure
- 4     | Generate Excitation Time Series 2    | 2025-09-21 11:55:01 | success
- 5     | Generate Response Time Series 2      | 2025-09-21 11:55:01 | success
+ 1     | Create the Symbolic Expression       | 2025-09-21 18:31:00 | success
+ 2     | Generate Excitation Time Series 1    | 2025-09-21 18:31:00 | success
+ 3     | Generate Response Time Series 1      | 2025-09-21 18:31:00 | failure
+ 4     | Generate Excitation Time Series 2    | 2025-09-21 18:31:00 | success
+ 5     | Generate Response Time Series 2      | 2025-09-21 18:31:00 | success
 -------------------------------------------------------------------------------
 
 The Generated Symbolic Expression:
 (73.5 add (x_0 mul (((9.38 mul cos((-0.092 add (-6.12 mul x_0)))) add (87.1 mul arctan((-0.965 add (0.973 mul rand))))) sub (8.89 mul exp(((4.49 mul log((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul ((51.3 add (-55.6 mul x_0)))**2)))))))
 
 Running Time:
-0.04549
+0.0392
 </pre></div>
 </div>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add the params `logging_path` to save the stats</span>
@@ -563,16 +563,16 @@ The Specific Execution Process of S2Generator:
 -------------------------------------------------------------------------------
  Index | Target                               | Time                | Results
 -------+--------------------------------------+---------------------+----------
- 1     | Create the Symbolic Expression       | 2025-09-21 11:55:01 | success
- 2     | Generate Excitation Time Series 1    | 2025-09-21 11:55:01 | success
- 3     | Generate Response Time Series 1      | 2025-09-21 11:55:01 | success
+ 1     | Create the Symbolic Expression       | 2025-09-21 18:31:00 | success
+ 2     | Generate Excitation Time Series 1    | 2025-09-21 18:31:00 | success
+ 3     | Generate Response Time Series 1      | 2025-09-21 18:31:00 | success
 -------------------------------------------------------------------------------
 
 The Generated Symbolic Expression:
 (0.846 add ((0.265 mul sqrt((45.7 add (38.8 mul rand)))) add (62.8 mul sqrt((((-2.6 mul x_0) sub (90.4 mul tan((0.382 add (9.34 mul 1))))) add (-0.016 mul ((6.56 add (0.244 mul x_0)))**2))))))
 
 Running Time:
-0.00311
+0.00272
 </pre></div>
 </div>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We can also generate the multivariate input and output time series</span>
@@ -604,19 +604,19 @@ The Specific Execution Process of S2Generator:
 -------------------------------------------------------------------------------
  Index | Target                               | Time                | Results
 -------+--------------------------------------+---------------------+----------
- 1     | Create the Symbolic Expression       | 2025-09-21 11:55:01 | success
- 2     | Generate Excitation Time Series 1    | 2025-09-21 11:55:01 | success
- 3     | Generate Response Time Series 1      | 2025-09-21 11:55:01 | failure
- 4     | Generate Excitation Time Series 2    | 2025-09-21 11:55:01 | success
- 5     | Generate Response Time Series 2      | 2025-09-21 11:55:01 | failure
- 6     | Generate Excitation Time Series 3    | 2025-09-21 11:55:01 | success
- 7     | Generate Response Time Series 3      | 2025-09-21 11:55:01 | failure
- 8     | Generate Excitation Time Series 4    | 2025-09-21 11:55:01 | success
- 9     | Generate Response Time Series 4      | 2025-09-21 11:55:01 | failure
- 10    | Generate Excitation Time Series 5    | 2025-09-21 11:55:01 | success
- 11    | Generate Response Time Series 5      | 2025-09-21 11:55:01 | failure
- 12    | Generate Excitation Time Series 6    | 2025-09-21 11:55:01 | success
- 13    | Generate Response Time Series 6      | 2025-09-21 11:55:01 | success
+ 1     | Create the Symbolic Expression       | 2025-09-21 18:31:00 | success
+ 2     | Generate Excitation Time Series 1    | 2025-09-21 18:31:00 | success
+ 3     | Generate Response Time Series 1      | 2025-09-21 18:31:00 | failure
+ 4     | Generate Excitation Time Series 2    | 2025-09-21 18:31:00 | success
+ 5     | Generate Response Time Series 2      | 2025-09-21 18:31:00 | failure
+ 6     | Generate Excitation Time Series 3    | 2025-09-21 18:31:00 | success
+ 7     | Generate Response Time Series 3      | 2025-09-21 18:31:00 | failure
+ 8     | Generate Excitation Time Series 4    | 2025-09-21 18:31:00 | success
+ 9     | Generate Response Time Series 4      | 2025-09-21 18:31:00 | failure
+ 10    | Generate Excitation Time Series 5    | 2025-09-21 18:31:00 | success
+ 11    | Generate Response Time Series 5      | 2025-09-21 18:31:00 | failure
+ 12    | Generate Excitation Time Series 6    | 2025-09-21 18:31:00 | success
+ 13    | Generate Response Time Series 6      | 2025-09-21 18:31:00 | success
 -------------------------------------------------------------------------------
 
 The Generated Symbolic Expression:
@@ -626,10 +626,10 @@ The Generated Symbolic Expression:
 (-34.1 add (-0.646 mul x_1))
 
 Running Time:
-0.25835
+0.23443
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.585 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.532 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-12-logging-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/08a6df8b418611dd46a38ce823e900ed/12-logging.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">12-logging.ipynb</span></code></a></p>

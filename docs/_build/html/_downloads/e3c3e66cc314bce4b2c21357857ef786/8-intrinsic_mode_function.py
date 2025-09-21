@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-'''
+"""
 Excitation Generation via Intrinsic Mode Function
 ======================================================
 
@@ -36,7 +36,7 @@ We first determine the number of signals to use and then generate the correspond
 
 where, $w_k$ is the random weight for the IMFs :math:`u_k (t)` and is normalized by :math:`\sum_{k} w_k = 1`.
 
-'''
+"""
 
 # %%
 
@@ -84,10 +84,10 @@ print("The probability dict: \n", imfs.available_dict)
 # %%
 # To prevent numerical explosion in the generated excitation time series data, we can randomly scale the intrinsic mode function (IMF) within a specified range by calculating its "energy" during the data generation process.
 # For a time series of length :math:`n``, its energy :math:`E` can be represented by its second norm:
-'''
+"""
 .. math:
    E = \\frac{1}{n} \left \| y(t) \\right \| ^ 2 = \\frac{1}{n} \sum_{i} ^ {n} y(i) ^ 2.
-'''
+"""
 
 # %%
 
@@ -132,9 +132,9 @@ for i in range(2):
 
 # $$
 # We can use an adaptive signal decomposition algorithm to observe the different intrinsic mode functions that make up the excitations of this time series data.
-# 
+#
 # We can directly import the `variational mode decomposition (VMD) <https://github.com/wwhenxuan/PySDKit/blob/main/pysdkit/_vmd/vmd_c.py>`_ algorithm, the most commonly used in adaptive mode decomposition, from PySDKit and use the `plot_IMFs <https://github.com/wwhenxuan/PySDKit/blob/main/pysdkit/plot/_plot_imfs.py) method to visualize the decomposed sub-signals>`_ .
-# 
+#
 # Here, we use the first signal as an example. Because the amplitude spectrum is symmetrical, we can clearly see that the signal has three main frequency components, with the remaining minor fluctuations being amplitude.
 # For this reason, we set the number of modes to be decomposed to 4.
 
@@ -151,4 +151,3 @@ imfs_results = vmd.fit_transform(signal=time_series[:, 0])
 
 # Visualize the decomposition results
 fig = plot_IMFs(signal=time_series[:, 0], IMFs=imfs_results)
-

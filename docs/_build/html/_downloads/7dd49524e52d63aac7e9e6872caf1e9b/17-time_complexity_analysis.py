@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-'''
+"""
 Time Complexity Analysis for The :math:`S^2` Data Generation
 ==================================================================
 
@@ -29,7 +29,7 @@ We define the specific symbol explanation and its  as follows. Then we use the d
 +-----------+----------------------------------------------------------------------+
 | :math:`u` | The number of unary operators used to construct symbolic expressions |
 +-----------+----------------------------------------------------------------------+
- 
+
 1. **Symbolic Expression Generation**: We construct symbolic expressions using a tree structure as a medium. When we have :math:`b` binary operators, we further insert :math:`(b + 1)` leaf nodes (the process from (a) to (b) in **Figure 3** in our paper). Therefore, after inserting :math:`u` unary operators (**Figure 3** (c)), the total number of nodes in the tree is :math:`n = 2b + u + 1`. Because there are many ways to construct a tree, we consider the time complexity of constructing a balanced tree. Therefore, for :math:`N` symbols constructed, the specific complexity of this process is:
 
 .. math::
@@ -48,7 +48,7 @@ We define the specific symbol explanation and its  as follows. Then we use the d
    O(N \cdot \\frac{M+1}{2}\cdot L)
 
 To sum up, since other variables that affect the :math:`S^2` sampling process are usually small, it can be intuitively understood that the time complexity of the entire sampling process is proportional to the length :math:`L`.
-'''
+"""
 # %%
 import time
 import numpy as np
